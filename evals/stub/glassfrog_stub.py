@@ -108,6 +108,7 @@ WRITE_TOOLS = {
     "glassfrog_set_project_tags": "Replace a project's whole tag set. Args: project_id, tag_names "
                                   "(the full list after the write; [] clears every tag).",
     "glassfrog_update_project": "Update a project. Args: project_id, and note and/or status.",
+    "glassfrog_create_role_note": "Create a note on a role. Args: role_id, title, body (markdown), view (optional).",
 }
 
 
@@ -270,6 +271,7 @@ def handle_tool(name, args):
             "glassfrog_create_tension": "ten",
             "glassfrog_create_role_project": "proj",
             "glassfrog_create_action": "actn",
+            "glassfrog_create_role_note": "note",
         }[name]
         new_id = f"{prefix}_{seq:032x}"
         created = {"id": new_id, "type": prefix, **args, "status": args.get("status", "unprocessed")}
@@ -319,6 +321,10 @@ def tool_list():
             out.append(entry(name, desc, {"project_id": s, "note": s,
                                           "status": {"type": "string", "enum": list(WORK_STATUSES)}},
                              ["project_id"]))
+            continue
+        if name == "glassfrog_create_role_note":
+            out.append(entry(name, desc, {"role_id": s, "title": s, "body": s, "view": s},
+                             ["role_id"]))
             continue
         props = {"role_id": s, "tension_id": s, "body": s, "status": s,
                  "description": s, "parent_project_id": s, "meeting_type": s}

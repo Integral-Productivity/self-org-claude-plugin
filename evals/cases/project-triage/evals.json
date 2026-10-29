@@ -2,7 +2,7 @@
   "skill": "self-org",
   "surface": "/self-org:project-triage",
   "status": "active",
-  "note": "Synthetic org (evals/scenarios/project-triage.json). Eval 0 is read-only and judged: it checks the reality gates fire before any form critique and the resume rule skips a settled project. Eval 1 carries an advance go-ahead and checks the writes mechanically off the stub's log: the state tag keeps the project's other tag, the note is written before the tag, a gate failure closes through status, the duplicate survivor and the settled project are untouched, and no rubric verdict or status becomes a tag. Read the transcript before the score if the surface never engaged. Evals 2 to 4 use evals/scenarios/project-triage-needs-info.json for ADR-0022 and the needs-info resolution mode (#414): eval 2 checks the waiting split off the write log, eval 3 judges the read-only mode walk, and eval 4 checks that an answered waiting project returns to current and an answer with no action is recorded, not turned into an action.",
+  "note": "Synthetic org (evals/scenarios/project-triage.json). Eval 0 is read-only and judged: it checks the reality gates fire before any form critique and the resume rule skips a settled project. Eval 1 carries an advance go-ahead and checks the writes mechanically off the stub's log: the state tag keeps the project's other tag, the note is written before the tag, a gate failure closes through status, the duplicate survivor and the settled project are untouched, no rubric verdict or status becomes a tag, and the pass ends with one role note on the triaged role (#427). Read the transcript before the score if the surface never engaged. Evals 2 to 4 use evals/scenarios/project-triage-needs-info.json for ADR-0022 and the needs-info resolution mode (#414): eval 2 checks the waiting split off the write log, eval 3 judges the read-only mode walk, and eval 4 checks that an answered waiting project returns to current and an answer with no action is recorded, not turned into an action.",
   "evals": [
     {
       "eval_id": 0,
@@ -46,7 +46,7 @@
       "eval_name": "confirmed-writes-keep-tags-and-close-by-status",
       "fixture": "evals/fixtures/glassfrog/project-triage.json",
       "prompt": "Triage the current projects on my roles. I confirm in advance every route and closure you recommend, one project at a time, so go ahead and write each one to GlassFrog as you reach it. Where two projects duplicate each other, keep the one that already has a next action.",
-      "ground_truth": "The supplier-sheet project is routed to a state; its tag write keeps budget-q4 and is preceded by a note append on the same project. The pricing-page project is closed with status completed. The duplicate guide-b is archived; guide-a, the survivor, is not closed. The venue-contract project is not written at all. No tag is a rubric verdict or a status.",
+      "ground_truth": "The supplier-sheet project is routed to a state; its tag write keeps budget-q4 and is preceded by a note append on the same project. The pricing-page project is closed with status completed. The duplicate guide-b is archived; guide-a, the survivor, is not closed. The venue-contract project is not written at all. No tag is a rubric verdict or a status. After the project writes, the pass is recorded as one role note on the Operations Steward role.",
       "assertions": [
         {
           "text": "A state tag is written on the supplier-sheet project",
@@ -177,6 +177,41 @@
               "tool": "glassfrog_set_project_tags",
               "args_match": {
                 "tag_names": "needs-next-action|needs-outcome|needs-owner|needs-goal|out-of-authority|executor-mismatch|archived|completed"
+              }
+            }
+          }
+        },
+        {
+          "text": "The pass is recorded as a role note on the Operations Steward role",
+          "discriminating": true,
+          "check": {
+            "kind": "write_present",
+            "match": {
+              "tool": "glassfrog_create_role_note",
+              "args_contain": {
+                "role_id": "role_88e3a54028ef541b6ae409c54efabacf"
+              },
+              "args_match": {
+                "title": "project triage"
+              }
+            }
+          }
+        },
+        {
+          "text": "The role note is written after the supplier-sheet tag write, so it records the pass rather than preceding it",
+          "discriminating": true,
+          "check": {
+            "kind": "write_ordering",
+            "first": {
+              "tool": "glassfrog_set_project_tags",
+              "args_contain": {
+                "project_id": "proj_be11259f19a63fcf4e2bb718fb1c43c7"
+              }
+            },
+            "then": {
+              "tool": "glassfrog_create_role_note",
+              "args_contain": {
+                "role_id": "role_88e3a54028ef541b6ae409c54efabacf"
               }
             }
           }
