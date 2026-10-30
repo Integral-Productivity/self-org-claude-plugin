@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.3.0...v1.4.0) (2026-10-30)
+
+
+### Features
+
+* **project-triage:** record each pass as a GlassFrog role note ([#428](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/428)) ([c94524d](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/c94524daec9b7dc2aca04f87add1469a27ebe5f2))
+
 ## [1.3.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.2.0...v1.3.0) (2026-10-26)
 
 
