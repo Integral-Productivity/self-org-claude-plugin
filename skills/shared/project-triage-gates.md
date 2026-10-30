@@ -100,6 +100,34 @@ The `needs-info` resolution mode ignores movement and walks every `needs-info` p
 
 A project tagged `ready-for-agent` or `ready-for-human` is counted and not walked. A project whose note has no triage line but carries a state tag set by hand counts as moved.
 
+### The pass record
+
+The note lines record each project. The pass as a whole is recorded as **one GlassFrog role note per role** whose projects this pass wrote, with `glassfrog_create_role_note(role_id, title, body)`. The role note is the record, because role holders read the role in GlassFrog. A copy of it in a drive or a report file is allowed, but it is never the record ([#427](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/427)).
+
+**When.** After the last project write on that role in the pass. A role with no confirmed project write gets no note, and a pass with no confirmed project write writes no note at all. A deferred project, a draft for another role's owner, and a refused tag write are not writes; a note line that was written is.
+
+**Title.** `<YYYY-MM-DD HH:MM local> — project triage`, in the actor's local time, taken from a real clock at draft time, as for the note line.
+
+**Body.** Markdown, in this order:
+
+```markdown
+**Scope.** <mode: standard pass | needs-info resolution>. Projects read: <n>. Already triaged and skipped: <n>. Newly triaged: <n>. Deferred: <n>.
+
+| Project | Applied | Why | Follow-ups |
+|---|---|---|---|
+| [<description>](<web_url>) | <state, or status completed/archived/waiting> | <the reason from the note line> | <tension or action filed, or a drafted follow-up, or none> |
+
+**Findings.** <rubric Family A findings named during the pass, and any [r] hand-off to /self-org:review-project with its result when known; or none>
+
+**Observations.** <patterns across the role's projects worth the role holder's attention; or none>
+```
+
+One table row per project walked and written on that role. Link a project by its `web_url`; when it has none, give its description and id. Triage runs no critic lens (ADR-0018), so a lens finding appears only when an `[r]` review produced one. A drafted follow-up action names no person: any filler of the role can take it. Name a person only when that person holds specific knowledge outside the role.
+
+**Confirmation and ownership.** Show the full title and body, then write it only on the user's confirmation of that one note, as for every other write here. A role the actor does not fill gets its note as a draft for its owner, never a write.
+
+**Unattended runs.** A scheduled run writes the role note only where its routine's policy allows that write, the same rule as for the state tag. Otherwise the note stays a draft in the run's report, for a person to confirm (`./agentic-routines.md`).
+
 ---
 
 ## Outputs of the gates
@@ -112,3 +140,4 @@ A project tagged `ready-for-agent` or `ready-for-human` is counted and not walke
 | Routed to `needs-info`, another party must answer | note line + `status: waiting`, then the tag |
 | Routed from a `waiting` project, nobody else must answer now | note line + `status: current`, then the tag |
 | Deferred | nothing |
+| End of pass, a role with at least one write | one role note on that role (The pass record) |

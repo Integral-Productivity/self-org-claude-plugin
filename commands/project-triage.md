@@ -1,11 +1,11 @@
 ---
-description: Walk the actor's current GlassFrog projects and decide what each one needs next — retire the ones that fail a reality check (done, duplicate, superseded, owner role gone) and give every other project one saved route (needs-info, ready-for-agent, ready-for-human) that the next pass resumes from. With a leading `needs-info`, walk the needs-info queue instead and record each answer. Readiness only; the deep quality audit belongs to /self-org:review-project.
+description: Walk the actor's current GlassFrog projects and decide what each one needs next — retire the ones that fail a reality check (done, duplicate, superseded, owner role gone) and give every other project one saved route (needs-info, ready-for-agent, ready-for-human) that the next pass resumes from. With a leading `needs-info`, walk the needs-info queue instead and record each answer. Each pass that writes is recorded as a GlassFrog note on each triaged role. Readiness only; the deep quality audit belongs to /self-org:review-project.
 argument-hint: "[needs-info] [circle name, optional]"
 ---
 
 # /self-org:project-triage
 
-Walk the `current` projects on the actor's roles and decide, for each one, **what it needs next before anyone can act on it**. Save that answer on the project, with its reason, so the next pass starts where this one stopped.
+Walk the `current` projects on the actor's roles and decide, for each one, **what it needs next before anyone can act on it**. Save that answer on the project, with its reason, so the next pass starts where this one stopped. Then record the pass itself as a note on each triaged role, where the role's holders already look.
 
 The command has two modes:
 
@@ -23,7 +23,9 @@ Load two shared references at the start:
 
 **Draft, show, then write one project at a time.** No GlassFrog write happens without the user's confirmation of that one project. Never batch. The user can quit at any point and the remaining projects stay as they are.
 
-**Write only what the actor owns.** In Holacracy only a role's filler updates or closes that role's projects. A project on a role the actor does not fill is walked and drafted, never written: its block shows the draft for the owner to apply and offers no write key.
+**Write only what the actor owns.** In Holacracy only a role's filler updates or closes that role's projects. A project on a role the actor does not fill is walked and drafted, never written: its block shows the draft for the owner to apply and offers no write key. The same holds for that role's pass record (step 8).
+
+**Unattended runs.** A scheduled run makes a write only where its routine's policy allows that write. The pass record follows the same rule as the state tag: otherwise it stays a draft in the run's report.
 
 ## What this command does
 
@@ -93,12 +95,26 @@ Load two shared references at the start:
 
 7. **Write on confirmation**, per `project-triage-gates.md` Step 6: read the project with `glassfrog_get_project`, append the note line with `glassfrog_update_project`, adding `status` in the same call for `[c]`/`[a]` and whenever the route changes it (`waiting` for another party, `current` when a `waiting` project is routed back), then for a state call `glassfrog_set_project_tags(project_id, tag_names)` with the read-modify-write from `triage-states.md` Step 3. Refuse any state name outside that file's Step 1 table before the call. Surface every error; never swallow a failed write.
 
-8. **Summarize.** Count walked, routed to each state, completed, archived, deferred, and skipped as already `ready-for-*`. Count `needs-info` projects by status (`current`, `waiting`) and those answered and awaiting a first action, so a move to `waiting` or an answer without an action does not look like progress. List projects drafted for another role's owner. Say whether state writes were drafts only (step 3).
+8. **Record the pass on each role.** For each role with at least one confirmed project write in this pass, draft one role note per `project-triage-gates.md` Step 6 ("The pass record"): title `<YYYY-MM-DD HH:MM local> — project triage`, then scope, one table row per written project (link, applied, why, follow-ups), findings, and observations. Show it:
+
+   ```
+   Pass record for [Role name] of [Circle name]
+   Title: [YYYY-MM-DD HH:MM local] — project triage
+   [the note body]
+
+     [w] write the note       -> glassfrog_create_role_note(role_id, title, body)
+     [d] defer                -> no write; the draft stays in this session
+   ```
+
+   A role the actor does not fill gets the draft only, for its owner. A pass with no confirmed project write drafts no note: say so in the summary. Drafted follow-up actions name no person unless that person holds knowledge outside the role. A drive file or report is at most a copy of the note, never the record. Surface a failed write; the per-project note lines still hold the decisions.
+
+9. **Summarize.** Count walked, routed to each state, completed, archived, deferred, and skipped as already `ready-for-*`. Count `needs-info` projects by status (`current`, `waiting`) and those answered and awaiting a first action, so a move to `waiting` or an answer without an action does not look like progress. List projects drafted for another role's owner. Say whether state writes were drafts only (step 3). Name each role note written, and each one drafted and not written.
 
 ## Behaviour
 
 - **Gates before form.** A project that is already done, duplicated, or superseded does not need its outcome reworded. Asking the reality question first is what keeps the pass cheap.
 - **Archive is a status, not a tag.** `completed` when the outcome exists, `archived` otherwise. Both are reversible in GlassFrog. Deletion is permanent and this command does not offer it.
+- **The pass record lives on the role.** A triage report in a drive splits the record across two tools. The role note keeps it in GlassFrog, next to the projects it describes; any drive file is a copy.
 - **No tag without a reason.** Every state write appends its note line first. A bare tag loses why the project was routed, and the next triager has to work it out again.
 - **Never write a rubric verdict as a tag.** `needs-next-action`, `needs-outcome`, `executor-mismatch` and the rest are findings from `/self-org:review-project`. Triage writes only the four states in `triage-states.md`.
 - **A past-tense title is not a status.** Projects are titled in past tense as an idiom. Gate 1 needs evidence, not grammar.
