@@ -73,6 +73,8 @@ Four guidelines:
 
 The body must be 1–5000 characters (API constraint). Most tensions fit in 1–3 sentences.
 
+**Then check the draft against `./tension-well-formedness.md`.** Run checks T1–T6 internally (T7 is the Step 2 gate you already ran). This is a soft gate: it never blocks filing. If a check fails, keep the user's draft, and show the one or two failing checks with a drafted fix in the Step 6 confirmation. If every check passes, say nothing about the rubric.
+
 ### Step 5 -- Annotate suggested meeting venue (mental routing for the user)
 
 `glassfrog_create_tension` does **not** store a `meeting_type` on the tension, and `update_tension` **rejects the field with 422** on every combination tried ([glassfrog-mcp-server#123 (comment)](https://github.com/Integral-Productivity/glassfrog-mcp-server/issues/123#issuecomment-5149496749), which corrects that issue's body). It is settable in the GlassFrog UI only. Suggested venue is *for the user's mental model*, not the API. Per `./triage-gates.md` Step 3:
@@ -92,6 +94,9 @@ Sensing role:    [Role name] of [Circle name]    (role_id: role_xxx...)
 Body:            [Tension body, with attribution preamble if applicable;
                   topic front-loaded in first sentence]
 Suggested venue: [governance | tactical | either]   (annotation only, not stored)
+[Only if a rubric check failed in Step 4:
+ Missing:        [check, e.g. "T2 concrete instance"] -- [one-line why]
+ Drafted fix:    [the body with the missing element added, or one question]]
 
 File this? [y] yes  [e] edit  [n] no
 ```

@@ -17,11 +17,12 @@ You operate from two shared specifications. Load them at the start of every disp
 
 1. `skills/shared/tension-capture-flow.md` -- the B-flow this subagent implements (Steps 1–8).
 2. `skills/shared/triage-gates.md` -- the already-held-authority gate (Step 1), the role-vs-person gate (Step 2), the meeting-venue routing (Step 3), and the supersession check (Step 4).
+3. `skills/shared/tension-well-formedness.md` -- the body rubric (T1–T7) run as a soft check while drafting.
 
 Also load if needed:
 
-3. `skills/shared/actor-and-role-resolution.md` -- the canonical actor/role identity resolution procedure.
-4. `skills/self-org-ai-governance/references/glassfrog-api-constraints.md` -- the current `create_tension(role_id, body)` signature, the same-session list-back unreliability, and the meeting-association gap ([glassfrog-mcp-server#60](https://github.com/Integral-Productivity/glassfrog-mcp-server/issues/60)).
+4. `skills/shared/actor-and-role-resolution.md` -- the canonical actor/role identity resolution procedure.
+5. `skills/self-org-ai-governance/references/glassfrog-api-constraints.md` -- the current `create_tension(role_id, body)` signature, the same-session list-back unreliability, and the meeting-association gap ([glassfrog-mcp-server#60](https://github.com/Integral-Productivity/glassfrog-mcp-server/issues/60)).
 
 ## Dispatch input
 
@@ -58,6 +59,8 @@ If genuinely structural-in-disguise (apply the substitution test), reframe as a 
 ### Step 4 -- Draft the body
 
 Preserve the user's own words. Keep it concrete (gap, not desired fix). 1–5000 characters. If carrying on behalf of someone else, prepend `Sensed by [name], carried as [role]:`.
+
+Then run checks T1–T6 of `skills/shared/tension-well-formedness.md` on the draft, internally. Soft gate only: if a check fails, add a `Missing:` line and a `Drafted fix:` line to the Step 6 block for the one or two checks that matter most. Never refuse to file because of a rubric check.
 
 ### Step 5 -- Route to meeting type
 
