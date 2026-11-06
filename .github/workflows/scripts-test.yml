@@ -325,6 +325,14 @@ jobs:
         # a given change happens to touch.
         run: bash scripts/evals-harness.test.sh
 
+      - name: tension-lint regression suite
+        # Guards scripts/tension-lint.py (ADR-0024): thresholds, the decision
+        # table with its two inverted checks, the T6 code rule, the length
+        # bound, and the rule that a failed TypeSafe call is an error, never a
+        # "no". Jev's answers are faked, so the suite makes no network call and
+        # needs no TYPESAFE_API_KEY and no typesafe-sdk package.
+        run: bash scripts/tension-lint.test.sh
+
       - name: eval-report regression suite
         # Guards scripts/eval-report.py (#204), which renders the graded run's
         # summary against the committed baseline.

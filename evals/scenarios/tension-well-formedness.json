@@ -1,0 +1,78 @@
+{
+  "scenario": "tension-well-formedness",
+  "purpose": "Triage must judge each tension body against the shared well-formedness rubric (skills/shared/tension-well-formedness.md) and name the check that fails, with a drafted fix, rather than calling a body 'unclear' with no standard. Four bodies, one per shape: a well-formed control that must be left alone, a thin body with no concrete instance (T2), a body that holds two separate gaps (T4), and a proposal with no stated gap (T5). The control stops an eval from passing by sending every body back for an edit.",
+  "organization": "Northwind Collective",
+  "actor": {
+    "name": "Rowan Iveson",
+    "email": "rowan@example.invalid"
+  },
+  "roles": [
+    {
+      "key": "operations-circle",
+      "name": "Operations Circle",
+      "purpose": "Commitments that hold without anyone chasing them",
+      "accountabilities": [
+        "Holding the circle's operating cadence across quarters"
+      ],
+      "domains": [],
+      "filled_by_actor": false
+    },
+    {
+      "key": "vendor-steward",
+      "name": "Vendor Steward",
+      "parent": "operations-circle",
+      "purpose": "Suppliers the circle can rely on",
+      "accountabilities": [
+        "Onboarding new suppliers the circle has agreed to use",
+        "Tracking supplier renewals and their dates"
+      ],
+      "domains": [],
+      "filled_by_actor": true
+    },
+    {
+      "key": "delivery-coordination",
+      "name": "Delivery Coordination",
+      "parent": "operations-circle",
+      "purpose": "Work reaches the people waiting for it",
+      "accountabilities": [
+        "Sequencing committed work across the circle's roles"
+      ],
+      "domains": [],
+      "filled_by_actor": true
+    }
+  ],
+  "tensions": [
+    {
+      "key": "well-formed",
+      "on": "vendor-steward",
+      "status": "unprocessed",
+      "created_at": "2026-09-14T09:00:00Z",
+      "updated_at": "2026-09-14T09:00:00Z",
+      "body": "Supplier renewals reach Vendor Steward too late to act on. Now the renewal date is visible only in each supplier's contract, so it surfaces when the invoice arrives; it could be visible to the role at least 60 days ahead. On 2026-09-02 the storage supplier auto-renewed for a year at a 20% higher rate because the invoice was the first sign of the renewal. This touches the role's accountability for tracking supplier renewals and their dates."
+    },
+    {
+      "key": "thin",
+      "on": "vendor-steward",
+      "status": "unprocessed",
+      "created_at": "2026-09-20T10:30:00Z",
+      "updated_at": "2026-09-20T10:30:00Z",
+      "body": "Supplier onboarding is slow. It takes much longer than it should to bring a new supplier on, and it feels like this keeps happening. It affects the role's accountability for onboarding new suppliers."
+    },
+    {
+      "key": "two-gaps",
+      "on": "delivery-coordination",
+      "status": "unprocessed",
+      "created_at": "2026-09-22T14:00:00Z",
+      "updated_at": "2026-09-22T14:00:00Z",
+      "body": "Work sequencing across the circle is invisible. Now the order of committed work exists only in Delivery Coordination's notes, so on 2026-09-18 two roles started the same request in parallel; it could be visible to every role in the circle. Also, the circle's weekly tactical meeting keeps running over time, and on 2026-09-21 it ended 40 minutes late with three agenda items untouched."
+    },
+    {
+      "key": "proposal-in-disguise",
+      "on": "delivery-coordination",
+      "status": "unprocessed",
+      "created_at": "2026-09-25T16:45:00Z",
+      "updated_at": "2026-09-25T16:45:00Z",
+      "body": "Add a Queue Keeper role. Give it the accountability for publishing the circle's work queue every Monday, and a domain over the queue board."
+    }
+  ]
+}
