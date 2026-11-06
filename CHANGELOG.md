@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.5.0...v1.6.0) (2026-11-06)
+
+
+### Features
+
+* **tension:** check tension bodies for well-formedness with one rubric and a Jev lint ([#440](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/440)) ([582afe4](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/582afe448d88971ed6bc3ac4f9f11c172197105d))
+
 ## [1.5.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.4.0...v1.5.0) (2026-11-02)
 
 
