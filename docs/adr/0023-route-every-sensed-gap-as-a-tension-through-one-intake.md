@@ -4,8 +4,8 @@ Date: 2026-10-30
 
 ## Status
 
-Proposed (2026-10-30). Kraig Parkinson chose the option on 2026-10-30. The ADR is
-accepted when this PR merges.
+Accepted (2026-10-30). Kraig Parkinson chose the option on 2026-10-30 and accepted
+it by merging PR #429.
 
 Extends [ADR-0007](0007-route-artifacts-by-live-glassfrog-domains-not-a-hardcoded-table.md)
 (route by live domains) and [ADR-0021](0021-every-work-item-lifecycle-stage-has-a-command-or-a-tracked-gap.md)
