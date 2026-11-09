@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.6.0...v1.7.0) (2026-11-09)
+
+
+### Features
+
+* **governance:** adopt devops-excellence standard ([#442](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/442)) ([657d920](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/657d920ee5a2166f3171589a149f3850967af408))
+
 ## [1.6.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.5.0...v1.6.0) (2026-11-06)
 
 
