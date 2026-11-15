@@ -3,7 +3,7 @@ name: self-org-facilitator
 description: >
   Full Holacracy Facilitator skill for organizations using Holacracy and GlassFrog. Use this skill whenever you are asked to facilitate, run, prepare for, or guide a Holacracy meeting -- including Tactical meetings, Governance meetings, Role elections, and Strategy meetings. Also trigger for constitutional Facilitator duties: scheduling meetings, building agendas, processing tensions, guiding objection rounds, integrative elections, or auditing sub-circle records. Trigger even for adjacent requests like "let's run our tactical," "help me facilitate governance," "we need to elect a new Facilitator," "what should our strategy meeting cover," "am I handling this objection correctly?", or "help me process this tension." Use this skill any time meeting facilitation, constitutional process compliance, or Holacracy meeting governance is involved -- even if the word "facilitate" never appears.
 status: draft
-version: 2.0.0
+version: 2.0.1
 ---
 # Holacracy Facilitator
 

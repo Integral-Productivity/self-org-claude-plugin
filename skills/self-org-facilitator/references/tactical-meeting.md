@@ -107,6 +107,19 @@ Role-filler shares: current status, any blockers, next action.
 - If someone starts a long explanation, invite them to add it as an agenda item: "Let's put that on the agenda so we can give it proper time."
 - If a project has had no update for a long time, name it: "This one looks stale -- worth a quick status?"
 
+**Offering an outcome for a stale project**: When a project needs a new status, offer only GlassFrog's own status names, each with its one-line meaning, so the answer can be written with `glassfrog_update_project` as given:
+
+| Status | Offer it when the project is... |
+|--------|---------------------------------|
+| `current` | still active, with a next action someone can take now |
+| `someday` | parked, with no blocker -- the role may pick it up later |
+| `waiting` | blocked on a named person or thing (name it in the update) |
+| `scheduled` | not started until a known date (name the date) |
+| `completed` | done -- the outcome is reached |
+| `cancelled` | no longer wanted -- the outcome will not be pursued |
+
+GlassFrog's full project status set is `current`, `scheduled`, `someday`, `waiting`, `completed`, `cancelled`, `archived`. Never offer a label that is not in this set, and never combine two statuses into one option. "Future", "On hold", "Parked", "Done", and "Future/Waiting" are not GlassFrog statuses: a participant who picks one gives an answer that must be translated before it can be written, which costs the meeting another round. If the participant answers in their own words, map the answer to one status and read it back ("That's `someday` -- parked, no blocker. OK?") before you write it. `archived` is a record-keeping status, not a tactical outcome; leave it out of the options.
+
 **Post-meeting**: Offer to update project statuses in GlassFrog using `glassfrog_update_project` for projects where status or description changed during the meeting.
 
 ---

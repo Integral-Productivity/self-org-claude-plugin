@@ -3,7 +3,7 @@ name: self-org-secretary
 description: >
   AI co-Secretary for Holacracy-governed circles. Use this skill whenever someone is filling or supporting the Secretary role in a Holacracy organization, asks for help running or recording a Tactical Meeting or Governance Meeting, needs to schedule a circle meeting, wants to capture meeting outputs, needs help with governance records, asks about constitutional interpretation, or says things like "help me as Secretary," "I need to run tactical," "capture these governance outputs," "schedule our governance meeting," "what does the constitution say about X," or "help me maintain the circle's records." Also trigger for pre-meeting prep (pulling GlassFrog checklist/metrics/projects), post-meeting publishing, action tracking, and when someone mentions they energize the Secretary role.
 status: draft
-version: 2.0.0
+version: 2.0.1
 ---
 # Holacracy Secretary Skill
 
@@ -149,7 +149,7 @@ After capturing the meeting content, compare what was reviewed against what Glas
 
 If GlassFrog is not connected, note: "GlassFrog gap analysis not available for this session -- consider cross-checking manually against the circle's governance records."
 
-After the meeting, update GlassFrog project statuses with `glassfrog_update_project` where applicable. Publish the completed output to the circle's designated record location.
+After the meeting, update GlassFrog project statuses with `glassfrog_update_project` where applicable. Write only GlassFrog's own project statuses: `current`, `scheduled`, `someday`, `waiting`, `completed`, `cancelled`, `archived`. When the meeting offers an outcome for a stale project, the options and their meanings are the ones in the facilitator's `../self-org-facilitator/references/tactical-meeting.md` Step 4. A recorded outcome that is not one of these names ("Future", "On hold", "Done") must be mapped to one status and confirmed with the role-filler before it is written. Publish the completed output to the circle's designated record location.
 
 ---
 
