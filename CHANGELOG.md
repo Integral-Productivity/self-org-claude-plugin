@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.0...v1.7.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **tactical:** offer stale-project outcomes by GlassFrog status name ([#439](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/439)) ([fcc2f77](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/fcc2f777c6f8730c0d87e640d98f10a844df4e09))
+
 ## [1.7.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.6.0...v1.7.0) (2026-11-09)
 
 
