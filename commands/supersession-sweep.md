@@ -1,11 +1,11 @@
 ---
-description: Sweep recent or session-filed tensions for supersession (S.5.5.1d). For each pair where one tension subsumes another, offer to archive the subsumed one or merge specifics into the surviving body.
+description: Sweep recent or session-filed tensions for supersession (Step 4 of triage-gates). For each pair where one tension subsumes another, offer to archive the subsumed one or merge specifics into the surviving body.
 argument-hint: ['scope: "session" | "recent" | circle name, optional; default "session"']
 ---
 
 # /self-org:supersession-sweep
 
-End-of-session deduplication for filed tensions. Applies the constitutional supersession test from S.5.5.1d — *"would the tension still exist if the other were resolved?"* — to pairs of tensions in scope, and offers to archive or merge subsumed ones.
+End-of-session deduplication for filed tensions. Applies the supersession test from `skills/shared/triage-gates.md` Step 4 — *"would the tension still exist if the other were resolved?"* — to pairs of tensions in scope, and offers to archive or merge subsumed ones.
 
 This command is also offered implicitly by the `self-org-ai-governance` skill when Claude detects session-closing signals ("done for now", "that's it for today"). Invoking it explicitly is an override or a manual trigger.
 
@@ -52,7 +52,7 @@ This command is also offered implicitly by the `self-org-ai-governance` skill wh
 - **Conservative bias.** When in doubt, recommend keeping both. Two tensions describing the same gap from different angles can both be useful for the role-filler's own clarity; only collapse when one truly subsumes the other.
 - **Asymmetric pairs only.** Supersession is directional: A subsumed by B is not the same as B subsumed by A. The command surfaces the directional pair; the user can flip it with `r`.
 - **Cross-circle supersession is rare but valid.** A tension on one role can sometimes be made moot by a tension on a sister role in another circle. The sweep does not artificially limit to one circle unless the user scopes it.
-- **Constitutional grounding.** The S.5.5.1d test exists in the Constitution as the criterion for whether an *objection* is genuinely independent of a *proposer's tension*. The same logic transposes cleanly to whether two tensions in an inbox are independent.
+- **Grounding.** The test is the plugin's, by analogy with Constitution v5.0 S.5.3.2(c): an objection counts only if the concern "does not already exist even in the absence of the Proposal". The same independence logic transposes to whether two tensions in an inbox are independent. The Constitution itself does not rule on supersession between tensions.
 
 ## When the implicit offer fires
 

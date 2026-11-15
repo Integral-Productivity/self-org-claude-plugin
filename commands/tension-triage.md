@@ -42,7 +42,7 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
     This may not need a meeting at all — see [c]."]
 
    [If a supersession candidate is flagged: "May overlap with: [other tension excerpt]
-    (ten_yyy). Apply S.5.5.1d test?"]
+    (ten_yyy). Apply the supersession test (gates Step 4)?"]
 
    Suggested venue (per gates Step 3): [governance | tactical | either]   (annotation only)
 

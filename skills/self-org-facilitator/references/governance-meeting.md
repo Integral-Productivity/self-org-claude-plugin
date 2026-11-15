@@ -1,5 +1,9 @@
 # Governance Meeting Facilitation -- v5.0
 
+Source: the rules quoted here are excerpts from the [Holacracy Constitution v5.0](https://www.holacracy.org/constitution/5-0/), quoted from [HolacracyOne's repository at commit cc93b0b](https://github.com/holacracyone/Holacracy-Constitution/blob/cc93b0b/Holacracy-Constitution.md) (ADR-0026), by HolacracyOne, LLC, licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Integral Productivity LLC selected, reformatted, and annotated the excerpts and wrote the facilitation scripts. Because of the ShareAlike term, this file is licensed under CC BY-SA 4.0, not under the repository's MIT license. See [NOTICE](../../../NOTICE).
+
+Block quotes are the Constitution's wording. Everything else is facilitation guidance. Section numbers are v5.0; a v4.1 number is labelled "v4.1".
+
 A Governance meeting is the circle's structural evolution mechanism. Its purpose is to process proposed changes to the circle's governance: roles, accountabilities, domains, and policies. Every change adopted in governance must survive an objection-based validity test -- this is what gives governance decisions their constitutional authority.
 
 **Typical duration**: 60-120 minutes. A meeting with three or four substantive proposals may take the full two hours.
@@ -35,21 +39,20 @@ Same as Tactical -- each person shares briefly, one at a time, uninterrupted. Se
 
 ---
 
-### Step 2: Administrative Concerns
+### Time Out (at any point)
 
-**What it is**: A brief space to address any process or logistics concerns before diving into governance.
+v5.0 has no "administrative concerns" step. The meeting process is check-in, agenda building and processing, and closing (S.5.4.3). Logistics and process questions go into a Time Out:
 
-**Facilitation script**:
-> "Any administrative concerns before we build the agenda? Things like meeting norms, time constraints, or process questions?"
+> At any point during this process, a participant may request a "Time Out" pause. The Facilitator may choose to grant or deny this request. During the Time Out, participants may discuss administrative issues or the rules of this Constitution. They may not use the Time Out to work towards the resolution of a Tension, Proposal, or Objection.
 
-This is not agenda time for governance tensions -- it's for housekeeping. Keep it brief. Common items:
-- Someone has a hard stop time
-- A participant is joining remotely and needs to leave early
-- A question about the process itself
+**Facilitation script** (when someone raises a hard stop, a remote-join issue, or a process question):
+> "Let's take a short Time Out for that. [Handle it.] Time Out over -- back to [where we were]."
+
+If the Time Out turns into work on a Tension or a Proposal, end it: "That's agenda work -- add it as an item."
 
 ---
 
-### Step 3: Agenda Building
+### Step 2: Agenda Building
 
 **What it is**: Anyone in the circle can add a tension to the governance agenda. As in Tactical, this is not the time to discuss tensions -- just to surface them.
 
@@ -65,7 +68,7 @@ Go around until the agenda is complete.
 
 ---
 
-### Step 4: Process Each Agenda Item
+### Step 3: Process Each Agenda Item
 
 This is the heart of the governance meeting. Each agenda item follows the **Integrative Decision Making (IDM)** process -- six phases that must be followed in order.
 
@@ -90,9 +93,25 @@ For each item, announce: "[Name], your tension is next. Please share your propos
 - A request for someone to do something (that's a tactical tension)
 - A strategy suggestion (that goes to the Lead Link)
 - A personal grievance or interpersonal issue
-- A proposal to change how the Facilitator runs meetings (meta-process -- suggest bringing it outside the meeting)
+
+A proposal to change how the circle runs its meetings *is* governance when it is a Policy. A Policy may add to the Governance Meeting process if it does not conflict with Article 5 (S.5.4.3), may replace or amend the Tactical process (S.3.2), and may change another default rule only where the Constitution explicitly allows it (S.5.2.1(d)). Process it like any other proposal.
 
 If the proposal is outside governance scope, name it: "This sounds like [tactical/strategic] rather than a governance change. Would you like to address it differently, or is there a governance version of this tension?"
+
+**Is the proposal valid?** The Constitution sets three requirements:
+
+> For a Proposal to be valid, the Proposer must be able to:
+>
+> - **(a)** describe a Tension that the Proposal would address for one of the Proposer's Roles; and
+> - **(b)** share an example of an actual past or present situation illustrating that Tension; and
+> - **(c)** give a reasonable explanation of how the Proposal would have reduced the Tension in that example.
+>
+> If at any point it becomes clear to the Facilitator that a Proposal does not meet these criteria, the Facilitator must discard the Proposal. (S.5.3.1)
+
+**Facilitation script** (only when one of the three is unclear):
+> "Which of your roles feels this tension? Can you give one real example, past or present? How would this proposal have helped in that example?"
+
+If the Proposer cannot answer, discard the proposal and say why: "Without [a role's tension / a real example / how it would have helped], I have to set this proposal aside (S.5.3.1). You can bring it back when you have one."
 
 **After the proposer finishes**: Optionally ask, "Do you need anything to make this proposal more concrete before we move on?" Then proceed.
 
@@ -151,7 +170,7 @@ Go around the group. Each person speaks once, uninterrupted.
 **What happens**: The Facilitator asks each person in turn whether they have an objection to the (possibly amended) proposal. This is the constitutional validity test.
 
 **Facilitation script**:
-> "Objection round. I'll ask each person: do you have an objection to adopting this proposal? An objection means you believe it would degrade the circle's capacity to express its purpose or accountabilities, or would create an unconstitutional governance record."
+> "Objection round. I'll ask each person: do you see any reason why adopting this proposal would cause harm or move us backwards? I'll test anything that sounds like an objection."
 
 Ask each person: "[Name], do you have an objection?"
 
@@ -168,22 +187,33 @@ Response options:
 
 ##### Testing an Objection
 
-When someone raises an objection, the Facilitator tests whether it is constitutionally valid before treating it as such. Ask these questions in order:
+The Facilitator may capture a concern as an objection without testing it, or test it (S.5.4.5(e)). The Facilitator must test it if any Circle Member asks (S.5.3.4(a)). These are the criteria:
 
-**Test 1 -- Does it cause harm?**
-> "Would adopting this proposal degrade the circle's capacity to express its purpose or accountabilities -- or create a constitutionally invalid record?"
+> A concern about adopting a Proposal only counts as an Objection if the Objector can provide a reasonable argument for why it meets **all** of the following criteria:
+>
+> - **(a)** The Proposal would reduce the capacity of the Circle to enact its Purpose or Accountabilities.
+> - **(b)** The Proposal would limit the Objector's capacity to enact the Purpose or an Accountability of a Role the Objector represents in the Circle, even if the Objector filled no other Roles in the Organization.
+> - **(c)** The concern does not already exist even in the absence of the Proposal. Thus, a new Tension would be created specifically by adopting the Proposal.
+> - **(d)** The Proposal would necessarily cause the impact, or, if it might cause the impact, the Circle wouldn't have an adequate opportunity to adapt before significant harm could result.
+>
+> However, regardless of the above criteria, a concern always counts as an Objection if adopting the Proposal would violate a rule in this Constitution. (S.5.3.2)
 
-If the answer is no (it's just not ideal, or there might be a better way), the objection is **invalid**. Name it cleanly: "That sounds like a preference for a different approach rather than a harm -- I'm going to set that objection aside. [Continue to next person.]"
+And the limit on the Facilitator's judgment:
 
-**Test 2 -- Is it based on present reality?**
-> "Is this harm you're describing based on information you have now, or speculation about what might happen?"
+> When assessing responses, the Facilitator may only judge whether the Objector presented arguments for each criteria using logical reasoning. The Facilitator may not judge on the basis of an argument's accuracy or the importance of addressing it. (S.5.3.3)
 
-If purely speculative: the objection is invalid. "Speculative harms aren't sufficient grounds for an objection under the Constitution -- I'm setting that aside."
+**First, check for a Constitution violation.** Ask: "Would adopting this proposal break a rule in the Constitution?" If the Objector says yes, it counts as an objection without the four tests. If you doubt the claim, ask the Secretary to rule (S.5.3.3): "Secretary, would adopting this violate the Constitution?" If the Secretary rules that it would not, you must dismiss the objection. Otherwise, capture it.
 
-**Test 3 -- Is it the role's perspective?**
-> "If you sensed this tension in your role, would you have brought a proposal to address it?"
+**Otherwise, ask one question per criterion, in order.** Stop at the first criterion with no reasoned argument.
 
-If the objection is purely personal and not something the person would address through governance in their role, it's invalid.
+1. **(a) Circle capacity** -- "How would this proposal reduce the circle's capacity to enact its purpose or accountabilities?"
+2. **(b) Your role** -- "Which role that you represent here would it limit, and how?" A concern held only as a person, with no role the Objector represents, fails here.
+3. **(c) New tension** -- "Is this created by adopting the proposal, or does it exist already without it?" A tension that exists already is something to bring as your own agenda item.
+4. **(d) Necessary, or no chance to adapt** -- "Would the proposal necessarily cause this? If it only might, why couldn't we adapt before significant harm?" An anticipated harm counts when the Objector argues the circle could not adapt in time. Do not discard an objection only because the harm has not happened yet. (The "present data, not anticipated" test is v4.1 3.2.4; v5.0 replaced it.)
+
+**What you judge, and what you do not.** You judge only whether each answer is a logical argument for that criterion. You do not judge whether it is true, or whether it matters enough (S.5.3.3). "I think it's a bad idea" or "there might be a better way" is not an argument for (a) to (d). "If this passes, the Billing role loses the domain it needs to send invoices, and we invoice weekly, so we could not adapt before customers go unbilled" is an argument for all four, even if you think it is wrong.
+
+**If a criterion has no argument**: discard it and name the criterion: "I didn't hear how [criterion] applies, so this doesn't count as an objection (S.5.3.2). It may still be a tension worth its own agenda item."
 
 **If the objection is valid**: Announce it clearly. "That's a valid objection. We'll move into integration." Do not process multiple objections at once -- resolve one, then re-run the objection round.
 
@@ -193,18 +223,21 @@ If the objection is purely personal and not something the person would address t
 
 #### Phase F: Integration
 
-**What happens**: When a valid objection exists, the proposer and objector work together to find a modified proposal that addresses both the original tension and the objection.
+**What happens** (S.5.4.5(f)): the Facilitator takes each objection, one at a time. The participants brainstorm an amendment that resolves it. The objection is resolved when the Objector confirms the amended proposal would not trigger it, and the Proposer confirms it still addresses their tension. When all objections are resolved, go back to the objection round with the amended proposal.
 
 **Facilitation script**:
-> "We have a valid objection. [Objector's name], let's work with [Proposer's name] to find a modification. The question is: what's the minimum change to the proposal that would resolve your objection while still addressing the proposer's tension?"
+> "Let's integrate [Objector]'s objection. Everyone may suggest amendments. [Objector], what change would resolve your objection and still address [Proposer]'s tension?"
+
+**The rules of integration (S.5.3.4)**, in facilitation terms:
+- **(a)** If any Circle Member asks, test the objection. If it fails the criteria, discard it.
+- **(b)** The Objector must try to find an amendment that resolves the objection and still addresses the Proposer's tension. If the Objector is not making a good-faith attempt, deem the objection abandoned and drop it.
+- **(c)** Anyone may ask the Proposer clarifying questions about the tension or its examples. If the Proposer is not answering in good faith, deem the proposal dropped.
+- **(d)** The Objector may suggest an amended proposal and argue why it resolves the tension. On the Objector's request, the Proposer must argue why the amendment would fail to resolve the tension in at least one of their examples (they may add an example). If the Proposer is unable or unwilling, deem the proposal dropped.
 
 **Facilitation guidance**:
-- Keep this a dialogue between proposer and objector, not a group discussion
-- Keep the focus on modifying the proposal, not relitigating the tension
-- If they cannot find an integration within a few minutes, suggest deferring: "It may be worth taking this offline and coming back with a refined proposal in the next governance meeting."
-- Once a modification is agreed: re-enter Phase D (Amend and Clarify), then re-run Phase E (Objection Round) for the modified proposal
-
-**After successful integration**: Return to the objection round to check whether the modification introduced any new objections from others.
+- Keep the focus on amending the proposal, not relitigating the tension.
+- If no integration emerges, use (b) to (d) to move it to a result rather than deferring by default. The Proposer may still withdraw the proposal.
+- After all objections are resolved, re-run Phase E (Objection Round) for the amended proposal: an amendment can raise new objections.
 
 ---
 
@@ -216,7 +249,7 @@ Log for the Secretary: the exact change (role added/modified, accountability add
 
 ---
 
-### Step 5: Closing Round
+### Step 4: Closing Round
 
 Same as Tactical -- each person shares a brief reflection, uninterrupted. See `tactical-meeting.md` for full facilitation script.
 
@@ -240,7 +273,7 @@ After the meeting:
 
 **The reaction round becomes a debate**: If reactors start responding to each other rather than simply sharing their reactions, redirect: "Let's keep this as individual reactions -- save the conversation for after the meeting."
 
-**The same objection keeps coming back**: If an objector keeps raising an invalid objection in different words, name the pattern gently: "I've tested this a couple of ways now and it doesn't meet the constitutional bar for a valid objection. I'm going to set it aside and we'll proceed." The Facilitator has the authority to make this call.
+**The same objection keeps coming back**: If an objector keeps raising a concern in different words and still gives no reasoned argument for one of the four criteria, name the gap: "I still haven't heard how [criterion] applies, so I'm setting this aside (S.5.3.2)." Judge only the logic of the argument, never whether you agree with it (S.5.3.3).
 
 **Someone tries to make a counter-proposal**: Counter-proposals are not part of the IDM process. If someone wants to propose something different, they can add it to the agenda for the same or a future governance meeting.
 

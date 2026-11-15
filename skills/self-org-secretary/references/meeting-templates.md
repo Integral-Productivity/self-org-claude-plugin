@@ -123,8 +123,8 @@ Items added during build:
 
 ---
 
-## Administrative Concerns
-[Scheduling, housekeeping items]
+## Time Outs
+[Only if a Time Out produced a ruling or a decision about process (S.5.4.3); otherwise delete this section]
 
 ---
 
@@ -211,7 +211,7 @@ Used when the Governance Meeting includes an Integrative Election:
 ### Election -- [Role Name] (e.g., Facilitator / Secretary / Circle Rep)
 **Facilitator (for this election):** [Name]
 **Nominees:** [List of nominees]
-**Process:** Integrative Election per S.5.3
+**Process:** Integrative Election per S.5.3.5
 **Elected:** [Name]
 **Term:** [Duration or "until next election" if not specified]
 **Consented by:** All Circle Members present

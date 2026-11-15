@@ -153,10 +153,10 @@ Strategy is the Lead Link's authority to set unilaterally. The Lead Link does no
 
 | Topic | Constitution Section |
 |-------|---------------------|
-| Lead Link role definition and accountabilities | S.2.2 |
-| Role assignment as Lead Link domain | S.2.2.2 |
-| Role-filler autonomy within accountabilities | S.4.1 |
-| What requires governance vs. operational decision | S.3.1 |
-| Core Role election process (Facilitator, Secretary, Rep Link -- not Lead Link) | S.5.4 |
-| Super-Circle Lead Link's authority over sub-circle Lead Link | S.2.3.2 |
+| Lead Link (v5.0: Circle Lead) role and its functions | S.1.4 |
+| Role assignment by the Circle Lead | S.1.4.1 |
+| Role Lead autonomy within accountabilities, and its constraints | Article 4, S.4.1 |
+| What requires governance vs. operational decision | S.5.2, S.5.2.1 |
+| Core Role election process (Facilitator, Secretary, Rep Link -- not Lead Link) | S.5.3.5 |
+| Super-Circle Lead Link's authority over sub-circle Lead Link | S.1.4, S.1.4.1 (the Super-Circle's Circle Lead assigns the Role whose Role Lead serves as the Sub-Circle's Circle Lead) |
 | Domain authority and permission rules | S.4.1.2 |

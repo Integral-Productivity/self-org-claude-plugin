@@ -3,7 +3,7 @@ name: self-org-secretary
 description: >
   AI co-Secretary for Holacracy-governed circles. Use this skill whenever someone is filling or supporting the Secretary role in a Holacracy organization, asks for help running or recording a Tactical Meeting or Governance Meeting, needs to schedule a circle meeting, wants to capture meeting outputs, needs help with governance records, asks about constitutional interpretation, or says things like "help me as Secretary," "I need to run tactical," "capture these governance outputs," "schedule our governance meeting," "what does the constitution say about X," or "help me maintain the circle's records." Also trigger for pre-meeting prep (pulling GlassFrog checklist/metrics/projects), post-meeting publishing, action tracking, and when someone mentions they energize the Secretary role.
 status: draft
-version: 2.0.1
+version: 2.1.0
 ---
 # Holacracy Secretary Skill
 
@@ -157,19 +157,21 @@ After the meeting, update GlassFrog project statuses with `glassfrog_update_proj
 
 The Secretary's job during a Governance Meeting is to capture the process precisely -- proposals, objections, amendments, and the final governance output that changes the circle's structure. This record is the circle's official governance history.
 
-**Standard Governance Meeting process** (Holacracy Constitution S.5):
+**Standard Governance Meeting process** (Holacracy Constitution v5.0 S.5.4.3, with each item processed per S.5.4.5):
 
 1. **Check-in Round** -- Record who is present.
-2. **Administrative concerns** -- Note any process or scheduling housekeeping.
-3. **Agenda Building** -- Circle Members add items (tension labels, one or two words). Record full agenda.
-4. **Process each agenda item:**
-   a. **Proposer presents the tension** -- Record the tension as stated.
-   b. **Clarifying questions** -- Others ask; proposer answers. Capture significant exchanges.
-   c. **Reaction round** -- Each person reacts; proposer may amend. Record the proposal after any amendments.
-   d. **Objection round** -- Each person tested for objections. For each valid objection, record: who objected, the objection as stated, and how it was resolved (amendment or withdrawal).
-   e. **Integration** -- If objection leads to amendment, record the amended proposal.
-   f. **Final proposal** -- Record the final governance output (see output types below).
-5. **Closing Round** -- Record who closed.
+2. **Agenda Building** -- The Facilitator solicits items in the meeting (short labels, no discussion). Record the full agenda. Items may be added between items.
+3. **Process each agenda item** (Integrative Decision-Making, S.5.4.5):
+   a. **Present Proposal** -- Record the Tension and the Proposal as stated.
+   b. **Clarifying questions** -- Others ask; the Proposer may answer or decline. Capture significant exchanges. On request, read the Proposal or show existing Governance.
+   c. **Reaction round** -- Each participant except the Proposer reacts, one at a time.
+   d. **Option to clarify** -- The Proposer may amend. Record the Proposal after any amendments.
+   e. **Objection round** -- For each Objection the Facilitator captures, record: who objected, the Objection as stated, and how it was resolved.
+   f. **Integration** -- Record each amendment that resolves an Objection, then the Proposal goes back to the objection round.
+   g. **Final proposal** -- Record the adopted governance output (see output types below).
+4. **Closing Round** -- Record who closed.
+
+There is no "administrative concerns" step in v5.0. A participant may ask for a Time Out at any point to discuss administrative issues or the rules (S.5.4.3); record a Time Out only if it produced a ruling.
 
 **Governance output types to capture precisely:**
 
@@ -311,11 +313,13 @@ After every constitutional ruling, add this section regardless of the audience's
 ```
 
 **Key constitutional provisions the Secretary commonly interprets:**
-- What counts as a valid tension vs. an objection (S.5.5)
-- Whether a proposal addresses a real tension or imposes preferences (S.5.4.3)
-- Validity of an objection (S.5.5.1 -- four criteria: reduces circle capacity, limits objector's authority, creates tension not addressed by proposal, would arise regardless of other tensions)
-- Whether an action falls within a role's authority (S.4.1)
+- Whether a proposal is valid: a Tension for one of the Proposer's Roles, a real past or present example, and how the Proposal would have reduced it (S.5.3.1)
+- Whether a concern counts as an objection: a reasoned argument for all four criteria of S.5.3.2 -- reduces the Circle's capacity, limits a Role the Objector represents, is a new Tension created by the Proposal, and would necessarily cause the impact or leave no adequate chance to adapt before significant harm
+- Whether adopting a proposal would violate the Constitution: such a concern always counts as an objection, and the Facilitator may ask the Secretary to rule on it (S.5.3.2, S.5.3.3)
+- Whether an action falls within a role's authority (Article 4; constraints in S.4.1)
 - Domain control and permission rules (S.4.1.2)
+
+Quote the rule from `references/constitutional-reference.md` when you rule. It holds the v5.0 text pinned by ADR-0026.
 
 ---
 

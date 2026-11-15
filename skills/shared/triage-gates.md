@@ -185,7 +185,7 @@ So if the user wants the venue encoded *in the record itself*, the mechanism is 
 
 ## Step 4 -- Is this superseded by an existing tension?
 
-Constitutional grounding: S.5.5.1d -- the test for whether a proposed objection is actually independent of an existing tension is "the tension would exist even if the Proposer's tension were already resolved." The same logic applies *between* tensions in the inbox: if Tension A would be fully addressed by resolving Tension B, then A is not a separate tension worth keeping.
+Grounding (an analogy, not a constitutional rule): v5.0 S.5.3.2(c) counts a concern as an objection only if "the concern does not already exist even in the absence of the Proposal" -- it must be a new tension, created by the proposal. The plugin applies the same independence test *between* tensions in the inbox. The Constitution does not rule on tension supersession: if Tension A would be fully addressed by resolving Tension B, then A is not a separate tension worth keeping.
 
 **Procedure** (especially for `/self-org:supersession-sweep` and during `/self-org:tension-triage`):
 

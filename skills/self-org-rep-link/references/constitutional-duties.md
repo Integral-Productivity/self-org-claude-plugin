@@ -4,17 +4,17 @@ Source: excerpts from the [Holacracy Constitution v5.0](https://www.holacracy.or
 
 ---
 
-## Rep Link Role Definition (verbatim from Constitution S.2.6.4)
+## Circle Rep Role Definition (v5.0 S.5.1.1; the v4.1 name is Rep Link)
 
-**Purpose:**
-Within the Sub-Circle: Tensions relevant to process in the broader Circle channeled out and resolved.
+> The selected Circle Rep fills a "Circle Rep Role" in the Circle, with a Purpose of "Tensions relevant to process in a broader Circle channeled out and resolved", and the following Accountabilities:
+>
+> - **(a)** Seeking to understand Tensions conveyed by Role Leads within the Circle
+> - **(b)** Discerning Tensions appropriate to process within a broader Circle that holds the Circle
+> - **(c)** Processing Tensions within a broader Circle to remove constraints on the Circle
 
-**Accountabilities:**
-- Seeking to understand Tensions conveyed by Circle Members of the Sub-Circle, and discerning those appropriate to process in the broader Circle
-- Providing visibility to the Lead Link of the broader Circle into the health of the Sub-Circle, including reporting on any Metrics or Checklist items assigned to the whole Sub-Circle
-- Removing constraints within the broader Circle that limit the Sub-Circle
+The definition this file quoted before (with a Lead Link visibility accountability) is v4.1 2.6.4. v5.0 dropped that accountability.
 
-**Note on election:** The Rep Link is elected by the Sub-Circle's Circle Members using the Holacracy integrative election process, not appointed by a Lead Link. This distinction matters: the role exists to represent the sub-circle's experience of the governance system, not the Lead Link's intent.
+**Note on election:** The Rep Link is elected by the Sub-Circle's Circle Members using the Integrative Election Process (S.5.3.5), unless a Policy defines another process, and is not appointed by a Lead Link. Anyone serving as a Circle Lead for the circle may not also serve as its Circle Rep (S.5.1.1). This distinction matters: the role exists to represent the sub-circle's experience of the governance system, not the Lead Link's intent.
 
 ---
 
@@ -36,7 +36,7 @@ The Rep Link has no authority to negotiate, commit to, or speak for the sub-circ
 
 ## Full Constitutional Membership in the Enclosing Circle
 
-The Rep Link is a full Circle Member of the enclosing circle, with all the rights and obligations that entails (Constitution S.2.4):
+The Rep Link is a full Circle Member of the enclosing circle, with all the rights and obligations that entails (Constitution S.5.1.1: the Circle Rep "becomes a Circle Member of any Circle containing that Circle, with the authority to represent their Circle just like a Circle Lead", unless a Policy of the containing Circle limits this and gives comparable representation another way):
 
 - Can add agenda items to tactical meetings
 - Can raise tensions in governance meetings and submit proposals
@@ -50,7 +50,7 @@ This is important to internalize: the Rep Link does not attend enclosing circle 
 
 ## What the Rep Link Reports in Tactical Meetings
 
-Constitution S.3.3.2 specifies tactical meeting structure. The Rep Link's reporting obligations in an enclosing circle tactical meeting:
+Constitution S.3.2 specifies the default tactical meeting process. The Rep Link's reporting obligations in an enclosing circle tactical meeting:
 
 1. **Checklist items assigned to the sub-circle** -- any recurring actions the sub-circle as a whole is accountable for in the enclosing circle's view. Report yes/no since last meeting.
 
@@ -114,11 +114,12 @@ The following Policy of [Circle Name] is hereby [modified / removed]:
 Added Domain: [What this role now exclusively controls]
 ```
 
-**Important constraints on proposals:**
-- A proposal must address a tension *you have actually experienced* in your role -- you cannot propose on behalf of someone else's tension without their involvement
-- A proposal cannot address multiple unrelated tensions -- one tension, one proposal
-- A proposal cannot prescribe a solution beyond what is needed to resolve the tension
-- If the Facilitator determines the proposal cannot possibly cause harm even if it creates other tensions, it may pass without full objection testing (Constitution S.5.4.3)
+**What makes a proposal valid** (S.5.3.1). The Proposer must be able to:
+- describe a Tension the Proposal would address for one of the Proposer's own Roles (for the Rep Link, a Tension the Rep Link itself senses or carries from the sub-circle);
+- share an example of an actual past or present situation that shows the Tension; and
+- explain how the Proposal would have reduced the Tension in that example.
+
+If it becomes clear that a proposal does not meet these, the Facilitator must discard it. Keeping one tension per proposal is good practice, not a constitutional rule.
 
 ---
 
@@ -126,14 +127,16 @@ Added Domain: [What this role now exclusively controls]
 
 When the Rep Link brings a proposal, they may receive objections. Understanding valid objections helps prepare better proposals and anticipate genuine concerns.
 
-An objection is valid if and only if it meets all four criteria (Constitution S.5.5.1):
+A concern counts as an objection only if the Objector gives a reasonable argument that it meets all four criteria of S.5.3.2:
 
-1. **Degrades capacity** -- The proposal would reduce the circle's or objector's capacity to express its Purpose or enact its Accountabilities
-2. **Caused by the proposal** -- The degradation is created by the proposal, not by circumstances that already exist
-3. **Not yet existing** -- It's not already a known tension being processed elsewhere
-4. **Real or imminent** -- Based on known dynamics, not speculation about what might happen
+> - **(a)** The Proposal would reduce the capacity of the Circle to enact its Purpose or Accountabilities.
+> - **(b)** The Proposal would limit the Objector's capacity to enact the Purpose or an Accountability of a Role the Objector represents in the Circle, even if the Objector filled no other Roles in the Organization.
+> - **(c)** The concern does not already exist even in the absence of the Proposal. Thus, a new Tension would be created specifically by adopting the Proposal.
+> - **(d)** The Proposal would necessarily cause the impact, or, if it might cause the impact, the Circle wouldn't have an adequate opportunity to adapt before significant harm could result.
+>
+> However, regardless of the above criteria, a concern always counts as an Objection if adopting the Proposal would violate a rule in this Constitution.
 
-The Facilitator tests each objection against these criteria. The Rep Link can help the proposer anticipate and address objections by reviewing the proposal against these four tests before the meeting.
+The Facilitator may test each objection against these criteria, judging only the logic of the argument, not its accuracy (S.5.3.3). The Rep Link can help the proposer anticipate and address objections by reviewing the proposal against these four tests before the meeting.
 
 **Common objections to Rep Link proposals:**
 - "This accountability is already covered by [another role]" -- check governance for overlaps before proposing
@@ -159,10 +162,12 @@ Within the sub-circle, the Rep Link:
 
 | Topic | Constitution Section |
 |---|---|
-| Role definition and cross-links | S.2.6 |
-| Circle membership and Rep Link membership in enclosing circle | S.2.4 |
-| Tactical Meeting process and reporting structure | S.3.3 |
-| Governance Meeting process and proposal format | S.5.1-5.6 |
-| Valid objection criteria | S.5.5.1 |
-| Election process for Rep Link | S.5.7 |
-| IDR process (for person tensions -- distinct from governance) | S.3.6 |
+| Circle Rep Role definition (v4.1: Rep Link) | S.5.1.1 |
+| Circle Rep membership in the containing circle | S.5.1.1 |
+| Circle Members and governance participants | S.5.1 |
+| Tactical Meeting process and reporting structure | S.3.2 |
+| Changing governance and proposal requirements | S.5.3, S.5.3.1 |
+| Governance Meeting process | S.5.4.3, S.5.4.5 |
+| Valid objection criteria | S.5.3.2 |
+| Election process for the Circle Rep | S.5.3.5 |
+| IDR process (for person tensions -- distinct from governance) | Not in the Constitution; an organization practice |

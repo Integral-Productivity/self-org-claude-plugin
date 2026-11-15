@@ -85,7 +85,10 @@ role-roster delegation, descriptions inside Claude's upload limits (500
 characters for `plugin.json`, 1024 for a skill), GlassFrog tool names that
 exist on the server, GlassFrog tool grants generated from the inventory,
 triage-state names that are in the closed list, a work-item surface map with
-no empty lifecycle cell, and no pre-1.0 plugin name in a shipped surface. The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
+no empty lifecycle cell, no pre-1.0 plugin name in a shipped surface, and
+Constitution citations that name a real v5.0 section and the right one for the
+topic (check 14, against `evals/constitution-v5.0-sections.txt`, pinned to
+HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
 cloud sessions load, keeps the last version it accepted and every later release
 misses those sessions ([#368](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/368)).
 `claude plugin validate` does not check these limits.

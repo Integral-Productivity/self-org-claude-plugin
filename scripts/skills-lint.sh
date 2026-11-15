@@ -822,6 +822,59 @@ check_surface_map() {
   done <<< "$parsed"
 }
 
+# ---------------------------------------------------------------------------
+# Check 14 -- a Constitution citation names a real v5.0 section, and the right
+# one for its topic.
+#
+# Issue #446: the objection rules cited S.5.5 (Process Breakdown) for objection
+# criteria and S.5.4.3 for proposal validity. Most S.x.y numbers were v4.1
+# numbers or invented, and nothing compared a citation with the text it cites.
+# ADR-0026 pins one source, HolacracyOne commit cc93b0b, and this check holds
+# every live citation to the section list taken from it.
+#
+# Matched in live files: `S.x.y` and `v5.0 x.y`, with any clause letter after
+# the number ignored. A citation written `v4.1 S.x.y` is a labelled contrast
+# (ADR-0026 rule 4) and is not checked. Two rules:
+#   (a) the number is a heading in evals/constitution-v5.0-sections.txt;
+#   (b) a line that names a tagged topic (`| objection` in the list) and cites
+#       sections must cite at least one section that carries the tag. A real
+#       number for the wrong rule passes (a) and fails here.
+# ---------------------------------------------------------------------------
+CONST_SECTIONS_FILE="evals/constitution-v5.0-sections.txt"
+
+check_constitution_citations() {
+  skipped 14 && return 0
+  local list nums lines f n text tok num topic tagged ok cited
+  list="$(grep -vE '^\s*(#|$)' "$ROOT/$CONST_SECTIONS_FILE" 2>/dev/null || true)"
+  nums="$(cut -d' ' -f1 <<< "$list")"
+  lines="$(cd "$ROOT" && _live_md | xargs -r grep -HnE '(^|[^A-Za-z0-9.])(S\.[0-9]|v5\.0 [0-9])' 2>/dev/null)"
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    f="${line%%:*}"; line="${line#*:}"; n="${line%%:*}"; text="${line#*:}"
+    cited=""
+    while IFS= read -r tok; do
+      [ -n "$tok" ] || continue
+      case "$tok" in *"v4.1 "*) continue ;; esac
+      num="$(sed -E 's/^.*(S\.|v5\.0 )//; s/\.$//' <<< "$tok")"
+      if [ -z "$list" ]; then
+        finding 14 "$f:$n" "cites $num but $CONST_SECTIONS_FILE is missing or empty"
+        continue
+      fi
+      grep -qxF "$num" <<< "$nums" \
+        || finding 14 "$f:$n" "S.$num is not a section of Constitution v5.0 ($CONST_SECTIONS_FILE); label a v4.1 number 'v4.1' (ADR-0026)"
+      cited="$cited $num"
+    done < <(grep -oE '(^|[^A-Za-z0-9.])(v4\.1 )?(S\.|v5\.0 )[0-9]+(\.[0-9]+)*\.?' <<< "$text")
+    [ -n "$cited" ] && [ -n "$list" ] || continue
+    for topic in $(grep -oE '\| *[a-z,]+$' <<< "$list" | tr -d '| ' | tr ',' '\n' | sort -u); do
+      grep -qiE "\\b${topic}" <<< "$text" || continue
+      tagged="$(grep -E "\| *([a-z]+,)*${topic}(,[a-z]+)*$" <<< "$list" | cut -d' ' -f1)"
+      ok=""
+      for num in $cited; do grep -qxF "$num" <<< "$tagged" && ok=1; done
+      [ -n "$ok" ] || finding 14 "$f:$n" "names '$topic' but cites${cited}, none of which is a v5.0 $topic section ($(tr '\n' ' ' <<< "$tagged" | sed 's/ $//'))"
+    done
+  done <<< "$lines"
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -835,5 +888,6 @@ check_tool_grants
 check_state_names
 check_legacy_names
 check_surface_map
+check_constitution_citations
 
 check_common_summarize "skills-lint"

@@ -1,0 +1,76 @@
+# Holacracy Constitution v5.0 section numbers, for skills-lint.sh check 14.
+#
+# Pinned source (ADR-0026):
+#   https://github.com/holacracyone/Holacracy-Constitution/blob/cc93b0b/Holacracy-Constitution.md
+#
+# One section per line: `<number> <title>`, taken from the headings of that
+# file. An optional `| <keyword>[,<keyword>]` suffix tags a section with a
+# topic. When a shipped line names a tagged topic and cites a section, at least
+# one cited section on that line must carry the tag. That catches a real number
+# used for the wrong rule, such as S.5.5 (Process Breakdown) cited for
+# objection criteria.
+#
+# A change to the pinned commit is a deliberate edit to this list, reviewed in
+# a PR. Regenerate the numbers and titles from the new commit's headings.
+1 Organizational Structure
+1.1 Role Definition
+1.2 Responsibilities of Role Leads
+1.2.1 Processing Tensions
+1.2.2 Processing Purpose & Accountabilities
+1.2.3 Breaking Down Projects
+1.2.4 Tracking Projects, Next-Actions, & Tensions
+1.2.5 Executing Next-Actions
+1.3 Circles
+1.3.1 Breaking Down Roles
+1.3.2 Delegating Domains
+1.3.3 Anchor Circle
+1.3.4 Linking Into Circles
+1.3.5 Facilitator & Secretary Roles
+1.4 Circle Leads
+1.4.1 Assigning Roles
+1.4.2 Covering Unfilled Roles
+1.4.3 Defining Priorities & Strategies
+1.4.4 Routing External References
+1.4.5 Amending the Circle Lead Role
+2 Rules of Cooperation
+2.1 Duty of Transparency
+2.2 Duty of Processing
+2.3 Duty of Prioritization
+2.4 Relational Agreements
+3 Tactical Meetings
+3.1 Attendance
+3.2 Meeting Process
+4 Distributed Authority
+4.1 Constraints on Authority
+4.1.1 Don't Violate Policies
+4.1.2 Get Permission Before Impacting Domains
+4.1.3 Get Authorization Before Spending Money
+4.2 Interpretation Authority
+4.2.1 Conflicts of Interpretation
+4.2.2 Striking Invalid Governance
+4.3 Individual Initiative
+4.3.1 Allowed Situations
+4.3.2 Communication & Restoration
+5 Governance Process
+5.1 Governance Participants
+5.1.1 Circle Reps
+5.1.2 Facilitator & Secretary
+5.2 Scope of Governance
+5.2.1 Scope of Policy
+5.3 Changing Governance | objection
+5.3.1 Proposal Requirements
+5.3.2 Objection Requirements | objection
+5.3.3 Testing Potential Objections | objection
+5.3.4 Rules of Integration | objection
+5.3.5 Integrative Election Process | objection
+5.3.6 Surrogates for Facilitator & Secretary
+5.4 Governance Meetings
+5.4.1 Attendance
+5.4.2 Notice & Duration
+5.4.3 Meeting Process
+5.4.4 Agenda Building
+5.4.5 Integrative Decision-Making Process | objection
+5.5 Process Breakdown
+5.5.1 Breakdown from Failed Governance
+5.5.2 Process Restoration
+5.5.3 Escalation of Process Breakdown
