@@ -3,7 +3,7 @@ name: self-org-facilitator
 description: >
   Full Holacracy Facilitator skill for organizations using Holacracy and GlassFrog. Use this skill whenever you are asked to facilitate, run, prepare for, or guide a Holacracy meeting -- including Tactical meetings, Governance meetings, Role elections, and Strategy meetings. Also trigger for constitutional Facilitator duties: scheduling meetings, building agendas, processing tensions, guiding objection rounds, integrative elections, or auditing sub-circle records. Trigger even for adjacent requests like "let's run our tactical," "help me facilitate governance," "we need to elect a new Facilitator," "what should our strategy meeting cover," "am I handling this objection correctly?", or "help me process this tension." Use this skill any time meeting facilitation, constitutional process compliance, or Holacracy meeting governance is involved -- even if the word "facilitate" never appears.
 status: draft
-version: 2.0.1
+version: 2.1.0
 ---
 # Holacracy Facilitator
 
@@ -153,16 +153,18 @@ If discussion, debate, or dialogue emerges during steps that don't allow it: "I 
 During Tactical triage, the Facilitator's primary move is asking each tension holder: **"What do you need?"** This is not an invitation to explain the tension -- it asks for the outcome needed from this meeting right now. Valid outcomes: information shared, a project created, a next action committed to, an item flagged for governance. Keep triage crisp.
 
 ### Test Objections
-During Governance objection rounds, the Facilitator tests whether an objection is constitutionally valid before treating it as such. The constitutional test (asked with genuine curiosity, not as challenges):
+During Governance objection rounds, the Facilitator may capture a concern as an objection, or test it, and must test it if any Circle Member asks (S.5.3.4(a)). The full v5.0 text and the script are in `references/governance-meeting.md` Phase E. In short:
 
-1. "Would adopting this proposal degrade the circle's capacity to express its purpose or accountabilities -- or create a constitutionally invalid record?"
-2. "Is this harm you're describing based on something you know now, or speculation about what might happen?"
-3. "Is this objection coming from your role's perspective, or a personal preference about direction?"
+0. "Would adopting this proposal break a rule in the Constitution?" If yes, it counts as an objection; if in doubt, ask the Secretary to rule (S.5.3.2, S.5.3.3).
+1. "How would it reduce the circle's capacity to enact its purpose or accountabilities?" -- criterion (a)
+2. "Which role you represent here would it limit, and how?" -- criterion (b)
+3. "Is this created by adopting the proposal, or does it exist already?" -- criterion (c)
+4. "Would it necessarily cause this? If it only might, why couldn't we adapt before significant harm?" -- criterion (d)
 
-An objection is **invalid** if it is: a preference for a different approach, speculation about future harm, or a general disagreement. An objection is **valid** if it identifies real, present degradation of capacity or a constitutional violation.
+A concern counts as an objection only with a reasoned argument for all four, or a Constitution violation (S.5.3.2). Judge only whether each argument uses logical reasoning, never its accuracy or importance (S.5.3.3). An anticipated harm is not invalid for being anticipated: it counts when the circle could not adapt in time.
 
 ### Integrate
-When a valid objection exists, guide integration: "What's the minimum change to this proposal that would resolve your objection while still addressing the proposer's tension?" Facilitate between proposer and objector until a modified proposal emerges, then re-run the objection round.
+When there is an objection, the participants brainstorm an amendment that resolves it and still addresses the proposer's tension (S.5.4.5(f)). Apply the rules of integration (S.5.3.4): the Objector must try to find an amendment in good faith, and on request the Proposer must argue from one of their examples why an amendment would fail. When all objections are resolved, re-run the objection round.
 
 ### Hold Space
 In check-in and closing rounds, silence is fine. "Passing is allowed" is a legitimate facilitation move.

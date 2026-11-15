@@ -638,7 +638,47 @@ if [ "$(printf '%s\n' "$got" | grep -c .)" != 1 ] || ! grep -q 'Project × Readi
 fi
 CASES=$((CASES + 1))
 
-# 14. The real repository is clean. Fixtures prove the checks work; this proves
+# 14. Constitution citations name a real v5.0 section, and the right one for
+#     the topic (ADR-0026). The list is the real pinned one, so a change to it
+#     that drops a section this case cites breaks the case loudly.
+_const_fixture() {  # $1 = destination dir, $2 = text appended to the demo skill
+  _fixture "$1"
+  cp "$HERE/../evals/constitution-v5.0-sections.txt" "$1/evals/"
+  printf '\n%s\n' "$2" >> "$1/skills/demo/SKILL.md"
+  git -C "$1" add -A && git -C "$1" commit -qm const
+}
+
+# 14a. The forms the plugin writes must pass: a lettered clause, the
+#      "v5.0 x.y" form, a sentence-final number, a v4.1-labelled contrast, and
+#      an objection line that cites an objection section.
+_const_fixture "$TMP/c14a" 'Quote S.5.3.2(d) and v5.0 5.3.3. Authority is S.4.1.
+The old wording was v4.1 S.3.2.4 and v4.1 3.2.4(c).
+| Valid objection criteria | S.5.3.2 |'
+SKILLS_LINT_ROOT="$TMP/c14a" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c14a" bash "$LINT"; fail "check 14 flagged a valid citation form"; }
+CASES=$((CASES + 1))
+
+# 14b. A section that does not exist in v5.0 (a v4.1 number left unlabelled).
+_const_fixture "$TMP/c14b" 'Rep Link definition (S.2.6.4).'
+_assert_load_bearing 14 "$TMP/c14b" "citation to a section v5.0 does not have"
+
+# 14c. A real section cited for the wrong rule: S.5.5 is Process Breakdown,
+#      not objection criteria. This is the #446 defect, and the finding must
+#      name the file and line.
+_const_fixture "$TMP/c14c" 'What counts as a valid objection (S.5.5)'
+_assert_load_bearing 14 "$TMP/c14c" "objection rule cited to a non-objection section"
+got="$(SKILLS_LINT_ROOT="$TMP/c14c" bash "$LINT" 2>/dev/null)"
+grep -qE '^\[14\]  skills/demo/SKILL.md:[0-9]+: ' <<< "$got" \
+  || fail "check 14: the finding does not name the file and line"
+CASES=$((CASES + 1))
+
+# 14d. A citation with no pinned list is a finding, never a silent pass.
+_fixture "$TMP/c14d"
+printf '\nSee S.4.1.\n' >> "$TMP/c14d/skills/demo/SKILL.md"
+git -C "$TMP/c14d" add -A && git -C "$TMP/c14d" commit -qm c14d
+_assert_load_bearing 14 "$TMP/c14d" "citation with no pinned section list"
+
+# 15. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))
