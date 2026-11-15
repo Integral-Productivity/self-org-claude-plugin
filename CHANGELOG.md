@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.1...v1.7.2) (2026-11-15)
+
+
+### Bug Fixes
+
+* **skills:** quote Constitution v5.0 objection and proposal rules, check citations ([#457](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/457)) ([ab2da08](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/ab2da08ae2d17471ed87456def955a887619cbed))
+
 ## [1.7.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.0...v1.7.1) (2026-11-15)
 
 
