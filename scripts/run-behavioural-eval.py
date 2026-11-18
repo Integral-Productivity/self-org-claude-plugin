@@ -132,6 +132,12 @@ PLUGIN_NAME = json.loads(
 # docstring's note on what the control can reach.
 EVAL_TOOLS = "Skill,Task,Read"
 
+# Tools a case may add to EVAL_TOOLS with its `extra_tools` field, and nothing
+# else. `AskUserQuestion` lets a case check that a walk offers its per-item
+# decision in the picker (#461). A shell or a file writer is never on this list:
+# the control reached the checkout with `find /` when it had one.
+ALLOWED_EXTRA_TOOLS = frozenset({"AskUserQuestion"})
+
 # The stub must register under the same server name as the real connector in
 # .mcp.json, or every `mcp__glassfrog-extended__*` tool name the skills were written
 # against fails to resolve and the eval measures a plumbing error.
@@ -650,11 +656,16 @@ def probe_stub(fixture: Path, write_log: Path) -> tuple[bool, str]:
 # Execution
 # ---------------------------------------------------------------------------
 
-def build_command(prompt: str, config: str, cfg_path: Path, model: str | None) -> list[str]:
+def build_command(prompt: str, config: str, cfg_path: Path, model: str | None,
+                  extra_tools: tuple[str, ...] = ()) -> list[str]:
+    unknown = set(extra_tools) - ALLOWED_EXTRA_TOOLS
+    if unknown:
+        raise ValueError(f"extra_tools not allowed: {sorted(unknown)}")
+    tools = ",".join([EVAL_TOOLS, *extra_tools])
     cmd = [
         CLAUDE_BIN,
         "-p", prompt,
-        "--tools", EVAL_TOOLS,
+        "--tools", tools,
         "--output-format", "stream-json",
         "--verbose",
         "--strict-mcp-config",
@@ -824,7 +835,8 @@ def contamination_error(events: list, config: str) -> str | None:
 
 
 def execute(prompt: str, config: str, run_dir: Path, fixture: Path,
-            model: str | None, timeout: int) -> dict:
+            model: str | None, timeout: int,
+            extra_tools: tuple[str, ...] = ()) -> dict:
     """Run one (eval, config, run) and capture everything it produced."""
     outputs = run_dir / "outputs"
     outputs.mkdir(parents=True, exist_ok=True)
@@ -860,7 +872,7 @@ def execute(prompt: str, config: str, run_dir: Path, fixture: Path,
     started = time.time()
     try:
         proc = subprocess.run(
-            build_command(prompt, config, cfg_path, model),
+            build_command(prompt, config, cfg_path, model, extra_tools),
             capture_output=True, text=True, timeout=timeout,
             cwd=str(workdir), env=session_env(config_dir),
         )
@@ -1401,7 +1413,8 @@ def run_once(case: dict, config: str, run_dir: Path, model: str | None,
         raise SystemExit(f"fixture not found: {fixture}")
 
     started = time.time()
-    outcome = execute(case["prompt"], config, run_dir, fixture, model, timeout)
+    outcome = execute(case["prompt"], config, run_dir, fixture, model, timeout,
+                      tuple(case.get("extra_tools", ())))
     transcript, metrics = render_transcript(outcome["events"], case["prompt"])
     if outcome["error"]:
         transcript += f"\n## Execution error\n\n{outcome['error']}\n"
@@ -1532,6 +1545,11 @@ def load_case_file(path: Path) -> dict:
         for field in ("eval_id", "eval_name", "prompt", "fixture", "assertions"):
             if field not in case:
                 raise SystemExit(f"{path}: eval #{i} is missing required field '{field}'")
+        extra = case.get("extra_tools", [])
+        if not isinstance(extra, list) or set(extra) - ALLOWED_EXTRA_TOOLS:
+            raise SystemExit(
+                f"{path}: {case['eval_name']} asks for extra_tools {extra!r}; only "
+                f"{sorted(ALLOWED_EXTRA_TOOLS)} may be added, so the run stays hermetic")
         for assertion in case["assertions"]:
             if "text" not in assertion:
                 raise SystemExit(f"{path}: {case['eval_name']} has an assertion with no 'text'")

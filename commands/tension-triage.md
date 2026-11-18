@@ -57,6 +57,8 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
 
    The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
+   **Picker first.** When the host offers a multiple-choice question tool, show this decision in it, per `skills/shared/decision-keys.md` Step 3: the verdict and one sentence of reason above, then the recommended key, the two likeliest other keys, and `More options`. The block above is the fallback for a host with no question tool.
+
 7. **Call the appropriate `glassfrog_update_tension`** for the user's decision. Surface any error honestly: `update_tension` failures must not be silently swallowed.
 
 8. **Summarize at the end.** Number archived, edited, resolved-by-existing-authority, marked processed, deferred. Surface any supersession candidates the user did not act on (offer `/self-org:supersession-sweep`). If the pass flagged tensions as ready-to-process, say so plainly and name the next surface.

@@ -920,6 +920,21 @@ check_decision_keys() {
   done <<< "$hits"
 }
 
+# Check 16 -- a walk shows its per-item decision in the picker (#461). Every command
+#     that writes out a letter menu must cite decision-keys.md Step 3, which
+#     holds the picker path; the letter menu is only the fallback. Commands
+#     only: the capture flows' confirm blocks are not walks.
+check_picker_path() {
+  skipped 16 && return 0
+  local f
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    grep -qF "decision-keys.md\` Step 3" "$ROOT/$f" \
+      || finding 16 "$f" "shows a letter menu but does not cite \`skills/shared/decision-keys.md\` Step 3, the picker path (#461)"
+  done < <(cd "$ROOT" && _live_md | grep '^commands/' \
+    | xargs -r grep -lE '(^|[[:space:]])\[[a-z]\] [a-z]+' 2>/dev/null)
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -935,5 +950,6 @@ check_legacy_names
 check_surface_map
 check_constitution_citations
 check_decision_keys
+check_picker_path
 
 check_common_summarize "skills-lint"

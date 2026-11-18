@@ -696,8 +696,10 @@ _keys_fixture() {  # $1 = destination dir
 |---|---|---|---|
 | `[a]` | `archive` | Set status archived. | status change |
 | `[w]` | `write` | Write the draft shown. | the draft shown |
+
+## Step 3 -- Showing the menu in the picker
 EOF
-  printf '\nKeys follow `skills/shared/decision-keys.md`.\n\n     [a] archive it   -> status archived\n     [w] write        -> the draft\n' \
+  printf '\nKeys follow `skills/shared/decision-keys.md`.\n\n     [a] archive it   -> status archived\n     [w] write        -> the draft\n\nPicker first, per `skills/shared/decision-keys.md` Step 3.\n' \
     >> "$1/commands/demo-cmd.md"
 }
 _keys_fixture "$TMP/c15a"
@@ -724,7 +726,13 @@ printf '| `[a]` | `apply` | Create an action. | new action |\n' >> "$TMP/c15d/sk
 git -C "$TMP/c15d" add -A && git -C "$TMP/c15d" commit -qm c15d
 _assert_load_bearing 15 "$TMP/c15d" "key defined twice in the vocabulary"
 
-# 16. The real repository is clean. Fixtures prove the checks work; this proves
+# 16. A walk command shows a letter menu but has no picker path (#461).
+_keys_fixture "$TMP/c16"
+sed -i.bak '/Picker first/d' "$TMP/c16/commands/demo-cmd.md" && rm -f "$TMP/c16/commands/demo-cmd.md.bak"
+git -C "$TMP/c16" add -A && git -C "$TMP/c16" commit -qm c16
+_assert_load_bearing 16 "$TMP/c16" "walk menu without the picker path"
+
+# 17. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))

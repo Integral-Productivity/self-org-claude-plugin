@@ -45,6 +45,8 @@ This command is also offered implicitly by the `self-org-ai-governance` skill wh
 
    The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
+   **Picker first.** When the host offers a multiple-choice question tool, show this decision in it, per `skills/shared/decision-keys.md` Step 3: the verdict and one sentence of reason above, then the recommended key, the two likeliest other keys, and `More options`. The block above is the fallback for a host with no question tool.
+
 5. **Apply the user's decision** via `glassfrog_update_tension` calls. For `m` (merge), the merge is two calls: update B's body, then archive A.
 6. **Summarize at the end.** Number of pairs detected, number archived, number merged, number kept.
 

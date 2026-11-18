@@ -54,6 +54,8 @@ Load three shared references at the start:
 
    The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
+   **Picker first.** When the host offers a multiple-choice question tool, show this decision in it, per `skills/shared/decision-keys.md` Step 3: the verdict and one sentence of reason above, then the recommended key, the two likeliest other keys, and `More options`. The block above is the fallback for a host with no question tool.
+
 7. **Apply the confirmed fix** by its `write_class`:
    - **additive-on-confirm** (`create-action`, `link-goal`): fire the single call. `create-action` **must** pass `parent_project_id` (this project) plus the owning `role_id` and a concrete `description`, `status: "current"`. `link-goal` passes the chosen `goal_id` + `project_id`. Trust the returned id as the same-session confirmation -- do **not** list-back to verify (same propagation caveat as tensions).
    - **advisory-draft** (`reframe-description`, `archive`): show the exact text/action the human would apply (e.g. the reframed description, or `update_project(project_id, status: "archived")`). Do not call the write.

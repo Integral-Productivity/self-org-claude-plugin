@@ -624,7 +624,35 @@ env = runner.session_env(pathlib.Path("/sandbox/cfg"))
 assert env["CLAUDE_CONFIG_DIR"] == "/sandbox/cfg", env.get("CLAUDE_CONFIG_DIR")
 assert "CLAUDECODE" not in env
 assert "CLAUDE_CODE_SIMPLE" not in env
+
+# A case may add AskUserQuestion so a walk can be checked for its picker path
+# (#461), and nothing else: a case that could add a shell would undo every
+# withheld tool above.
+picker = runner.build_command("p", "with_skill", cfg, None, ("AskUserQuestion",))
+tools = picker[picker.index("--tools") + 1].split(",")
+assert "AskUserQuestion" in tools and "Skill" in tools, tools
+assert "AskUserQuestion" not in with_skill[with_skill.index("--tools") + 1].split(","), with_skill
+for bad in ("Bash", "Write", "Glob", "Grep"):
+    try:
+        runner.build_command("p", "with_skill", cfg, None, (bad,))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(f"extra_tools accepted {bad}")
 PY
+pass
+
+# 5b. A case file that asks for a shell through extra_tools is refused at load.
+python3 - "$TMP/case/evals.json" "$TMP/case-shell.json" <<'PY'
+import json, sys
+doc = json.load(open(sys.argv[1]))
+doc["evals"][0]["extra_tools"] = ["Bash"]
+json.dump(doc, open(sys.argv[2], "w"))
+PY
+BEHAVIOURAL_EVAL_CLAUDE_BIN="$TMP/fake-claude" python3 "$RUNNER" \
+  --case "$TMP/case-shell.json" --out "$TMP/out-shell" \
+  --validate-only --no-session-probe >/dev/null 2>&1 \
+  && fail "a case that asked for Bash through extra_tools was accepted"
 pass
 
 # The generated MCP config names the server `glassfrog-extended`. Under any other name

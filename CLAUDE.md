@@ -57,7 +57,7 @@ The plugin separates **tension readiness** (`/self-org:tension-triage` — is th
 
 `skills/shared/project-triage-gates.md` holds the four project reality gates (outcome reached, duplicate, superseded, owner role gone), the routing order, the timestamped note line, and the movement rule that decides when a `needs-info` project is shown again. It is loaded by `/self-org:project-triage` and is the project twin of `triage-gates.md`, kept separate because callers cite steps by number.
 
-`skills/shared/decision-keys.md` is the one vocabulary for per-item menu keys: every walk command and both capture flows cite it next to their menus. A key has one meaning everywhere; a new action gets a new key, never an existing one. `skills-lint.sh` check 15 fails a menu key or label the table does not hold. It exists because `[a]` meant *archive* in three walks and *apply* in `/self-org:review-project` (#460).
+`skills/shared/decision-keys.md` is the one vocabulary for per-item menu keys: every walk command and both capture flows cite it next to their menus. A key has one meaning everywhere; a new action gets a new key, never an existing one. `skills-lint.sh` check 15 fails a menu key or label the table does not hold. It exists because `[a]` meant *archive* in three walks and *apply* in `/self-org:review-project` (#460). Its Step 3 is the picker path: a walk shows each per-item decision in the host's question tool (recommended key, two likeliest others, `More options`), and the letter menu is the fallback. Check 16 fails a walk command that shows a menu and does not cite Step 3 (#461).
 
 `skills/shared/project-capture-flow.md` (the draft-and-confirm P-flow for filing a well-formed project at intake) is loaded by the `/self-org:capture-project` command and the `project-capture` subagent. It is the create-flow twin of `skills/shared/tension-capture-flow.md`; keep the two flows' constitutional-safeguard and confirmation-block conventions aligned.
 
@@ -91,7 +91,7 @@ no empty lifecycle cell, no pre-1.0 plugin name in a shipped surface, and
 Constitution citations that name a real v5.0 section and the right one for the
 topic (check 14, against `evals/constitution-v5.0-sections.txt`, pinned to
 HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md))), and menu keys that keep one meaning in every walk (check 15, against
-`skills/shared/decision-keys.md`, [#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
+`skills/shared/decision-keys.md`, [#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)), and a walk that shows a letter menu cites the picker path in that file's Step 3 (check 16, [#461](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/461)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
 cloud sessions load, keeps the last version it accepted and every later release
 misses those sessions ([#368](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/368)).
 `claude plugin validate` does not check these limits.

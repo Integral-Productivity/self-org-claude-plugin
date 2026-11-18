@@ -76,6 +76,8 @@ Load two shared references at the start:
 
    The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
+   **Picker first.** When the host offers a multiple-choice question tool, show this decision in it, per `skills/shared/decision-keys.md` Step 3: the verdict and one sentence of reason above, then the recommended key, the two likeliest other keys, and `More options`. The block above is the fallback for a host with no question tool.
+
    For a `needs-info` draft, decide who must answer by `project-triage-gates.md` Step 5: the owner role keeps `current`; another role, circle, or outside party drafts `status: waiting`; when unclear, the owner. The user corrects the addressee before the write like any other part of the draft.
 
    In the **resolution mode**, show the open question first, before any draft route:
