@@ -113,6 +113,9 @@ MUT="$(make_mutant integer "''|*[!0-9]*|0*)" "__never__)")" || fail "could not b
 RC="$(run "$MUT" resolve --event workflow_dispatch --weekly-cron "$WEEKLY" --runs-input abc)"
 [ "$RC" = "1" ] && grep -q "positive integer" "$TMP/err" \
   && fail "mutation case is vacuous: runs=abc was still refused as a non-integer"
+MUT="$(make_mutant leadingzero "''|*[!0-9]*|0*)" "''|*[!0-9]*)")" || fail "could not build the leading-zero mutant"
+RC="$(run "$MUT" resolve --event workflow_dispatch --weekly-cron "$WEEKLY" --runs-input 0)"
+[ "$RC" = "1" ] && fail "mutation case is vacuous: runs=0 was still refused without the leading-zero branch"
 pass
 
 # 5. The spend cap: runs above 10 is refused before any model call.
@@ -178,6 +181,10 @@ pass
 # 11. A fresh-leg count that is not an integer is a usage error, never a skip.
 RC="$(run "$SCRIPT" decide --runs 1 --fresh-legs "" --workflow "$TMP/wf-150.yml")"
 [ "$RC" = "2" ] || fail "an empty fresh-leg count did not exit 2 (exit $RC, out: $(cat "$TMP/out"))"
+MUT="$(make_mutant freshint 'case "$FRESH_LEGS" in '"''"'|*[!0-9]*) usage ;; esac' ':')" \
+  || fail "could not build the fresh-leg integer mutant"
+RC="$(run "$MUT" decide --runs 1 --fresh-legs "" --workflow "$TMP/wf-150.yml")"
+[ "$RC" = "2" ] && fail "mutation case is vacuous: an empty fresh-leg count still exited 2"
 pass
 
 # ---------------------------------------------------------------------------

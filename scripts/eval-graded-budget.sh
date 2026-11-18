@@ -37,14 +37,17 @@ SPEND_CAP=10
 # Measured, not guessed: run 31053788703 spent ~36 minutes on 3 evals x 3 runs
 # x 2 configs = 18 executions. The 2026-08-17 baseline measured ~216 s for a
 # with_skill execution, so this is optimistic; replacing it with a value read
-# from the last run is a tracked follow-up.
+# from the last run is a follow-up listed on issue #467.
 MINUTES_PER_EXECUTION=2
 # Everything either side of the eval loop: checkout, node, the CLI install,
 # the aggregator fetch, aggregate, report, upload, plus slack for a slow runner.
 OVERHEAD_MINUTES=10
 
 usage() {
-  sed -n '11,24p' "$0" | sed 's/^# \{0,1\}//' >&2
+  cat >&2 <<'EOF'
+usage: eval-graded-budget.sh resolve --event E [--schedule S] --weekly-cron C [--runs-input N]
+       eval-graded-budget.sh decide --runs N --fresh-legs F --workflow PATH
+EOF
   exit 2
 }
 

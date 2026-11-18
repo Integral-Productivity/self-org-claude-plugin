@@ -110,12 +110,12 @@ jobs:
     #
     # THIS NUMBER IS READ AT RUNTIME, NOT JUST OBEYED (#205). The "Plan the
     # graded run" step below passes this file to scripts/eval-graded-budget.sh,
-    # which parses it out and refuses a run that cannot finish inside it. Before that, the two were unrelated numbers
-    # describing one constraint: `runs` accepted 1–10 while `runs=10` at four
-    # evals needs ~160 minutes and provably cannot finish — a contributor got a
-    # 90-minute wait and a red run with no signal about why. Raising or
-    # lowering this value now moves the accepted range with it, so they cannot
-    # drift apart.
+    # which parses it out and refuses a run that cannot finish inside it.
+    # Before #205 the two were unrelated numbers describing one constraint:
+    # `runs` accepted 1–10 while `runs=10` at four evals needs ~160 minutes and
+    # provably cannot finish — a contributor got a 90-minute wait and a red run
+    # with no signal about why. Raising or lowering this value now moves the
+    # accepted budget with it, so they cannot drift apart.
     #
     # A YAML key cannot read an env var, so this literal is the single source
     # and the shell reads the file. Keep it the ONLY `timeout-minutes:` in this
@@ -344,8 +344,8 @@ jobs:
           if [ -n "${CACHE_INDEX_PATH:-}" ]; then args+=(--cache-index "$CACHE_INDEX_PATH"); fi
           PLAN=$(python3 scripts/run-behavioural-eval.py --out "$RUNNER_TEMP/plan" \
             --plan-only --runs "$RUNS" "${args[@]}")
-          FRESH=$(python3 -c 'import json,sys;print(json.loads(sys.argv[1])["fresh_legs"])' "$PLAN")
-          CACHED=$(python3 -c 'import json,sys;print(json.loads(sys.argv[1])["cached_legs"])' "$PLAN")
+          FRESH=$(jq -r .fresh_legs <<<"$PLAN")
+          CACHED=$(jq -r .cached_legs <<<"$PLAN")
           echo "runs=$RUNS: $FRESH legs would execute, $CACHED would be reused from the cache"
 
           ACTION=$(bash scripts/eval-graded-budget.sh decide --runs "$RUNS" \
