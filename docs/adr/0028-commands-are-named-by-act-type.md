@@ -59,11 +59,11 @@ Each old name stays as a deprecated alias command (the `process-inbox` pattern f
 
 - Renaming the subagents (`tension-capture`, `project-capture`) and the shared flow files (`tension-capture-flow.md`, `project-capture-flow.md`). #159 lists them; they are internal names and stay with #159.
 - Renaming the `checklist-metric-audit` skill. Skill names are a separate surface.
-- The `/self-org:policy:*` namespace (#103).
+- The planned `policy:` command namespace (#103).
 
 ## Consequences
 
-- A user who knows the work item finds its walks together (`/self-org:tension-`, `/self-org:project-`). A user who knows the act finds its authority verb first (`/self-org:sense-`, `/self-org:commit-`).
+- A user who knows the work item finds its walks together: every tension walk starts `tension-` and every project walk starts `project-`. A user who knows the act finds its authority verb first: `sense-` or `commit-`.
 - #159's verbs ship for the two commands that exist. #159 stays open for the subagent and flow-file renames and for the planned commands.
 - Two shapes remain, by design. The rule is the act type, and the lint check makes a third shape fail.
 - Renames are a `feat:` change because the aliases keep the old names working. Removing the aliases in 2.0.0 is the breaking change.
