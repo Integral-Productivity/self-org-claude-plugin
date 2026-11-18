@@ -732,7 +732,29 @@ sed -i.bak '/Picker first/d' "$TMP/c16/commands/demo-cmd.md" && rm -f "$TMP/c16/
 git -C "$TMP/c16" add -A && git -C "$TMP/c16" commit -qm c16
 _assert_load_bearing 16 "$TMP/c16" "walk menu without the picker path"
 
-# 17. The real repository is clean. Fixtures prove the checks work; this proves
+# 17. A command names a GlassFrog write tool but the model can still start it
+#     (#464). Then the same command with the flag, and an exempt triage walk
+#     without it, both pass.
+_fixture "$TMP/c17"
+printf '\nFiles it with `glassfrog_create_tension(role_id, body)` on confirmation.\n' \
+  >> "$TMP/c17/commands/demo-cmd.md"
+git -C "$TMP/c17" add -A && git -C "$TMP/c17" commit -qm c17
+_assert_load_bearing 17 "$TMP/c17" "writing command without disable-model-invocation"
+
+_fixture "$TMP/c17b"
+sed -i.bak 's/^argument-hint: \[thing, optional\]$/&\ndisable-model-invocation: true/' "$TMP/c17b/commands/demo-cmd.md"
+rm -f "$TMP/c17b/commands/demo-cmd.md.bak"
+printf '\nFiles it with `glassfrog_create_tension(role_id, body)` on confirmation.\n' \
+  >> "$TMP/c17b/commands/demo-cmd.md"
+cp "$TMP/c17/commands/demo-cmd.md" "$TMP/c17b/commands/tension-triage.md"
+sed -i.bak 's#demo-cmd#tension-triage#' "$TMP/c17b/commands/tension-triage.md" && rm -f "$TMP/c17b/commands/tension-triage.md.bak"
+git -C "$TMP/c17b" add -A && git -C "$TMP/c17b" commit -qm c17b
+grep -q '^disable-model-invocation: true' "$TMP/c17b/commands/demo-cmd.md" || fail "c17b fixture did not get the flag"
+SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT"; fail "check 17 flagged a flagged command or an exempt triage walk"; }
+CASES=$((CASES + 1))
+
+# 18. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))

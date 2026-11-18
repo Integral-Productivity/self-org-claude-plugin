@@ -1,6 +1,7 @@
 ---
 description: Prime Facilitator AND Secretary scope for a Governance Meeting. Resolves the actor's standing in the target circle, optionally surfaces a pre-governance-prep packet, and hands off to the skills for IDM facilitation and governance capture. Primes and waits -- does not auto-advance.
 argument-hint: [circle name to focus on, optional]
+disable-model-invocation: true
 ---
 
 # /self-org:governance

@@ -1,6 +1,7 @@
 ---
 description: Capture a Holacratic tension to a role's GlassFrog backlog via a draft-and-confirm flow. Cross-role, out-of-meeting surface. Resolves sensing role, applies role-vs-person triage, drafts the body (topic-front-loaded), and files with a single per-tension confirmation.
 argument-hint: [tension text, optional]
+disable-model-invocation: true
 ---
 
 # /self-org:capture-tension

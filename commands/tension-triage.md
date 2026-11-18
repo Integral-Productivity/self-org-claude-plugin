@@ -61,7 +61,7 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
 
 7. **Call the appropriate `glassfrog_update_tension`** for the user's decision. Surface any error honestly: `update_tension` failures must not be silently swallowed.
 
-8. **Summarize at the end.** Number archived, edited, resolved-by-existing-authority, marked processed, deferred. Surface any supersession candidates the user did not act on (offer `/self-org:supersession-sweep`). If the pass flagged tensions as ready-to-process, say so plainly and name the next surface.
+8. **Summarize at the end.** Number archived, edited, resolved-by-existing-authority, marked processed, deferred. Surface any supersession candidates the user did not act on, and name `/self-org:supersession-sweep` for the user to run (it is user-only, #464). If the pass flagged tensions as ready-to-process, say so plainly and name the next surface.
 
 ## Behaviour
 
@@ -85,7 +85,7 @@ Triage decides readiness. It does not decide disposition — it will not write a
 
 That boundary is the point of the command, not a limitation of it. But it is a boundary with a gap in it right now: **`/self-org:process-tension` has not shipped yet** ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it does, a tension this command marks ready has no automated next surface. Say so honestly rather than quietly widening scope to fill the gap — that quiet widening is exactly what produced the conflation this split exists to undo.
 
-For the one case where a disposition surface already exists — a tension that should become a project — hand off to `/self-org:capture-project`.
+For the one case where a disposition surface already exists — a tension that should become a project — dispatch the `project-capture` subagent. `/self-org:capture-project` is user-only (#464), so the walk does not start the command.
 
 ## Why this command exists
 

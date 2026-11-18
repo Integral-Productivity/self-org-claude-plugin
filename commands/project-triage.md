@@ -69,7 +69,7 @@ Load two shared references at the start:
      [w] write the route      -> note line (+ status change, if any), then tag read-modify-write
      [c] complete             -> note line + status: completed   (gate failures only)
      [a] archive              -> note line + status: archived    (gate failures only)
-     [r] review it            -> hand this one project to /self-org:review-project
+     [r] review it            -> name /self-org:review-project <project> for the user to run
      [d] defer                -> no write
      [q] quit                 -> stop; the rest stay as they are
    ```
@@ -128,7 +128,7 @@ Load two shared references at the start:
 
 ## Where this command stops
 
-Triage decides readiness. It does not reword an outcome, link a goal, or re-assign a role — those are quality findings, and `[r]` hands one project to `/self-org:review-project` for them. The standard pass drafts no next action. The resolution mode shows at most one labeled `Suggested first step (draft)` and names it in the answered note line; that is a deliberate, scoped exception to ADR-0018, and it never creates, rewords, or critiques an action. Creating the first next action belongs to `commit-action` ([#161](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/161)); until it ships, the owner adds the action in GlassFrog or with `/self-org:stalled-project-sweep` `[u]`. It does not create a successor project either: a superseded project whose successor does not exist yet is routed to `needs-info` with the successor as the open question, and `/self-org:capture-project` can file it.
+Triage decides readiness. It does not reword an outcome, link a goal, or re-assign a role — those are quality findings, and `[r]` names `/self-org:review-project <project>` for the user to run on one project. The review writes to GlassFrog, so it is user-only and the walk does not start it (#464). The standard pass drafts no next action. The resolution mode shows at most one labeled `Suggested first step (draft)` and names it in the answered note line; that is a deliberate, scoped exception to ADR-0018, and it never creates, rewords, or critiques an action. Creating the first next action belongs to `commit-action` ([#161](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/161)); until it ships, the owner adds the action in GlassFrog or with `/self-org:stalled-project-sweep` `[u]`. It does not create a successor project either: a superseded project whose successor does not exist yet is routed to `needs-info` with the successor as the open question, and `/self-org:capture-project` can file it.
 
 ## Why this command exists
 

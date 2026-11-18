@@ -25,7 +25,7 @@ A menu line starts with the key and then the label in the second column, word fo
 | `[m]` | `merge` | Fold one tension's specifics into another, then archive the first. | body change + status change |
 | `[x]` | `exchange` | Swap the two items' roles in the pair and draft again. | none |
 | `[h]` | `authority held` | Name the authority the role already holds; offer the conversion. | none until confirmed |
-| `[r]` | `review` | Hand this one project to `/self-org:review-project`. | none |
+| `[r]` | `review` | Name `/self-org:review-project <project>` for the user to run on this one project. The walk does not start it: the review is user-only (#464). | none |
 | `[t]` | `route tension` | Hand this finding to the `tension-capture` subagent. | none until confirmed |
 | `[v]` | `view draft` | Show an advisory draft that the user applies in GlassFrog. | none |
 | `[y]` | `yes` | Confirm the block shown and write it. | the draft shown |

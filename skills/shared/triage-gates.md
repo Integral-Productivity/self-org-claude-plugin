@@ -49,7 +49,7 @@ This is a distinct class of inbox debt: **authority parked as though it needed s
 
 **Confirmation, not automation.** Recognising that authority exists is a reading; acting on it is a write. Surface the reading, let the user decide, and never convert or archive without an explicit per-item keystroke.
 
-> **Note on dispatch.** The disposition this gate produces -- "convert to project," "convert to action," "repair the artifact directly" -- is the province of `/self-org:process-tension`, which does not exist yet ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it ships, hand the project case to `/self-org:capture-project` and name the rest honestly for the user to act on.
+> **Note on dispatch.** The disposition this gate produces -- "convert to project," "convert to action," "repair the artifact directly" -- is the province of `/self-org:process-tension`, which does not exist yet ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it ships, hand the project case to the `project-capture` subagent (the `/self-org:capture-project` command is user-only, #464) and name the rest honestly for the user to act on.
 
 ---
 

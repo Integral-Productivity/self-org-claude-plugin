@@ -1,6 +1,7 @@
 ---
 description: Register and list Holacracy agentic routines. Turn on the Secretary pre-tactical-prep or stalled-project-sweep routine for a circle, or see which routines are active.
 argument-hint: "[list | register pre-tactical-prep <circle> | register stalled-sweep <circle>]"
+disable-model-invocation: true
 ---
 
 # /self-org:routines

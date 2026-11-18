@@ -1,6 +1,7 @@
 ---
 description: Sweep a role's or circle's GlassFrog projects for stall. Surfaces un-moving projects (no next-action, old, or status "waiting") and offers per item to re-energize (draft a next-action) or archive (status "archived"). Per-item confirm; never auto-archives.
 argument-hint: ['scope: "mine" | "recent" | circle name, optional; default "mine"']
+disable-model-invocation: true
 ---
 
 # /self-org:stalled-project-sweep

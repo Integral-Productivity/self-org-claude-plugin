@@ -1,6 +1,7 @@
 ---
 description: Sweep recent or session-filed tensions for supersession (Step 4 of triage-gates). For each pair where one tension subsumes another, offer to archive the subsumed one or merge specifics into the surviving body.
 argument-hint: ['scope: "session" | "recent" | circle name, optional; default "session"']
+disable-model-invocation: true
 ---
 
 # /self-org:supersession-sweep

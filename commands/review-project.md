@@ -1,6 +1,7 @@
 ---
 description: Adversarial review of one GlassFrog project against the well-formedness rubric. Runs five critic lenses (actionability, goal-alignment, scope-authority, assignment-fit, red-team), surfaces findings with drafted fixes, and applies additive fixes with a single per-item confirmation. Never auto-writes. Backlog triage moved to /self-org:project-triage.
 argument-hint: [project name/id]
+disable-model-invocation: true
 ---
 
 # /self-org:review-project

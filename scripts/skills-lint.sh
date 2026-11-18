@@ -935,6 +935,35 @@ check_picker_path() {
     | xargs -r grep -lE '(^|[[:space:]])\[[a-z]\] [a-z]+' 2>/dev/null)
 }
 
+# Check 17 -- a command that writes to GlassFrog is user-only (#464).
+#
+# `disable-model-invocation: true` stops the model starting a command on its
+# own; only the user's `/name` runs it. Every write still waits for a per-item
+# confirmation, so this is the second guard, not the first. A command whose
+# body names a write tool from evals/glassfrog-tools.tsv must carry the flag.
+# The two triage walks are exempt by decision on #464: nine of ten eval cases
+# start them from plain language, and the flag would stop the eval measuring
+# them. Writes reached by other routes (audit-portfolio through its skill,
+# routines through the scheduler) carry the flag by hand; this check sees
+# only the tool names it can read.
+# ---------------------------------------------------------------------------
+MODEL_INVOCABLE_WRITERS="commands/tension-triage.md commands/project-triage.md"
+
+check_user_only_writers() {
+  skipped 17 && return 0
+  local inv="$ROOT/evals/glassfrog-tools.tsv" writers f
+  [ -f "$inv" ] || return 0
+  writers="$(grep -v '^#' "$inv" | awk -F'\t' '$2 == "write" { print $1 }')"
+  [ -n "$writers" ] || return 0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    case " $MODEL_INVOCABLE_WRITERS " in *" $f "*) continue ;; esac
+    sed -n '/^---$/,/^---$/p' "$ROOT/$f" | grep -qE '^disable-model-invocation:[[:space:]]*true' \
+      || finding 17 "$f" "names a GlassFrog write tool but lacks 'disable-model-invocation: true' (#464)"
+  done < <(cd "$ROOT" && git ls-files 'commands/*.md' \
+    | xargs -r grep -lwF -f <(printf '%s\n' "$writers") 2>/dev/null)
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -951,5 +980,6 @@ check_surface_map
 check_constitution_citations
 check_decision_keys
 check_picker_path
+check_user_only_writers
 
 check_common_summarize "skills-lint"
