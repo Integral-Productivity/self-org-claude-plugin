@@ -638,10 +638,11 @@ check_state_names() {
 #
 # Matched: the old command prefix, the old MCP tool prefix, an install line
 # (`holacracy@`), a `"name": "holacracy"` manifest value, and any
-# `holacracy-<x>` / `holacratic-<x>` identifier. Not matched: the repository
-# slug `holacracy-claude-plugin`, which keeps its name until it is renamed on
-# GitHub, and an ADR filename inside a link (`0005-holacracy-...`), which is a
-# historical record. Descriptive prose ("Holacracy", "Holacratic") is not an
+# `holacracy-<x>` / `holacratic-<x>` identifier, and the repository's former
+# slug `holacracy-claude-plugin` anywhere, URLs included. The repo was renamed on GitHub; the
+# old slug resolves only through a redirect, which breaks the day another repo
+# takes the name (#463). Not matched: an ADR filename inside a link
+# (`0005-holacracy-...`), which is a historical record. Descriptive prose ("Holacracy", "Holacratic") is not an
 # identifier and stays. A file that must name an old identifier -- the
 # migration note -- is allowlisted by pair in evals/legacy-names-allow.txt.
 # ---------------------------------------------------------------------------
@@ -666,13 +667,12 @@ check_legacy_names() {
   skipped 12 && return 0
   local line f n tok hits
   hits="$(cd "$ROOT" && _legacy_files | xargs -r grep -noE \
-    '/holacracy:|mcp__plugin_holacracy_|holacracy@|"name": *"holacracy"|(^|[^/0-9A-Za-z-])holacra(cy|tic)-[a-z][a-z-]*' 2>/dev/null)"
+    '/holacracy:|mcp__plugin_holacracy_|holacracy@|"name": *"holacracy"|holacracy-claude-plugin|(^|[^/0-9A-Za-z-])holacra(cy|tic)-[a-z][a-z-]*' 2>/dev/null)"
   while IFS= read -r line; do
     [ -n "$line" ] || continue
     # Split by hand: `IFS=: read` would drop the trailing colon of `/holacracy:`.
     f="${line%%:*}"; line="${line#*:}"; n="${line%%:*}"; tok="${line#*:}"
     tok="${tok#"${tok%%[/m\"h]*}"}"   # drop the one leading boundary character
-    [ "$tok" = "holacracy-claude-plugin" ] && continue
     _legacy_allowed "$f" "$tok" && continue
     finding 12 "$f:$n" "$tok is the plugin's pre-1.0 name; use self-org (ADR-0020)"
   done <<< "$hits"

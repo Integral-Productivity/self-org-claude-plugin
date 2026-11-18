@@ -73,13 +73,13 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
 
 `processed` is currently reserved for **catch-up only**: tensions resolved in a real governance or tactical meeting but never marked in GlassFrog. Do not use it to clear the backlog; that would lie about whether the tension was actually worked.
 
-This option is on loan. Once `/self-org:process-tension` ships ([#160](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/160)) it moves there, along with a wider and more honest rule — a tension is `processed` when it has produced a durable output, whether in a prior meeting or in the session at hand. It lives here in the meantime so that meeting-day catch-up does not require the GlassFrog UI.
+This option is on loan. Once `/self-org:process-tension` ships ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)) it moves there, along with a wider and more honest rule — a tension is `processed` when it has produced a durable output, whether in a prior meeting or in the session at hand. It lives here in the meantime so that meeting-day catch-up does not require the GlassFrog UI.
 
 ## Where this command stops
 
 Triage decides readiness. It does not decide disposition — it will not write a proposal, convert a tension to a project or action, or repair the artifact a tension complains about. Those are outputs, and outputs are `/self-org:process-tension`'s job.
 
-That boundary is the point of the command, not a limitation of it. But it is a boundary with a gap in it right now: **`/self-org:process-tension` has not shipped yet** ([#160](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/160)). Until it does, a tension this command marks ready has no automated next surface. Say so honestly rather than quietly widening scope to fill the gap — that quiet widening is exactly what produced the conflation this split exists to undo.
+That boundary is the point of the command, not a limitation of it. But it is a boundary with a gap in it right now: **`/self-org:process-tension` has not shipped yet** ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it does, a tension this command marks ready has no automated next surface. Say so honestly rather than quietly widening scope to fill the gap — that quiet widening is exactly what produced the conflation this split exists to undo.
 
 For the one case where a disposition surface already exists — a tension that should become a project — hand off to `/self-org:capture-project`.
 

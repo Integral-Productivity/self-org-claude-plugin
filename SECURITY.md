@@ -4,7 +4,7 @@
 
 Do not open a public issue for a security problem.
 
-Use GitHub's private reporting form: <https://github.com/Integral-Productivity/holacracy-claude-plugin/security/advisories/new>.
+Use GitHub's private reporting form: <https://github.com/Integral-Productivity/self-org-claude-plugin/security/advisories/new>.
 Only the maintainers can read what you send there.
 
 Include:

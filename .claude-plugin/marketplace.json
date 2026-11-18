@@ -12,7 +12,7 @@
       "name": "self-org",
       "source": {
         "source": "github",
-        "repo": "Integral-Productivity/holacracy-claude-plugin",
+        "repo": "Integral-Productivity/self-org-claude-plugin",
         "ref": "stable"
       },
       "description": "Engage with Holacracy — Facilitator, Secretary, Lead Link, Rep Link co-pilots, a governance-aware operating frame, and the GlassFrog MCP connector."

@@ -49,7 +49,7 @@ This is a distinct class of inbox debt: **authority parked as though it needed s
 
 **Confirmation, not automation.** Recognising that authority exists is a reading; acting on it is a write. Surface the reading, let the user decide, and never convert or archive without an explicit per-item keystroke.
 
-> **Note on dispatch.** The disposition this gate produces -- "convert to project," "convert to action," "repair the artifact directly" -- is the province of `/self-org:process-tension`, which does not exist yet ([#160](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/160)). Until it ships, hand the project case to `/self-org:capture-project` and name the rest honestly for the user to act on.
+> **Note on dispatch.** The disposition this gate produces -- "convert to project," "convert to action," "repair the artifact directly" -- is the province of `/self-org:process-tension`, which does not exist yet ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it ships, hand the project case to `/self-org:capture-project` and name the rest honestly for the user to act on.
 
 ---
 
@@ -86,7 +86,7 @@ Reframing a person tension as a role tension, or partitioning a blended one, cha
 - **A reframed tension is still a tension.** Passing this gate by reframing does not exempt the write from anything downstream. It goes through the same per-tension confirmation in `./tension-capture-flow.md` Step 6, on the same terms as a tension that arrived structural.
 - **If the user's framing survives your reframe, the reframe was wrong.** The test is whether they would recognise their own tension in the body you drafted. Ask; do not assume.
 
-**Observed failure mode.** Given *"the person filling ◎Campaign Delivery keeps committing to launch dates and then missing them without telling anyone,"* two of three graded sessions rewrote the body as a notification gap and filed it with no confirmation block and no mention that the person half had been dropped. The grader's words for one of them: *"silently laundered the person complaint into a role-shaped one and filed it."* The reframe itself was defensible -- the notification gap is real and does survive a change of filler. Performing it silently, and treating a successful reframe as licence to write, was not. See [#208](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/208).
+**Observed failure mode.** Given *"the person filling ◎Campaign Delivery keeps committing to launch dates and then missing them without telling anyone,"* two of three graded sessions rewrote the body as a notification gap and filed it with no confirmation block and no mention that the person half had been dropped. The grader's words for one of them: *"silently laundered the person complaint into a role-shaped one and filed it."* The reframe itself was defensible -- the notification gap is real and does survive a change of filler. Performing it silently, and treating a successful reframe as licence to write, was not. See [#208](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/208).
 
 ### Blended tensions -- partition the body, don't fuse or refuse
 

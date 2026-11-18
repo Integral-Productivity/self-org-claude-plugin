@@ -466,15 +466,22 @@ printf '| `needs-info` | also a verdict |\n' >> "$TMP/c11c/skills/shared/project
 git -C "$TMP/c11c" add -A && git -C "$TMP/c11c" commit -qm c11c
 _assert_load_bearing 11 "$TMP/c11c" "name in both the state list and the verdict table"
 
-# 12. No pre-1.0 plugin name in a shipped surface (ADR-0020). The repo slug and
-#     an ADR filename in a link are not identifiers and must pass.
+# 12. No pre-1.0 plugin name in a shipped surface (ADR-0020). An ADR filename
+#     in a link is a historical record, not an identifier, and must pass.
 _fixture "$TMP/c12a"
-printf '\nClone holacracy-claude-plugin; see [the seam](docs/adr/0005-holacracy-identity.md).\n' >> "$TMP/c12a/skills/demo/SKILL.md"
+printf '\nSee [the seam](docs/adr/0005-holacracy-identity.md).\n' >> "$TMP/c12a/skills/demo/SKILL.md"
 mkdir -p "$TMP/c12a/docs/adr" && printf '# ADR\n' > "$TMP/c12a/docs/adr/0005-holacracy-identity.md"
 git -C "$TMP/c12a" add -A && git -C "$TMP/c12a" commit -qm c12a
 SKILLS_LINT_ROOT="$TMP/c12a" bash "$LINT" >/dev/null 2>&1 \
-  || { SKILLS_LINT_ROOT="$TMP/c12a" bash "$LINT"; fail "check 12 flagged the repo slug or an ADR filename"; }
+  || { SKILLS_LINT_ROOT="$TMP/c12a" bash "$LINT"; fail "check 12 flagged an ADR filename"; }
 CASES=$((CASES + 1))
+
+# 12d. The repository's former slug (#463). GitHub redirects it today; the
+#      redirect breaks if another repo takes the name.
+_fixture "$TMP/c12d"
+printf '\nFiled as [#1](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/1).\n' >> "$TMP/c12d/skills/demo/SKILL.md"
+git -C "$TMP/c12d" add -A && git -C "$TMP/c12d" commit -qm c12d
+_assert_load_bearing 12 "$TMP/c12d" "former repo slug in a skill"
 
 # 12b. An old skill name in prose -- nothing else in the lint looks at it.
 _fixture "$TMP/c12b"
