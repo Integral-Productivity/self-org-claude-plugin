@@ -208,6 +208,23 @@ the eval exercises the real MCP path rather than a simulation of it.
 ± stddev and the delta. High-variance cases are flaky, not hard — treat a wide
 stddev as a defect in the case, not a finding about the skill.
 
+## Cadence and budget
+
+The graded job runs at two depths. Monday to Saturday at 07:00 UTC it runs
+nightly at `runs=1`: one measurement of each leg, enough to see a change by the
+next morning. Sunday at 07:00 UTC it runs weekly at `runs=3`: the run-to-run
+variance that the baseline and any flakiness read need. A `workflow_dispatch`
+keeps its `runs` input, default 3.
+
+Before any model call, the "Plan the graded run" step asks
+`run-behavioural-eval.py --plan-only` how many legs the cache below will **not**
+skip, and `scripts/eval-graded-budget.sh` prices only those against the job's
+one `timeout-minutes`. When that count is zero, nothing the evals measure has
+changed: the job writes a notice and a step summary, skips every paid step, and
+stays green. A run that cannot finish inside the timeout is refused in seconds,
+with the arithmetic. The cache key includes the Claude Code CLI version, and
+the job installs the latest CLI, so a new CLI release makes every leg fresh.
+
 ## Change-aware skip cache
 
 The nightly `graded` job (`.github/workflows/skills-eval.yml`) does not re-execute

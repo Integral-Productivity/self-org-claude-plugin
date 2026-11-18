@@ -448,6 +448,17 @@ jobs:
         # that neither direction's fixture trips the other.
         run: bash scripts/cache-key-completeness-check.test.sh
 
+      - name: eval-graded-budget regression suite
+        # The graded eval job's budget decision: how many runs an event gets,
+        # whether a run fits the job's timeout, and whether a night has any
+        # leg left to execute. It used to be inline in skills-eval.yml, where
+        # it ran only on the nightly and refused its own default every night
+        # for weeks after the case count grew (#467). Mutation-checked: each
+        # check has a mutant with only that check removed. The last section
+        # reads skills-eval.yml to check the graded job calls the script and
+        # gates its paid steps on the decision.
+        run: bash scripts/eval-graded-budget.test.sh
+
       - name: cache-key-completeness-check on this ref
         # The suite above proves the check works against fixtures. This runs
         # it against the actual run-behavioural-eval.py, which is the point.

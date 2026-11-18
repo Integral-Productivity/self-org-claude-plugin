@@ -36,7 +36,15 @@ on:
     # result is waiting at the start of the operator's day rather than landing
     # mid-morning. GitHub does not guarantee the minute; nothing here depends on
     # it.
-    - cron: "0 7 * * *"
+    #
+    # Two entries, one per depth (issue #467). Monday to Saturday is the
+    # nightly at runs=1: a cheap signal on each change. Sunday is the weekly at
+    # runs=3: the run-to-run variance the baseline needs. They never share a
+    # night, so neither queues behind the other. The "Plan the graded run" step
+    # tells them apart by github.event.schedule and names the weekly string
+    # again; scripts/eval-graded-budget.test.sh fails if the two differ.
+    - cron: "0 7 * * 1-6"
+    - cron: "0 7 * * 0"
   workflow_dispatch:
     inputs:
       runs:
@@ -100,9 +108,9 @@ jobs:
     # A timeout kills the job mid-step, so the whole budget is spent for no
     # benchmark.
     #
-    # THIS NUMBER IS READ AT RUNTIME, NOT JUST OBEYED (#205). The `runs` range
-    # check below parses it out of this file and derives the largest `runs`
-    # that can finish inside it. Before that, the two were unrelated numbers
+    # THIS NUMBER IS READ AT RUNTIME, NOT JUST OBEYED (#205). The "Plan the
+    # graded run" step below passes this file to scripts/eval-graded-budget.sh,
+    # which parses it out and refuses a run that cannot finish inside it. Before that, the two were unrelated numbers
     # describing one constraint: `runs` accepted 1–10 while `runs=10` at four
     # evals needs ~160 minutes and provably cannot finish — a contributor got a
     # 90-minute wait and a red run with no signal about why. Raising or
@@ -111,9 +119,15 @@ jobs:
     #
     # A YAML key cannot read an env var, so this literal is the single source
     # and the shell reads the file. Keep it the ONLY `timeout-minutes:` in this
-    # workflow — the range check asserts exactly one exists and fails loudly
+    # workflow — the budget check asserts exactly one exists and fails loudly
     # rather than silently reading the wrong job's ceiling.
-    timeout-minutes: 90
+    #
+    # 150, not 90 (issue #467). The weekly runs=3 with every leg fresh needs
+    # about 120 minutes by the measured rate, and its cache keys never match
+    # the nightly's (runs is a key input), so at 90 it would refuse every
+    # Sunday. The nightly's cost does not move with this number: the budget
+    # check prices only the legs the cache will not skip, at runs=1.
+    timeout-minutes: 150
     # Overrides the workflow's top-level `contents: read`, scoped to THIS job
     # only — `offline` and every other job in this file stays read-only. The
     # cache index push at the end of this job is a direct commit to the
@@ -286,88 +300,86 @@ jobs:
           echo "CACHE_INDEX_WORKTREE=$WORKTREE" >> "$GITHUB_ENV"
           echo "CACHE_INDEX_PATH=$WORKTREE/cache-index.json" >> "$GITHUB_ENV"
 
-      - name: Run the behavioural evals
+      - name: Plan the graded run
+        id: plan
         if: steps.key.outputs.present == 'true'
+        # Decides, before any model call, how many runs this event gets and
+        # whether there is anything to measure at all (issue #467).
+        #
+        # The old guard priced every leg as fresh. The change-aware cache skips
+        # every leg whose key has not changed, so on a quiet night the guard
+        # could refuse a run that would execute nothing, and a run that did
+        # execute nothing left the aggregator no grading.json to read. Now the
+        # runner's --plan-only counts the legs the cache will NOT skip, with the
+        # same key and freshness rule the eval step uses, and only those are
+        # priced. Zero means nothing the evals measure has changed: the paid
+        # steps below are skipped and the job stays green.
+        #
+        # runs is resolved first because it is one of the key's inputs. The
+        # same model and case list as the eval step are passed for the same
+        # reason: a key computed from other inputs would count every leg fresh,
+        # and the skip would never fire.
+        #
+        # The arithmetic lives in scripts/eval-graded-budget.sh, not here, so
+        # scripts/eval-graded-budget.test.sh checks every branch on every PR.
+        # Inline, it ran only on the nightly, and refused its own default every
+        # night for weeks after the case count grew.
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          RUNS_INPUT: ${{ inputs.runs }}
+          # Same fallback as the eval step: `inputs` is empty on a schedule.
+          MODEL: ${{ inputs.model || 'claude-sonnet-5' }}
+        run: |
+          set -euo pipefail
+          # Must equal the weekly entry under on.schedule.
+          WEEKLY_CRON="0 7 * * 0"
+          RUNS=$(bash scripts/eval-graded-budget.sh resolve --event "$EVENT" \
+            --schedule "$SCHEDULE" --weekly-cron "$WEEKLY_CRON" \
+            --runs-input "$RUNS_INPUT" | sed -n 's/^runs=//p')
+
+          args=()
+          for f in evals/cases/*/evals.json; do args+=(--case "$f"); done
+          if [ -n "$MODEL" ]; then args+=(--model "$MODEL"); fi
+          if [ -n "${CACHE_INDEX_PATH:-}" ]; then args+=(--cache-index "$CACHE_INDEX_PATH"); fi
+          PLAN=$(python3 scripts/run-behavioural-eval.py --out "$RUNNER_TEMP/plan" \
+            --plan-only --runs "$RUNS" "${args[@]}")
+          FRESH=$(python3 -c 'import json,sys;print(json.loads(sys.argv[1])["fresh_legs"])' "$PLAN")
+          CACHED=$(python3 -c 'import json,sys;print(json.loads(sys.argv[1])["cached_legs"])' "$PLAN")
+          echo "runs=$RUNS: $FRESH legs would execute, $CACHED would be reused from the cache"
+
+          ACTION=$(bash scripts/eval-graded-budget.sh decide --runs "$RUNS" \
+            --fresh-legs "$FRESH" --workflow .github/workflows/skills-eval.yml \
+            | sed -n 's/^action=//p')
+          echo "runs=$RUNS" >> "$GITHUB_OUTPUT"
+          echo "action=$ACTION" >> "$GITHUB_OUTPUT"
+
+          if [ "$ACTION" = "skip" ]; then
+            echo "::notice title=Graded evals skipped::No leg would execute at runs=$RUNS: all $CACHED have a fresh cache entry under a key that has not changed. Nothing the evals measure has changed, so this run would cost model calls and add no signal."
+            {
+              echo "## Graded evals skipped: nothing changed"
+              echo
+              echo "At \`runs=$RUNS\`, all $CACHED legs have a fresh, successful cache entry"
+              echo "under a key that has not changed. The key covers the skills, shared"
+              echo "references, commands, agents, cases, fixtures, the stub, the runner,"
+              echo "\`runs\`, the model and the CLI version. No model call was made."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Run the behavioural evals
+        if: steps.key.outputs.present == 'true' && steps.plan.outputs.action == 'run'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          RUNS: ${{ inputs.runs || '3' }}
+          # Resolved, validated and budgeted by the "Plan the graded run" step.
+          RUNS: ${{ steps.plan.outputs.runs }}
           # The `|| ` fallback is not cosmetic: `inputs` is EMPTY on a schedule
           # event, so a default declared on the workflow_dispatch input alone
           # would leave the nightly run — the only one that runs unattended —
           # unpinned, which is exactly the configuration that produced the
-          # confounded run 31229964963. Same reason RUNS carries one.
+          # confounded run 31229964963.
           MODEL: ${{ inputs.model || 'claude-sonnet-5' }}
         run: |
           set -euo pipefail
-          # Both are workflow_dispatch inputs, so they reach the shell only as
-          # environment variables and are never interpolated into the command
-          # line. RUNS is additionally range-checked: it is passed to a loop that
-          # spends money AND has a wall-clock ceiling.
-          case "$RUNS" in
-            ''|*[!0-9]*) echo "runs must be a positive integer, got '$RUNS'" >&2; exit 1 ;;
-          esac
-
-          # The upper bound is DERIVED, not a constant (#205). It used to be a
-          # flat 10 sitting next to an unrelated timeout-minutes, and the two
-          # described one constraint: at four evals, runs=10 needs ~160 minutes
-          # against a 90-minute ceiling. It could not finish, and the range
-          # check accepted it anyway — 90 minutes of spend for a red run with
-          # no signal about why. Deriving it converts that into a two-second
-          # refusal showing the arithmetic.
-          #
-          # MINUTES_PER_EXECUTION is the measured rate: run 31053788703 spent
-          # ~36 minutes on 3 evals × 3 runs × 2 configs = 18 executions.
-          # OVERHEAD_MINUTES covers everything either side of the loop —
-          # checkout, node, the CLI install, the aggregator fetch, aggregate,
-          # report, upload — plus slack for a slow runner.
-          MINUTES_PER_EXECUTION=2
-          OVERHEAD_MINUTES=10
-          CONFIGS=2   # with_skill, without_skill — run-behavioural-eval.py's DEFAULT_CONFIGS
-
-          # Read the ceiling out of this file rather than restating it, so the
-          # job's timeout and this bound cannot drift apart. Exactly one
-          # timeout-minutes must exist; more than one and we would be silently
-          # deriving from the wrong job.
-          WORKFLOW=.github/workflows/skills-eval.yml
-          timeouts=$(grep -cE '^[[:space:]]*timeout-minutes:' "$WORKFLOW")
-          if [ "$timeouts" -ne 1 ]; then
-            echo "expected exactly one timeout-minutes in $WORKFLOW, found $timeouts;" >&2
-            echo "the runs ceiling is derived from it and cannot tell which job it belongs to" >&2
-            exit 1
-          fi
-          TIMEOUT_MINUTES=$(grep -E '^[[:space:]]*timeout-minutes:' "$WORKFLOW" | tr -dc '0-9')
-
-          # Counted from the case files, not from a number kept in step with
-          # them by hand — #201 was a whole eval silently vanishing, and a
-          # hard-coded count would make the ceiling wrong in exactly that case.
-          EVALS=$(python3 -c 'import glob,json;print(sum(len(json.load(open(f))["evals"]) for f in glob.glob("evals/cases/*/evals.json")))')
-          BUDGET=$((TIMEOUT_MINUTES - OVERHEAD_MINUTES))
-          PER_RUN=$((MINUTES_PER_EXECUTION * EVALS * CONFIGS))
-          MAX_RUNS=$((BUDGET / PER_RUN))
-
-          # The original flat 10 was a SPEND guard, and wall clock has not
-          # replaced it. Keep whichever binds first: a shrinking case count
-          # must not quietly license a 20-run dispatch.
-          SPEND_CAP=10
-          if [ "$MAX_RUNS" -gt "$SPEND_CAP" ]; then MAX_RUNS=$SPEND_CAP; fi
-
-          echo "$EVALS evals × $CONFIGS configs at ~${MINUTES_PER_EXECUTION}min each" \
-               "= ${PER_RUN}min per run; ${BUDGET}min usable of ${TIMEOUT_MINUTES}" \
-               "(spend cap $SPEND_CAP) => runs may be 1..$MAX_RUNS"
-
-          if [ "$MAX_RUNS" -lt 1 ]; then
-            echo "::error::even runs=1 needs ~${PER_RUN}min against a ${BUDGET}min budget." >&2
-            echo "Raise timeout-minutes in $WORKFLOW, or reduce the case count." >&2
-            exit 1
-          fi
-          if [ "$RUNS" -lt 1 ] || [ "$RUNS" -gt "$MAX_RUNS" ]; then
-            echo "::error::runs must be between 1 and $MAX_RUNS, got '$RUNS'." >&2
-            echo "runs=$RUNS needs ~$((RUNS * PER_RUN))min against a ${BUDGET}min budget" \
-                 "(timeout-minutes: $TIMEOUT_MINUTES, minus ${OVERHEAD_MINUTES}min overhead)." >&2
-            echo "Raise timeout-minutes in $WORKFLOW if this run is genuinely wanted." >&2
-            exit 1
-          fi
-
           args=()
           for f in evals/cases/*/evals.json; do args+=(--case "$f"); done
           # Pinned, not defaulted-to-the-CLI. With --model absent each session
@@ -388,7 +400,7 @@ jobs:
             --out "$RUNNER_TEMP/benchmark" --runs "$RUNS" "${args[@]}"
 
       - name: Aggregate
-        if: steps.key.outputs.present == 'true'
+        if: steps.key.outputs.present == 'true' && steps.plan.outputs.action == 'run'
         # The aggregator defaults every metadata field to a literal placeholder
         # — `<skill-name>`, `<path/to/skill>`, `<model-name>` — and run
         # 31053788703 shipped all four (#203). A committed baseline that names
@@ -509,7 +521,7 @@ jobs:
           fi
 
       - name: Report against the committed baseline
-        if: steps.key.outputs.present == 'true'
+        if: steps.key.outputs.present == 'true' && steps.plan.outputs.action == 'run'
         # Informational only. #173 owns turning a delta into an alarm.
         #
         # continue-on-error because "informational" has to mean it. This step
@@ -563,7 +575,7 @@ jobs:
         # not be able to destroy work upstream of it either. Guarded on
         # steps.key.outputs.present so a keyless night (no ANTHROPIC_API_KEY)
         # has nothing to push.
-        if: always() && steps.key.outputs.present == 'true'
+        if: always() && steps.key.outputs.present == 'true' && steps.plan.outputs.action == 'run'
         # Committed under the standard github-actions[bot] identity. This
         # repo's other automated writers — release-please, the App-based
         # promote-stable — use release-please-action or a dedicated GitHub
@@ -625,7 +637,7 @@ jobs:
         # this step was skipped when a cosmetic reporting bug failed above it,
         # and a complete successful run was lost outright (#199). Whatever the
         # run produced before dying is worth keeping.
-        if: always() && steps.key.outputs.present == 'true'
+        if: always() && steps.key.outputs.present == 'true' && steps.plan.outputs.action == 'run'
         uses: actions/upload-artifact@v7
         with:
           name: behavioural-benchmark

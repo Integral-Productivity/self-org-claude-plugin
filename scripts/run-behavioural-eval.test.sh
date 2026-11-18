@@ -2172,8 +2172,9 @@ OUT="$(run_plan "$TMP/idx-plan-hit.json" "$NOW" --configs with_skill)" \
 [ "$(plan_field "$OUT" cached_legs)" = "1" ] || fail "--plan-only did not count the cached leg: $OUT"
 [ "$(plan_field "$OUT" runs)" = "1" ] || fail "--plan-only did not report the runs it priced: $OUT"
 INVOCATIONS="$(wc -l < "$TMP/cache-invoke.log" | tr -d ' ')"
-[ "$INVOCATIONS" = "1" ] && grep -q -- "--version" "$TMP/cache-invoke.log" \
-  || { cat "$TMP/cache-invoke.log"; fail "--plan-only invoked the CLI for more than the --version probe"; }
+if [ "$INVOCATIONS" != "1" ] || ! grep -q -- "--version" "$TMP/cache-invoke.log"; then
+  cat "$TMP/cache-invoke.log"; fail "--plan-only invoked the CLI for more than the --version probe"
+fi
 # 16b. No side effects: the index is byte-identical and no eval dir exists.
 [ "$BEFORE" = "$(sha256sum < "$TMP/idx-plan-hit.json")" ] || fail "--plan-only modified the cache index"
 compgen -G "$TMP/out-plan/eval-*" >/dev/null && fail "--plan-only created an eval directory"
