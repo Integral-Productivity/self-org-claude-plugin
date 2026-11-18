@@ -875,6 +875,51 @@ check_constitution_citations() {
   done <<< "$lines"
 }
 
+# ---------------------------------------------------------------------------
+# Check 15 -- a menu key has one meaning in every walk (#460).
+#
+# Before skills/shared/decision-keys.md, `[a]` meant archive (a status change)
+# in three walks and apply (a new action) in review-project; `[c]` had three
+# meanings. A user who learned one walk could make the wrong write in another.
+#
+# The vocabulary is the Step 1 table of that file: `| \`[k]\` | \`label\` |`.
+# In every live file except the vocabulary itself, each `[k] label` that
+# follows the start of a line or whitespace must (a) use a key in the table and
+# (b) start with that key's label, word for word. Text after the label is free.
+# ---------------------------------------------------------------------------
+KEYS_FILE="skills/shared/decision-keys.md"
+
+_decision_keys() {  # prints "<key><TAB><label>" for each row of the key table
+  [ -f "$ROOT/$KEYS_FILE" ] || return 0
+  sed -nE 's/^\| `\[([a-z])\]` \| `([^`]+)` \|.*/\1	\2/p' "$ROOT/$KEYS_FILE"
+}
+
+check_decision_keys() {
+  skipped 15 && return 0
+  local vocab hits line f n text key rest label dup
+  vocab="$(_decision_keys)"
+  while IFS= read -r dup; do
+    [ -n "$dup" ] && finding 15 "$KEYS_FILE" "[$dup] is defined more than once; a key has one meaning"
+  done < <(cut -f1 <<< "$vocab" | sort | uniq -d)
+  hits="$(cd "$ROOT" && _live_md | grep -vxF "$KEYS_FILE" \
+    | xargs -r grep -HnoE '(^|[[:space:]])\[[a-z]\] [a-z]+( [a-z]+)*' 2>/dev/null)"
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    f="${line%%:*}"; line="${line#*:}"; n="${line%%:*}"; text="${line#*:}"
+    text="${text#"${text%%\[*}"}"
+    key="${text:1:1}"; rest="${text:4}"
+    label="$(awk -F'\t' -v k="$key" '$1 == k { print $2; exit }' <<< "$vocab")"
+    if [ -z "$label" ]; then
+      finding 15 "$f:$n" "[$key] is not a key in $KEYS_FILE; add it there with one meaning (#460)"
+      continue
+    fi
+    case "$rest" in
+      "$label"|"$label "*) ;;
+      *) finding 15 "$f:$n" "[$key] '$rest' here, but [$key] means '$label' in every walk ($KEYS_FILE)" ;;
+    esac
+  done <<< "$hits"
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -889,5 +934,6 @@ check_state_names
 check_legacy_names
 check_surface_map
 check_constitution_citations
+check_decision_keys
 
 check_common_summarize "skills-lint"

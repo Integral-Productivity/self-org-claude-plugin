@@ -45,12 +45,14 @@ Load three shared references at the start:
      Drafted fix: [the drafted fix, rendered per its kind]
 
      Apply as:
-       [a] apply         -> additive write on confirm (create-action / link-goal only)
-       [c] copy draft    -> advisory draft (reframe / archive) — you apply it in GlassFrog
+       [w] write         -> additive write on confirm (create-action / link-goal only)
+       [v] view draft    -> advisory draft (reframe / archive) — you apply it in GlassFrog
        [t] route tension -> dispatch tension-capture (scope-authority / assignment)
        [s] skip          -> no action on this finding
        [q] quit          -> stop the whole review, leave everything untouched
    ```
+
+   The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
 7. **Apply the confirmed fix** by its `write_class`:
    - **additive-on-confirm** (`create-action`, `link-goal`): fire the single call. `create-action` **must** pass `parent_project_id` (this project) plus the owning `role_id` and a concrete `description`, `status: "current"`. `link-goal` passes the chosen `goal_id` + `project_id`. Trust the returned id as the same-session confirmation -- do **not** list-back to verify (same propagation caveat as tensions).

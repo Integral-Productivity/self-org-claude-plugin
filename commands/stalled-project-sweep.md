@@ -33,7 +33,7 @@ Load the rubric `skills/shared/project-well-formedness.md` at the start — it d
    - **`stale` — primary signal:** a `current` project with **zero attached actions**. This is rubric dimension A2 restated: *a project without a next-action is stalled by definition.* No-action is the trigger.
    - **Age — corroborating only:** an old `created_at` (default **90 days**; override via the scope/threshold argument) *raises confidence* and is shown in the finding, but **never trips `stale` on its own.** A project with a live next-action is not stale no matter how old it is; an action-less project two weeks old is a weaker `stale` than an action-less project a year old, and the finding says so.
    - **`blocked`:** `status: "waiting"` — a first-class signal the rubric reserves for this sweep. Present it as `blocked`, not `stale`: the project isn't neglected, it's waiting on something. The re-energize/archive offer still applies (the dependency may be dead), but the framing is different.
-     When a `waiting` project carries the `needs-info` triage tag, or its last triage line routes `needs-info`, it is waiting on an answer `/self-org:project-triage` recorded (ADR-0022). Show that line's question and who must answer, and point to `/self-org:project-triage needs-info`, which records the answer and moves the project back to `current`. `[e]` here adds an action but leaves the project `waiting`; only the resolution mode moves it.
+     When a `waiting` project carries the `needs-info` triage tag, or its last triage line routes `needs-info`, it is waiting on an answer `/self-org:project-triage` recorded (ADR-0022). Show that line's question and who must answer, and point to `/self-org:project-triage needs-info`, which records the answer and moves the project back to `current`. `[u]` here adds an action but leaves the project `waiting`; only the resolution mode moves it.
    - **Exempt — never flagged:** `status: "someday"` and `status: "scheduled"`. These are *deliberately* not-now; treating them as stalled would punish correct backlog hygiene.
 
    **Be honest about the heuristic.** GlassFrog exposes **no last-touched timestamp** for a project. Staleness here is *inferred* from `created_at` plus action-absence — it cannot see a project that was actively discussed yesterday but never had an action attached. Say this out loud when presenting findings: a long-horizon project (a multi-quarter outcome that legitimately moves slowly) can look identical to an abandoned one. The user's per-item judgment is the real filter; the heuristic only decides what to *show* them.
@@ -51,16 +51,18 @@ Load the rubric `skills/shared/project-well-formedness.md` at the start — it d
                if this is a legitimately slow long-horizon project, defer it.
 
    Action:
-     [e] re-energize  -> draft a next-action, then create_action(role_id, parent_project_id, description, status: "current")
+     [u] unstick      -> draft a next-action, then create_action(role_id, parent_project_id, description, status: "current")
      [a] archive      -> update_project(proj_xxx, status: "archived")
      [d] defer         -> no action; leave it as-is
      [q] quit          -> stop the sweep; everything not yet acted on stays untouched
    ```
 
-   For `[e]`, draft the next-action *first* and show it, so the user confirms a concrete step rather than a blank promise — the same "make the next physical action explicit" discipline the rubric's A2 test applies.
+   The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
+
+   For `[u]`, draft the next-action *first* and show it, so the user confirms a concrete step rather than a blank promise — the same "make the next physical action explicit" discipline the rubric's A2 test applies.
 
 6. **Apply the user's decision:**
-   - `[e]` — `glassfrog_create_action` with `parent_project_id` (this project), the owning `role_id`, the drafted `description`, and `status: "current"`. Trust the returned id as the same-session confirmation — do **not** list-back to verify (same propagation caveat as tensions).
+   - `[u]` — `glassfrog_create_action` with `parent_project_id` (this project), the owning `role_id`, the drafted `description`, and `status: "current"`. Trust the returned id as the same-session confirmation — do **not** list-back to verify (same propagation caveat as tensions).
    - `[a]` — `glassfrog_update_project(project_id, status: "archived")`. This is the one lifecycle write the sweep performs.
    - Surface any write failure honestly — never swallow it: *"I couldn't apply that — GlassFrog returned [error]. The draft is still here; retry or adjust?"*
 
@@ -70,7 +72,7 @@ Load the rubric `skills/shared/project-well-formedness.md` at the start — it d
 
 - **Per-item decision — never batched.** Each project is its own confirm. `[q]` stops the whole sweep; everything not yet acted on stays untouched.
 - **Never auto-archive.** Archiving always requires an explicit per-item keystroke. The heuristic decides what to *surface*; only the human decides what to retire.
-- **Conservative bias.** When a `stale` verdict is thin (action-less but recent, or a plausibly-slow long-horizon outcome), lean toward recommending `[e]` or `[d]` over `[a]`. Retiring a live-but-slow project is the costly false positive; leaving a dead one one more cycle is cheap.
+- **Conservative bias.** When a `stale` verdict is thin (action-less but recent, or a plausibly-slow long-horizon outcome), lean toward recommending `[u]` or `[d]` over `[a]`. Retiring a live-but-slow project is the costly false positive; leaving a dead one one more cycle is cheap.
 - **Archive over delete — always.** The sweep never calls `glassfrog_delete_project`. Archive is the soft-collapse; a mistakenly-archived project is recoverable, a deleted one is not.
 - **Degrade gracefully.** If a read tool is unavailable on an older MCP server, name the constraint and sweep with what you have (*"Your GlassFrog MCP server doesn't return actions inline yet — I can't detect the no-action signal, so I'll flag on age and `waiting` status only, less reliably."*).
 

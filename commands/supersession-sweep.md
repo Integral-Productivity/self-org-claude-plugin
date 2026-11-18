@@ -40,8 +40,10 @@ This command is also offered implicitly by the `self-org-ai-governance` skill wh
      [a] archive A   -> update_tension(ten_xxx, status: "archived")
      [m] merge into B -> update_tension(ten_yyy, body: "<original B body>\n\nAlso: <A specifics>") and archive A
      [k] keep both    -> no action
-     [r] reverse (subsume B into A) -> swap roles, retry
+     [x] exchange A and B (subsume B into A) -> swap roles, retry
    ```
+
+   The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
 5. **Apply the user's decision** via `glassfrog_update_tension` calls. For `m` (merge), the merge is two calls: update B's body, then archive A.
 6. **Summarize at the end.** Number of pairs detected, number archived, number merged, number kept.

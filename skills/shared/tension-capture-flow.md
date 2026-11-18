@@ -101,6 +101,8 @@ Suggested venue: [governance | tactical | either]   (annotation only, not stored
 File this? [y] yes  [e] edit  [n] no
 ```
 
+The keys follow `./decision-keys.md`, the one key vocabulary for every menu.
+
 The user can:
 
 - **y / yes** -> Proceed to Step 7.

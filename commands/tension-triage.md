@@ -39,7 +39,7 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
    Filed:   [created_at, if available]
 
    [If the authority pre-scan flagged it: "◎[Role] already holds [domain / accountability].
-    This may not need a meeting at all — see [c]."]
+    This may not need a meeting at all — see [h]."]
 
    [If a supersession candidate is flagged: "May overlap with: [other tension excerpt]
     (ten_yyy). Apply the supersession test (gates Step 4)?"]
@@ -49,11 +49,13 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
    Ready to process, or not:
      [a] archive false positive  -> update_tension(status: "archived")
      [e] edit body               -> update_tension(body: ...)
-     [c] authority already held  -> name it; offer conversion; archive on confirmation
+     [h] authority held          -> name it; offer conversion; archive on confirmation
      [p] mark processed          -> update_tension(status: "processed")  (catch-up only — see below)
      [d] defer / leave           -> no action
      [q] quit                    -> stop, leave remaining tensions in place
    ```
+
+   The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
 
 7. **Call the appropriate `glassfrog_update_tension`** for the user's decision. Surface any error honestly: `update_tension` failures must not be silently swallowed.
 
@@ -63,7 +65,7 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
 
 - This command operates on **existing** tensions. To capture a *new* one, use `/self-org:capture-tension` (cross-role, out-of-meeting) or `/self-org:tactical` (in-meeting Secretary capture).
 - **Per-tension decision — never batched.** The user can quit at any point (`q`) and the remaining tensions stay unprocessed.
-- **`[c]` is a reading, not an automation.** Recognising that authority already exists is an interpretation; acting on it is a write. Name what the role holds, offer the conversion, and let the user decide. Never convert or archive without an explicit keystroke.
+- **`[h]` is a reading, not an automation.** Recognising that authority already exists is an interpretation; acting on it is a write. Name what the role holds, offer the conversion, and let the user decide. Never convert or archive without an explicit keystroke.
 - **Edit-body (`[e]`) is what *makes* a tension ready.** "Well-formed" means the checks in `skills/shared/tension-well-formedness.md`: when a body is not ready, name the failing check (for example "T2, concrete instance") and draft the `[e]` replacement so it passes. Leave a passing body alone. Front-load the topic in the first sentence; partition a blended tension per gates Step 2; prepend `[GOVERNANCE]` or `[TACTICAL]` if the user wants the venue encoded in the record.
 - **Archive (`[a]`) is reversible** — the tension still exists with `status: "archived"`. Deletion is permanent and this command does not offer it. When a tension is superseded *structurally*, write the successor first, then archive: archiving alone can drop a live exposure no other record carries.
 - **Meeting venue is annotation, not an API field.** `meeting_type` is exposed in the `update_tension` schema and returned in every response, but **the write is rejected with 422** — alone, with `status`, and with `body`; the identical call minus the field succeeds. It is settable in the GlassFrog UI only. See [glassfrog-mcp-server#123 (comment)](https://github.com/Integral-Productivity/glassfrog-mcp-server/issues/123#issuecomment-5149496749), which corrects that issue's body. The `[GOVERNANCE]`/`[TACTICAL]` body prefix is not a workaround for a stale constraint — it is the only mechanism the API offers.

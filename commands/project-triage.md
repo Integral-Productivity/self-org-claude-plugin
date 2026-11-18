@@ -74,6 +74,8 @@ Load two shared references at the start:
      [q] quit                 -> stop; the rest stay as they are
    ```
 
+   The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
+
    For a `needs-info` draft, decide who must answer by `project-triage-gates.md` Step 5: the owner role keeps `current`; another role, circle, or outside party drafts `status: waiting`; when unclear, the owner. The user corrects the addressee before the write like any other part of the draft.
 
    In the **resolution mode**, show the open question first, before any draft route:
@@ -89,7 +91,7 @@ Load two shared references at the start:
 
    - **A gate fails** (the answer says the outcome is done, duplicated, or superseded) → `[c]` or `[a]` as usual.
    - **There is a next action** → route to `ready-for-agent` or `ready-for-human`; a `waiting` project returns to `current` in the same note write.
-   - **Still no next action** → the route stays `needs-info` with the note line `needs-info -- answered; add first action: <draft> (<owner role>)` and status `current`. The owner adds the action in GlassFrog or with `/self-org:stalled-project-sweep` `[e]`; the next standard pass sees the project once it moves. If the answer shows someone else must still act, keep or set `waiting` with a `(waits on ...)` line instead.
+   - **Still no next action** → the route stays `needs-info` with the note line `needs-info -- answered; add first action: <draft> (<owner role>)` and status `current`. The owner adds the action in GlassFrog or with `/self-org:stalled-project-sweep` `[u]`; the next standard pass sees the project once it moves. If the answer shows someone else must still act, keep or set `waiting` with a `(waits on ...)` line instead.
 
    A gate failure offers `[c]` and `[a]` instead of `[w]`. A project on a role the actor does not fill offers `[r]`, `[d]` and `[q]` only. When the user disagrees with the draft, take their route and reason instead, as long as the state is in the closed list.
 
@@ -124,7 +126,7 @@ Load two shared references at the start:
 
 ## Where this command stops
 
-Triage decides readiness. It does not reword an outcome, link a goal, or re-assign a role — those are quality findings, and `[r]` hands one project to `/self-org:review-project` for them. The standard pass drafts no next action. The resolution mode shows at most one labeled `Suggested first step (draft)` and names it in the answered note line; that is a deliberate, scoped exception to ADR-0018, and it never creates, rewords, or critiques an action. Creating the first next action belongs to `commit-action` ([#161](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/161)); until it ships, the owner adds the action in GlassFrog or with `/self-org:stalled-project-sweep` `[e]`. It does not create a successor project either: a superseded project whose successor does not exist yet is routed to `needs-info` with the successor as the open question, and `/self-org:capture-project` can file it.
+Triage decides readiness. It does not reword an outcome, link a goal, or re-assign a role — those are quality findings, and `[r]` hands one project to `/self-org:review-project` for them. The standard pass drafts no next action. The resolution mode shows at most one labeled `Suggested first step (draft)` and names it in the answered note line; that is a deliberate, scoped exception to ADR-0018, and it never creates, rewords, or critiques an action. Creating the first next action belongs to `commit-action` ([#161](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/161)); until it ships, the owner adds the action in GlassFrog or with `/self-org:stalled-project-sweep` `[u]`. It does not create a successor project either: a superseded project whose successor does not exist yet is routed to `needs-info` with the successor as the open question, and `/self-org:capture-project` can file it.
 
 ## Why this command exists
 

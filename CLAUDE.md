@@ -57,6 +57,8 @@ The plugin separates **tension readiness** (`/self-org:tension-triage` — is th
 
 `skills/shared/project-triage-gates.md` holds the four project reality gates (outcome reached, duplicate, superseded, owner role gone), the routing order, the timestamped note line, and the movement rule that decides when a `needs-info` project is shown again. It is loaded by `/self-org:project-triage` and is the project twin of `triage-gates.md`, kept separate because callers cite steps by number.
 
+`skills/shared/decision-keys.md` is the one vocabulary for per-item menu keys: every walk command and both capture flows cite it next to their menus. A key has one meaning everywhere; a new action gets a new key, never an existing one. `skills-lint.sh` check 15 fails a menu key or label the table does not hold. It exists because `[a]` meant *archive* in three walks and *apply* in `/self-org:review-project` (#460).
+
 `skills/shared/project-capture-flow.md` (the draft-and-confirm P-flow for filing a well-formed project at intake) is loaded by the `/self-org:capture-project` command and the `project-capture` subagent. It is the create-flow twin of `skills/shared/tension-capture-flow.md`; keep the two flows' constitutional-safeguard and confirmation-block conventions aligned.
 
 `skills/checklist-metric-audit/` audits a circle's checklist items and metrics against its purpose, accountabilities, and domains, then remediates directly through the GlassFrog MCP. It leans on the constitutional distinction that checklist items and metrics are **operational, not governance** (Art. 3.2), so — unlike governance edits — it applies changes without a proposal. Its companion command is `/self-org:audit-portfolio`. When an audit finding actually needs a new accountability or domain, it hands off to `/self-org:capture-tension` rather than papering over the gap.
@@ -88,7 +90,8 @@ triage-state names that are in the closed list, a work-item surface map with
 no empty lifecycle cell, no pre-1.0 plugin name in a shipped surface, and
 Constitution citations that name a real v5.0 section and the right one for the
 topic (check 14, against `evals/constitution-v5.0-sections.txt`, pinned to
-HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
+HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md))), and menu keys that keep one meaning in every walk (check 15, against
+`skills/shared/decision-keys.md`, [#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
 cloud sessions load, keeps the last version it accepted and every later release
 misses those sessions ([#368](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/368)).
 `claude plugin validate` does not check these limits.

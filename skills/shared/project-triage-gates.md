@@ -117,7 +117,7 @@ The note lines record each project. The pass as a whole is recorded as **one Gla
 |---|---|---|---|
 | [<description>](<web_url>) | <state, or status completed/archived/waiting> | <the reason from the note line> | <tension or action filed, or a drafted follow-up, or none> |
 
-**Findings.** <rubric Family A findings named during the pass, and any [r] hand-off to /self-org:review-project with its result when known; or none>
+**Findings.** <rubric Family A findings named during the pass, and any `[r]` review hand-off to /self-org:review-project with its result when known; or none>
 
 **Observations.** <patterns across the role's projects worth the role holder's attention; or none>
 ```

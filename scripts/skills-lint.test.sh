@@ -685,7 +685,46 @@ printf '\nSee S.4.1.\n' >> "$TMP/c14d/skills/demo/SKILL.md"
 git -C "$TMP/c14d" add -A && git -C "$TMP/c14d" commit -qm c14d
 _assert_load_bearing 14 "$TMP/c14d" "citation with no pinned section list"
 
-# 15. The real repository is clean. Fixtures prove the checks work; this proves
+# 15. A menu key keeps one meaning in every walk (#460). The fixture gets a
+#     two-row vocabulary and a command whose menu cites it.
+_keys_fixture() {  # $1 = destination dir
+  _fixture "$1"
+  cat > "$1/skills/shared/decision-keys.md" <<'EOF'
+# Decision Keys
+
+| Key | Label | Meaning | Write |
+|---|---|---|---|
+| `[a]` | `archive` | Set status archived. | status change |
+| `[w]` | `write` | Write the draft shown. | the draft shown |
+EOF
+  printf '\nKeys follow `skills/shared/decision-keys.md`.\n\n     [a] archive it   -> status archived\n     [w] write        -> the draft\n' \
+    >> "$1/commands/demo-cmd.md"
+}
+_keys_fixture "$TMP/c15a"
+git -C "$TMP/c15a" add -A && git -C "$TMP/c15a" commit -qm c15a
+SKILLS_LINT_ROOT="$TMP/c15a" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c15a" bash "$LINT"; fail "check 15 flagged keys that match the vocabulary"; }
+CASES=$((CASES + 1))
+
+# 15b. The #460 defect: [a] used for apply, a write that is not a status change.
+_keys_fixture "$TMP/c15b"
+printf '     [a] apply        -> create the action\n' >> "$TMP/c15b/skills/demo/SKILL.md"
+git -C "$TMP/c15b" add -A && git -C "$TMP/c15b" commit -qm c15b
+_assert_load_bearing 15 "$TMP/c15b" "key with a second meaning"
+
+# 15c. A key the vocabulary does not define, inline after other keys.
+_keys_fixture "$TMP/c15c"
+printf '\nFile this? [w] write  [z] zap\n' >> "$TMP/c15c/skills/demo/SKILL.md"
+git -C "$TMP/c15c" add -A && git -C "$TMP/c15c" commit -qm c15c
+_assert_load_bearing 15 "$TMP/c15c" "key not in the vocabulary"
+
+# 15d. The vocabulary itself defines a key twice.
+_keys_fixture "$TMP/c15d"
+printf '| `[a]` | `apply` | Create an action. | new action |\n' >> "$TMP/c15d/skills/shared/decision-keys.md"
+git -C "$TMP/c15d" add -A && git -C "$TMP/c15d" commit -qm c15d
+_assert_load_bearing 15 "$TMP/c15d" "key defined twice in the vocabulary"
+
+# 16. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))
