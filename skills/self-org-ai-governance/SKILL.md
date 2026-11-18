@@ -177,7 +177,7 @@ When you observe these patterns:
 
 When the user signals session closing ("done for now", "that's it for today", "wrapping up", "good enough"), and at least one tension was filed during this session, offer:
 
-> *"Before we close -- you can sweep the tensions filed this session for supersession with `/self-org:supersession-sweep`."*
+> *"Before we close -- you can sweep the tensions filed this session for supersession with `/self-org:tension-sweep`."*
 
 Name the command for the user to type; do not start it. It writes to GlassFrog, so it is user-only (`disable-model-invocation`, #464). Silent when no tensions were filed.
 

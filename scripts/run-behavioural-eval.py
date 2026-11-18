@@ -75,7 +75,7 @@ absolute path on the same disk in both configurations, and a `find /` gets to it
 `contamination_error` fails any control run whose visible tool calls name the
 checkout.
 
-That is a reduction, not a proof. `Task` is offered — `/self-org:capture-tension`
+That is a reduction, not a proof. `Task` is offered — `/self-org:sense-tension`
 dispatches a subagent and withholding it would measure a crippled plugin — and a
 subagent's own tool calls do not surface in the parent event stream, so a control
 run that delegated a filesystem search would not be caught. Stated rather than
@@ -127,7 +127,7 @@ PLUGIN_NAME = json.loads(
 
 # The built-in tools an eval session may use. `Skill` is the point of the list:
 # without it the plugin's skills are unreachable however they are loaded (#226).
-# `Task` is here because /self-org:capture-tension dispatches a subagent.
+# `Task` is here because /self-org:sense-tension dispatches a subagent.
 # `Bash`, `Glob`, `Grep` and `Write` are deliberately absent — see the module
 # docstring's note on what the control can reach.
 EVAL_TOOLS = "Skill,Task,Read"
@@ -184,14 +184,14 @@ DEFAULT_CONFIGS = ("with_skill", "without_skill")
 #                       discovered the same way skills-lint.sh check 1 proves
 #                       a load path resolves (see discover_shared_references).
 #   commands/*.md       every eval's `surface` field names a slash command
-#                       (e.g. `/self-org:capture-tension`), implemented here
+#                       (e.g. `/self-org:sense-tension`), implemented here
 #                       -- not under skills/<dir>, so nothing above hashes it.
 #                       Hashed as one whole-directory digest rather than a
 #                       per-surface mapping, matching the with_skill
 #                       skill_versions precedent of over- rather than
 #                       under-invalidating (R4).
 #   agents/*.md          a command can dispatch a subagent (e.g.
-#                       capture-tension.md -> the tension-capture subagent),
+#                       sense-tension.md -> the tension-capture subagent),
 #                       which can itself load skills/shared/*.md content no
 #                       skills/<dir>/{SKILL.md,references/*.md} ever cites --
 #                       content discover_shared_references cannot see because

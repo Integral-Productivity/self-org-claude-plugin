@@ -32,7 +32,7 @@ Cases are grouped by **surface**, not one file per case, so several golden cases
 that exercise the same command share a file. Three of the four live under
 `/self-org:tension-triage`, because that is where the gates they test are
 specified — including successor-before-archive, which reads like a job for
-`/self-org:supersession-sweep` and is not: that command handles supersession
+`/self-org:tension-sweep` and is not: that command handles supersession
 *between two tensions* and explicitly does not file new ones, while a tension
 superseded *structurally by a role* is Step 1 territory and triage's to act on.
 

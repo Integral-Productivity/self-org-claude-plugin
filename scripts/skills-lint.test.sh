@@ -121,6 +121,8 @@ EOF
 EOF
   printf '# allowlist\n' > "$d/evals/lint-allow-paths.txt"
   printf '# forward references\n' > "$d/evals/forward-references.txt"
+  printf 'verb commit\nwalk triage\nitem project\nitem tension\nfixed demo-cmd\nfixed rogue\nfixed wellformed\n' \
+    > "$d/evals/command-names.txt"
   printf '# inventory\nglassfrog_get_me\tread\nglassfrog_list_my_roles\tread\nglassfrog_get_role\tread\nglassfrog_create_tension\twrite\nglassfrog_set_project_tags\twrite\n' \
     > "$d/evals/glassfrog-tools.tsv"
   printf '# prefixes\nmcp__plugin_self-org_glassfrog-extended__  plugin\nmcp__GlassFrog_Extended__  cowork\n' \
@@ -636,7 +638,7 @@ CASES=$((CASES + 1))
 # 13m. The same gap in isolation: today's map with only the July
 #      Project x Readiness cell put back. It must be the one and only finding.
 _july_fixture "$TMP/c13m" "$(sed 's/| `project-triage` |/| |/' "$HERE/../docs/surface-map.md")"
-for c in tension-triage audit-portfolio; do printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c13m/commands/$c.md"; done
+for c in tension-triage sense-tension commit-project tension-sweep project-review project-sweep portfolio-audit; do printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c13m/commands/$c.md"; done
 git -C "$TMP/c13m" add -A && git -C "$TMP/c13m" commit -qm today
 got="$(_findings13 "$TMP/c13m" "")"
 if [ "$(printf '%s\n' "$got" | grep -c .)" != 1 ] || ! grep -q 'Project × Readiness is empty' <<< "$got"; then
@@ -754,7 +756,25 @@ SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT" >/dev/null 2>&1 \
   || { SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT"; fail "check 17 flagged a flagged command or an exempt triage walk"; }
 CASES=$((CASES + 1))
 
-# 18. The real repository is clean. Fixtures prove the checks work; this proves
+# 18. A command named in neither act-type shape (ADR-0028, #462). Then a
+#     name in each shape, and a deprecated alias, all pass.
+_fixture "$TMP/c18"
+printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c18/commands/capture-project.md"
+git -C "$TMP/c18" add -A && git -C "$TMP/c18" commit -qm c18
+_assert_load_bearing 18 "$TMP/c18" "command named in neither act-type shape"
+
+_fixture "$TMP/c18b"
+for c in commit-project project-triage; do
+  printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c18b/commands/$c.md"
+done
+printf -- '---\ndescription: Deprecated alias for /self-org:commit-project.\nargument-hint: [x]\n---\n' \
+  > "$TMP/c18b/commands/capture-project.md"
+git -C "$TMP/c18b" add -A && git -C "$TMP/c18b" commit -qm c18b
+SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT"; fail "check 18 flagged a well-named command or a deprecated alias"; }
+CASES=$((CASES + 1))
+
+# 19. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))

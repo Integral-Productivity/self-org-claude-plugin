@@ -2,9 +2,9 @@
 
 This is the canonical rubric for judging whether a GlassFrog **project** is well-formed and well-placed. It is the project-side analog of `triage-gates.md`. Loaded by:
 
-- `/self-org:review-project` -- the adversarial project-review panel (via `project-review-critics.md`, which turns each dimension below into a critic lens).
-- `/self-org:capture-project` -- the capture-time guardrail, which loads Family A only (via the `project-capture` subagent).
-- `/self-org:stalled-project-sweep` -- the stalled/blocked sweep, which owns the detection logic emitting this rubric's reserved `stale` and `blocked` states.
+- `/self-org:project-review` -- the adversarial project-review panel (via `project-review-critics.md`, which turns each dimension below into a critic lens).
+- `/self-org:commit-project` -- the capture-time guardrail, which loads Family A only (via the `project-capture` subagent).
+- `/self-org:project-sweep` -- the stalled/blocked sweep, which owns the detection logic emitting this rubric's reserved `stale` and `blocked` states.
 - `/self-org:project-triage` -- the readiness router, which loads the B3 executor-fit test only (via `project-triage-gates.md` Step 5) to choose between `ready-for-agent` and `ready-for-human`.
 
 Every project surface loads this file so "done enough" means one thing across the plugin. The rubric **describes**; it never auto-acts. Any fix it implies is drafted for a human to confirm.
@@ -71,16 +71,16 @@ A project's verdict is one state. When several apply, the verdict is the state o
 | State | Meaning | Family | Produced by |
 |---|---|---|---|
 | `well-formed` | Passes both families; no surviving findings | -- | any surface |
-| `needs-outcome` | Activity-framed, not an outcome (A1) | A | review-project, capture-project |
-| `needs-next-action` | No next-action defined (A2) | A | review-project, capture-project |
-| `needs-owner` | Owner role unclear (A3) | A | review-project, capture-project |
-| `needs-goal` | Serves no goal/target (B1) | B | review-project |
-| `out-of-authority` | Scope exceeds role authority (B2/B3) | B | review-project |
-| `executor-mismatch` | Next action's executor need (human or agent) doesn't match the role's fillers (B3 executor-fit) | B | review-project |
+| `needs-outcome` | Activity-framed, not an outcome (A1) | A | project-review, commit-project |
+| `needs-next-action` | No next-action defined (A2) | A | project-review, commit-project |
+| `needs-owner` | Owner role unclear (A3) | A | project-review, commit-project |
+| `needs-goal` | Serves no goal/target (B1) | B | project-review |
+| `out-of-authority` | Scope exceeds role authority (B2/B3) | B | project-review |
+| `executor-mismatch` | Next action's executor need (human or agent) doesn't match the role's fillers (B3 executor-fit) | B | project-review |
 | `stale` | No movement over time | -- | **sweep (#76) only** |
 | `blocked` | Waiting on an external dependency | -- | **sweep (#76) only** |
 
-`stale` and `blocked` require signals (age, `status: "waiting"`, no recent action) that belong to the sweep. `/self-org:review-project` never emits them.
+`stale` and `blocked` require signals (age, `status: "waiting"`, no recent action) that belong to the sweep. `/self-org:project-review` never emits them.
 
 ---
 

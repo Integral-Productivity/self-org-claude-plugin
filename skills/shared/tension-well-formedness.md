@@ -2,7 +2,7 @@
 
 This is the canonical rubric for judging whether a GlassFrog **tension body** is clear enough to act on. It is the tension-side twin of `project-well-formedness.md`. Loaded by:
 
-- `/self-org:capture-tension` and the `tension-capture` subagent -- the capture-time soft gate, run inside Step 4 of `./tension-capture-flow.md`, after the gates in Steps 1 and 2 of `./triage-gates.md`.
+- `/self-org:sense-tension` and the `tension-capture` subagent -- the capture-time soft gate, run inside Step 4 of `./tension-capture-flow.md`, after the gates in Steps 1 and 2 of `./triage-gates.md`.
 - `/self-org:tension-triage` -- the standard for "well-formed" and for the text that `[e] edit body` drafts.
 - `scripts/tension-lint.py` -- the command-line lint, which checks T6 and the length bound in code and asks Jev (TypeSafe's System One model) one Noul question for each of T1-T5 ([ADR-0024](../../docs/adr/0024-tensions-are-checked-for-well-formedness-by-one-rubric.md)).
 

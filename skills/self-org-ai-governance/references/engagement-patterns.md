@@ -280,7 +280,7 @@ Pattern 5 is gentle. The user is *working*, not auditing tensions. One offer per
 
 When the user signals session closing ("done for now", "that's it for today", "good enough", "wrapping up"), and tensions were filed during the session, offer:
 
-> *"Before we close -- you can sweep the tensions filed this session for supersession with `/self-org:supersession-sweep` (default `session` scope)."*
+> *"Before we close -- you can sweep the tensions filed this session for supersession with `/self-org:tension-sweep` (default `session` scope)."*
 
 Name the command for the user to type; do not start it. It writes to GlassFrog, so it is user-only (`disable-model-invocation`, #464). Silent when no tensions were filed.
 

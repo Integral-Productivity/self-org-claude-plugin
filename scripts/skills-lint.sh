@@ -964,6 +964,37 @@ check_user_only_writers() {
     | xargs -r grep -lwF -f <(printf '%s\n' "$writers") 2>/dev/null)
 }
 
+# Check 18 -- commands are named by act type (ADR-0028, #462).
+#
+# An authority act is <verb>-<item>, a backlog walk is <item>-<walk>, and a
+# session or reference command has a fixed name. The words are in
+# evals/command-names.txt. A deprecated alias is exempt by its description.
+# Before this check, 14 commands used four shapes and no row of the surface map
+# sorted together in the slash menu.
+# ---------------------------------------------------------------------------
+check_command_names() {
+  skipped 18 && return 0
+  local vocab="$ROOT/evals/command-names.txt" f name verbs walks items fixed ok v i
+  [ -n "$(cd "$ROOT" && git ls-files 'commands/*.md')" ] || return 0
+  [ -f "$vocab" ] || { finding 18 "evals/command-names.txt" "missing, but commands exist to name (ADR-0028)"; return 0; }
+  verbs="$(awk '$1 == "verb" { print $2 }' "$vocab")"
+  walks="$(awk '$1 == "walk" { print $2 }' "$vocab")"
+  items="$(awk '$1 == "item" { print $2 }' "$vocab")"
+  fixed="$(awk '$1 == "fixed" { print $2 }' "$vocab")"
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    name="$(basename "$f" .md)"
+    sed -n '/^---$/,/^---$/p' "$ROOT/$f" | grep -qE '^description:[[:space:]]*Deprecated alias for /self-org:' && continue
+    ok=""
+    grep -qxF "$name" <<< "$fixed" && ok=1
+    for i in $items; do
+      for v in $verbs; do [ "$name" = "$v-$i" ] && ok=1; done
+      for v in $walks; do [ "$name" = "$i-$v" ] && ok=1; done
+    done
+    [ -n "$ok" ] || finding 18 "$f" "'$name' fits no act type: name it <verb>-<item> or <item>-<walk> from evals/command-names.txt, or amend ADR-0028"
+  done < <(cd "$ROOT" && git ls-files 'commands/*.md')
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -981,5 +1012,6 @@ check_constitution_citations
 check_decision_keys
 check_picker_path
 check_user_only_writers
+check_command_names
 
 check_common_summarize "skills-lint"

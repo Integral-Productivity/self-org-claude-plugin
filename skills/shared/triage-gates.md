@@ -3,9 +3,9 @@
 This is the canonical set of gates any Holacratic tension passes through before the plugin captures, routes, or processes it. It is not a workflow -- it is the constitutional checks, in the order that makes each one worth asking. Loaded by:
 
 - The `tension-capture` subagent (every capture flow runs Gates 1--2 before drafting).
-- The `/self-org:capture-tension` slash command.
+- The `/self-org:sense-tension` slash command.
 - The `/self-org:tension-triage` slash command (readiness assessment over an existing backlog).
-- The `/self-org:supersession-sweep` slash command (Step 4 is the supersession check).
+- The `/self-org:tension-sweep` slash command (Step 4 is the supersession check).
 - The `self-org-ai-governance` skill (proactive tension sensing during conversation).
 - The `self-org-rep-link` skill, whose `../self-org-rep-link/references/tension-triage-guide.md` extends this with Rep-Link-specific escalation logic.
 
@@ -49,7 +49,7 @@ This is a distinct class of inbox debt: **authority parked as though it needed s
 
 **Confirmation, not automation.** Recognising that authority exists is a reading; acting on it is a write. Surface the reading, let the user decide, and never convert or archive without an explicit per-item keystroke.
 
-> **Note on dispatch.** The disposition this gate produces -- "convert to project," "convert to action," "repair the artifact directly" -- is the province of `/self-org:process-tension`, which does not exist yet ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it ships, hand the project case to the `project-capture` subagent (the `/self-org:capture-project` command is user-only, #464) and name the rest honestly for the user to act on.
+> **Note on dispatch.** The disposition this gate produces -- "convert to project," "convert to action," "repair the artifact directly" -- is the province of `/self-org:process-tension`, which does not exist yet ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it ships, hand the project case to the `project-capture` subagent (the `/self-org:commit-project` command is user-only, #464) and name the rest honestly for the user to act on.
 
 ---
 
@@ -187,7 +187,7 @@ So if the user wants the venue encoded *in the record itself*, the mechanism is 
 
 Grounding (an analogy, not a constitutional rule): v5.0 S.5.3.2(c) counts a concern as an objection only if "the concern does not already exist even in the absence of the Proposal" -- it must be a new tension, created by the proposal. The plugin applies the same independence test *between* tensions in the inbox. The Constitution does not rule on tension supersession: if Tension A would be fully addressed by resolving Tension B, then A is not a separate tension worth keeping.
 
-**Procedure** (especially for `/self-org:supersession-sweep` and during `/self-org:tension-triage`):
+**Procedure** (especially for `/self-org:tension-sweep` and during `/self-org:tension-triage`):
 
 1. List existing unprocessed tensions on the same role (or, for broad sweeps, on related roles in the same circle).
 2. For each candidate pair, ask: "Would Tension A still exist as a felt gap if Tension B were resolved?"

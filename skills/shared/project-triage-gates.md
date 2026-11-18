@@ -4,7 +4,7 @@ This is the canonical set of checks a GlassFrog **project** passes through durin
 
 - The `/self-org:project-triage` slash command, the only surface that writes a triage state, in both its standard pass and its `needs-info` resolution mode.
 
-Triage answers one question per project: **what does this project need next before anyone can act on it?** It does not judge quality. The five critic lenses belong to `/self-org:review-project`; triage never runs them and never drafts a reframe. See [ADR-0018](../../docs/adr/0018-separate-project-readiness-from-project-quality.md).
+Triage answers one question per project: **what does this project need next before anyone can act on it?** It does not judge quality. The five critic lenses belong to `/self-org:project-review`; triage never runs them and never drafts a reframe. See [ADR-0018](../../docs/adr/0018-separate-project-readiness-from-project-quality.md).
 
 Every step **drafts and never writes**. A write happens only after the user confirms that one project, and only in the shape Step 6 sets out.
 
@@ -34,7 +34,7 @@ Run the steps in order. **Stop at the first step that resolves the project.** St
 
 **Evidence.** The project's `role_id` no longer resolves (`glassfrog_get_role_context` returns not found).
 
-**Outcome.** Draft `status: archived` with a note line saying the role was removed. If the work still matters, say so and suggest `/self-org:capture-tension` for the role that should hold it; triage does not move projects between roles.
+**Outcome.** Draft `status: archived` with a note line saying the role was removed. If the work still matters, say so and suggest `/self-org:sense-tension` for the role that should hold it; triage does not move projects between roles.
 
 **An unfilled role is not a gate failure.** Its work sits with the Circle Lead until the role is filled. Route it at Step 5 to `needs-info`, naming the Circle Lead as the role that decides.
 
@@ -117,7 +117,7 @@ The note lines record each project. The pass as a whole is recorded as **one Gla
 |---|---|---|---|
 | [<description>](<web_url>) | <state, or status completed/archived/waiting> | <the reason from the note line> | <tension or action filed, or a drafted follow-up, or none> |
 
-**Findings.** <rubric Family A findings named during the pass, and any `[r]` review hand-off to /self-org:review-project with its result when known; or none>
+**Findings.** <rubric Family A findings named during the pass, and any `[r]` review hand-off to /self-org:project-review with its result when known; or none>
 
 **Observations.** <patterns across the role's projects worth the role holder's attention; or none>
 ```

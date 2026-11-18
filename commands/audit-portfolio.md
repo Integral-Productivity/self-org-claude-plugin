@@ -1,30 +1,23 @@
 ---
-description: Audit a circle's checklist items and metrics against its purpose, accountabilities, and domains, then propose and (on confirmation) apply improvements. Operational, not governance — applies changes directly via GlassFrog after per-change confirmation.
-argument-hint: [circle name to audit, optional]
+description: Deprecated alias for /self-org:portfolio-audit. Runs it and names the new command once. Removed in 2.0.0.
+argument-hint: [same arguments as /self-org:portfolio-audit]
 disable-model-invocation: true
 ---
 
-# /self-org:audit-portfolio
+# /self-org:audit-portfolio — deprecated
 
-Run a **checklist & metric portfolio audit** on a circle. The command primes scope; the underlying `checklist-metric-audit` skill carries the method.
+This command has been renamed to **`/self-org:portfolio-audit`**.
 
-## What this command does
+## What to do
 
-1. **Resolve actor + circle scope** via `skills/shared/actor-and-role-resolution.md` (`glassfrog_get_me`, `glassfrog_list_my_roles`).
-   - If `$ARGUMENTS` was provided, treat it as a circle-name hint and validate it against the actor's roster; if the actor holds no role in that circle, name the mismatch and offer Observer mode.
-   - If the actor operates in exactly one circle relevant to the request, proceed silently.
-   - If several, ask which circle to audit.
-2. **Announce the resolved scope** before auditing: `Auditing the checklist & metric portfolio of **[Circle Name]**`.
-3. **Hand off to `checklist-metric-audit`** for the audit itself -- load purpose/accountabilities/domains, enumerate checklist items and metrics on the circle role and every sub-role, build the coverage matrix, surface findings, and draft candidate items and dispositions.
+1. Tell the user, once, in a single line:
 
-## The one thing this command insists on
+   > `/self-org:audit-portfolio` is now `/self-org:portfolio-audit` — running it for you.
 
-Checklist items and metrics are **operational, not governance** (Holacracy Constitution Art. 3.2 -- Tactical Meeting Checklist/Metrics Review). This command therefore **applies approved changes directly** through the GlassFrog MCP -- it does not open a governance proposal. Two guardrails hold:
+   Say it once and move on. Do not explain the rename and do not ask whether to proceed.
 
-- **Per-change confirmation for destructive edits.** Deletes and merges require explicit approval per item; never merge or delete on an unconfirmed assumption.
-- **Governance escalation when warranted.** If a gap actually needs a new accountability or domain (no role is accountable for something the circle needs), that is a governance tension -- dispatch the `tension-capture` subagent (the `/self-org:capture-tension` command is user-only, #464), don't paper over it with a checklist item.
+2. Run [`commands/portfolio-audit.md`](./portfolio-audit.md) with `$ARGUMENTS` passed through unchanged.
 
-## Behaviour
+## Why the rename
 
-- If GlassFrog is not connected, run advisory-only from what the user supplies and name the limit.
-- This command primes scope and produces the audit; it applies changes only after the user approves specific candidates and dispositions.
+Command names follow one rule by act type ([ADR-0028](../docs/adr/0028-commands-are-named-by-act-type.md)): an authority act starts with its authority verb, and a backlog walk starts with the work item it walks. The old name is kept as an alias because it shipped on the `stable` branch that both install channels track. It is removed in 2.0.0.

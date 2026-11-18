@@ -110,7 +110,7 @@ An audit that flags everything trains the user to ignore it. A mature portfolio 
 
 ## Boundaries
 
-- **This is not governance.** Do not route checklist/metric changes through a proposal or a governance meeting; that would be a category error (and slower). If an audit finding actually requires a new accountability or domain -- e.g., no role is accountable for something the circle needs -- *that* is a governance tension: surface it and dispatch the `tension-capture` subagent (the `/self-org:capture-tension` command is user-only, #464), don't try to fix it with a checklist item.
+- **This is not governance.** Do not route checklist/metric changes through a proposal or a governance meeting; that would be a category error (and slower). If an audit finding actually requires a new accountability or domain -- e.g., no role is accountable for something the circle needs -- *that* is a governance tension: surface it and dispatch the `tension-capture` subagent (the `/self-org:sense-tension` command is user-only, #464), don't try to fix it with a checklist item.
 - **Announce, don't edit silently.** Name every change applied, and prefer surfacing new recurring items in a tactical meeting.
 - **Respect ownership.** Metrics are the Lead Link's accountability to define; the Secretary maintains the checklist. Operate as advisor/actor to those roles, and say so.
 - **Do not assess what the API cannot show.** Staleness, trend, and range are not readable from GlassFrog. Saying "this metric looks inactive" from a definition-only read is the same failure as reporting health from absent evidence.

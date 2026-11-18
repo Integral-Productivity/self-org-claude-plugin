@@ -1,6 +1,6 @@
 # Decision Keys -- Shared Reference
 
-This is the one vocabulary for the letter keys in every per-item menu: the walk commands (`/self-org:tension-triage`, `/self-org:project-triage`, `/self-org:review-project`, `/self-org:stalled-project-sweep`, `/self-org:supersession-sweep`) and the draft-and-confirm blocks of the capture flows (`./tension-capture-flow.md`, `./project-capture-flow.md`). Each key has **one meaning** across all of them.
+This is the one vocabulary for the letter keys in every per-item menu: the walk commands (`/self-org:tension-triage`, `/self-org:project-triage`, `/self-org:project-review`, `/self-org:project-sweep`, `/self-org:tension-sweep`) and the draft-and-confirm blocks of the capture flows (`./tension-capture-flow.md`, `./project-capture-flow.md`). Each key has **one meaning** across all of them.
 
 Loaded by:
 
@@ -8,7 +8,7 @@ Loaded by:
 - `scripts/skills-lint.sh` check 15, which reads the table in Step 1.
 - `scripts/skills-lint.sh` check 16, which fails a walk command that shows a letter menu and does not cite Step 3.
 
-**Why:** a user who learns one walk carries its keys into the next. Before this file, `[a]` meant *archive* (a status change) in three walks and *apply* (a new action) in `/self-org:review-project`; `[c]` had three meanings and `[e]` had two ([#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)). A key that changes meaning between commands makes the wrong write.
+**Why:** a user who learns one walk carries its keys into the next. Before this file, `[a]` meant *archive* (a status change) in three walks and *apply* (a new action) in `/self-org:project-review`; `[c]` had three meanings and `[e]` had two ([#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)). A key that changes meaning between commands makes the wrong write.
 
 ## Step 1 -- The keys
 
@@ -25,7 +25,7 @@ A menu line starts with the key and then the label in the second column, word fo
 | `[m]` | `merge` | Fold one tension's specifics into another, then archive the first. | body change + status change |
 | `[x]` | `exchange` | Swap the two items' roles in the pair and draft again. | none |
 | `[h]` | `authority held` | Name the authority the role already holds; offer the conversion. | none until confirmed |
-| `[r]` | `review` | Name `/self-org:review-project <project>` for the user to run on this one project. The walk does not start it: the review is user-only (#464). | none |
+| `[r]` | `review` | Name `/self-org:project-review <project>` for the user to run on this one project. The walk does not start it: the review is user-only (#464). | none |
 | `[t]` | `route tension` | Hand this finding to the `tension-capture` subagent. | none until confirmed |
 | `[v]` | `view draft` | Show an advisory draft that the user applies in GlassFrog. | none |
 | `[y]` | `yes` | Confirm the block shown and write it. | the draft shown |

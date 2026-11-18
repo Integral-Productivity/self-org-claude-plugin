@@ -23,7 +23,7 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
 
    **Recommended pattern:** delegate the sweep to a subagent that returns a compact table (tension id, role, circle, body excerpt, created_at) rather than raw JSON. On a backlog of this size the raw responses will otherwise dominate the main context window before triage has begun.
 
-   **Caveat:** same-session reads are unreliable (propagation/scoping — see `skills/self-org-ai-governance/references/glassfrog-api-constraints.md`). Tensions written earlier in *this* session may not appear. Use `/self-org:supersession-sweep` with `session` scope for end-of-session review of fresh tensions.
+   **Caveat:** same-session reads are unreliable (propagation/scoping — see `skills/self-org-ai-governance/references/glassfrog-api-constraints.md`). Tensions written earlier in *this* session may not appear. Use `/self-org:tension-sweep` with `session` scope for end-of-session review of fresh tensions.
 
 4. **Run the authority pre-scan.** Before walking the list, apply `skills/shared/triage-gates.md` **Step 1** across it: for each tension, does the authority that would resolve it already exist — as a domain the sensing role holds, or as a role created since the tension was filed?
 
@@ -61,11 +61,11 @@ The readiness verdicts are: archive what no longer applies, edit bodies that no 
 
 7. **Call the appropriate `glassfrog_update_tension`** for the user's decision. Surface any error honestly: `update_tension` failures must not be silently swallowed.
 
-8. **Summarize at the end.** Number archived, edited, resolved-by-existing-authority, marked processed, deferred. Surface any supersession candidates the user did not act on, and name `/self-org:supersession-sweep` for the user to run (it is user-only, #464). If the pass flagged tensions as ready-to-process, say so plainly and name the next surface.
+8. **Summarize at the end.** Number archived, edited, resolved-by-existing-authority, marked processed, deferred. Surface any supersession candidates the user did not act on, and name `/self-org:tension-sweep` for the user to run (it is user-only, #464). If the pass flagged tensions as ready-to-process, say so plainly and name the next surface.
 
 ## Behaviour
 
-- This command operates on **existing** tensions. To capture a *new* one, use `/self-org:capture-tension` (cross-role, out-of-meeting) or `/self-org:tactical` (in-meeting Secretary capture).
+- This command operates on **existing** tensions. To capture a *new* one, use `/self-org:sense-tension` (cross-role, out-of-meeting) or `/self-org:tactical` (in-meeting Secretary capture).
 - **Per-tension decision — never batched.** The user can quit at any point (`q`) and the remaining tensions stay unprocessed.
 - **`[h]` is a reading, not an automation.** Recognising that authority already exists is an interpretation; acting on it is a write. Name what the role holds, offer the conversion, and let the user decide. Never convert or archive without an explicit keystroke.
 - **Edit-body (`[e]`) is what *makes* a tension ready.** "Well-formed" means the checks in `skills/shared/tension-well-formedness.md`: when a body is not ready, name the failing check (for example "T2, concrete instance") and draft the `[e]` replacement so it passes. Leave a passing body alone. Front-load the topic in the first sentence; partition a blended tension per gates Step 2; prepend `[GOVERNANCE]` or `[TACTICAL]` if the user wants the venue encoded in the record.
@@ -85,10 +85,10 @@ Triage decides readiness. It does not decide disposition — it will not write a
 
 That boundary is the point of the command, not a limitation of it. But it is a boundary with a gap in it right now: **`/self-org:process-tension` has not shipped yet** ([#160](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/160)). Until it does, a tension this command marks ready has no automated next surface. Say so honestly rather than quietly widening scope to fill the gap — that quiet widening is exactly what produced the conflation this split exists to undo.
 
-For the one case where a disposition surface already exists — a tension that should become a project — dispatch the `project-capture` subagent. `/self-org:capture-project` is user-only (#464), so the walk does not start the command.
+For the one case where a disposition surface already exists — a tension that should become a project — dispatch the `project-capture` subagent. `/self-org:commit-project` is user-only (#464), so the walk does not start the command.
 
 ## Why this command exists
 
 The GlassFrog tension backlog grows when the practice of processing tensions falls behind the practice of sensing them. The fastest way for a busy role-filler to keep it useful is to *triage* regularly: notice work you can already do, archive false positives, edit bodies that no longer scan, surface supersession before the backlog bloats with overlapping items.
 
-It is the readiness surface in a four-stage architecture — the complement to `/self-org:capture-tension` (which fills the backlog), `/self-org:supersession-sweep` (which deduplicates it), and `/self-org:process-tension` (which drains it).
+It is the readiness surface in a four-stage architecture — the complement to `/self-org:sense-tension` (which fills the backlog), `/self-org:tension-sweep` (which deduplicates it), and `/self-org:process-tension` (which drains it).
