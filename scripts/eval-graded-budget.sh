@@ -9,11 +9,18 @@
 # known before the runner can count which legs the cache will skip.
 #
 #   resolve --event E [--schedule S] --weekly-cron C [--runs-input N]
-#       Prints runs=N. A scheduled run on the weekly cron gets WEEKLY_RUNS (a
-#       variance read). Any other scheduled run gets NIGHTLY_RUNS (a cheap
-#       signal on each change). Any other event keeps its dispatch input,
-#       default 3. Refuses a value that is not a positive integer, or that is
-#       above the spend cap.
+#       Prints runs=N and max_age_days=D. A scheduled run on the weekly cron
+#       gets WEEKLY_RUNS (a variance read). Any other scheduled run gets
+#       NIGHTLY_RUNS (a cheap signal on each change). Any other event keeps its
+#       dispatch input, default 3. Refuses a value that is not a positive
+#       integer, or that is above the spend cap.
+#
+#       max_age_days is the cache age past which a leg runs again. Only the
+#       weekly run refreshes runs=3 entries, so they are almost exactly 7 days
+#       old when the next weekly run plans. Against a 7-day limit about half of
+#       those Sundays would read every leg as cached and skip, and the variance
+#       read would happen every one to two weeks. The weekly run therefore uses
+#       6 days; every other run keeps the runner's default of 7.
 #
 #   decide --runs N --fresh-legs F --workflow PATH
 #       Prints action=run or action=skip. F is the count of legs the change-
@@ -30,6 +37,10 @@ set -euo pipefail
 NIGHTLY_RUNS=1
 WEEKLY_RUNS=3
 DEFAULT_DISPATCH_RUNS=3
+# Must equal DEFAULT_CACHE_MAX_AGE_DAYS in run-behavioural-eval.py.
+CACHE_MAX_AGE_DAYS=7
+# Below the weekly period, so a weekly entry is always stale by the next Sunday.
+WEEKLY_CACHE_MAX_AGE_DAYS=6
 # The flat cap that predates the wall-clock bound. It is a spend guard, and
 # the wall-clock bound has not replaced it: a smaller case count must not
 # quietly allow a 20-run dispatch.
@@ -72,10 +83,11 @@ cmd_resolve() {
   done
   [ -n "$EVENT" ] && [ -n "$WEEKLY_CRON" ] || usage
 
-  local RUNS
+  local RUNS MAX_AGE=$CACHE_MAX_AGE_DAYS
   if [ "$EVENT" = "schedule" ]; then
     if [ "$SCHEDULE" = "$WEEKLY_CRON" ]; then
       RUNS=$WEEKLY_RUNS
+      MAX_AGE=$WEEKLY_CACHE_MAX_AGE_DAYS
     else
       RUNS=$NIGHTLY_RUNS
     fi
@@ -91,6 +103,7 @@ cmd_resolve() {
       "The cap is a spend guard and holds whatever the timeout allows."
   fi
   echo "runs=$RUNS"
+  echo "max_age_days=$MAX_AGE"
 }
 
 cmd_decide() {

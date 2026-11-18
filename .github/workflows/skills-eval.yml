@@ -334,16 +334,20 @@ jobs:
           set -euo pipefail
           # Must equal the weekly entry under on.schedule.
           WEEKLY_CRON="0 7 * * 0"
-          RUNS=$(bash scripts/eval-graded-budget.sh resolve --event "$EVENT" \
+          RESOLVED=$(bash scripts/eval-graded-budget.sh resolve --event "$EVENT" \
             --schedule "$SCHEDULE" --weekly-cron "$WEEKLY_CRON" \
-            --runs-input "$RUNS_INPUT" | sed -n 's/^runs=//p')
+            --runs-input "$RUNS_INPUT")
+          RUNS=$(sed -n 's/^runs=//p' <<<"$RESOLVED")
+          # 6 on the weekly cron, so last Sunday's entries never count as
+          # fresh this Sunday. The eval step must use the same value.
+          MAX_AGE=$(sed -n 's/^max_age_days=//p' <<<"$RESOLVED")
 
           args=()
           for f in evals/cases/*/evals.json; do args+=(--case "$f"); done
           if [ -n "$MODEL" ]; then args+=(--model "$MODEL"); fi
           if [ -n "${CACHE_INDEX_PATH:-}" ]; then args+=(--cache-index "$CACHE_INDEX_PATH"); fi
           PLAN=$(python3 scripts/run-behavioural-eval.py --out "$RUNNER_TEMP/plan" \
-            --plan-only --runs "$RUNS" "${args[@]}")
+            --plan-only --runs "$RUNS" --cache-max-age-days "$MAX_AGE" "${args[@]}")
           FRESH=$(jq -r .fresh_legs <<<"$PLAN")
           CACHED=$(jq -r .cached_legs <<<"$PLAN")
           echo "runs=$RUNS: $FRESH legs would execute, $CACHED would be reused from the cache"
@@ -352,6 +356,7 @@ jobs:
             --fresh-legs "$FRESH" --workflow .github/workflows/skills-eval.yml \
             | sed -n 's/^action=//p')
           echo "runs=$RUNS" >> "$GITHUB_OUTPUT"
+          echo "max_age_days=$MAX_AGE" >> "$GITHUB_OUTPUT"
           echo "action=$ACTION" >> "$GITHUB_OUTPUT"
 
           if [ "$ACTION" = "skip" ]; then
@@ -372,6 +377,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # Resolved, validated and budgeted by the "Plan the graded run" step.
           RUNS: ${{ steps.plan.outputs.runs }}
+          MAX_AGE: ${{ steps.plan.outputs.max_age_days }}
           # The `|| ` fallback is not cosmetic: `inputs` is EMPTY on a schedule
           # event, so a default declared on the workflow_dispatch input alone
           # would leave the nightly run — the only one that runs unattended —
@@ -397,7 +403,8 @@ jobs:
           # of the graded tier, not a precondition for it.
           if [ -n "${CACHE_INDEX_PATH:-}" ]; then args+=(--cache-index "$CACHE_INDEX_PATH"); fi
           python3 scripts/run-behavioural-eval.py \
-            --out "$RUNNER_TEMP/benchmark" --runs "$RUNS" "${args[@]}"
+            --out "$RUNNER_TEMP/benchmark" --runs "$RUNS" \
+            --cache-max-age-days "$MAX_AGE" "${args[@]}"
 
       - name: Aggregate
         if: steps.key.outputs.present == 'true' && steps.plan.outputs.action == 'run'

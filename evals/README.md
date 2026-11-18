@@ -216,6 +216,13 @@ next morning. Sunday at 07:00 UTC it runs weekly at `runs=3`: the run-to-run
 variance that the baseline and any flakiness read need. A `workflow_dispatch`
 keeps its `runs` input, default 3.
 
+Only the weekly run refreshes the `runs=3` cache entries, so they are about 7
+days old when the next weekly run plans. The weekly run therefore treats an
+entry as stale after 6 days, not the default 7. Otherwise about half of the
+Sundays with no change would read every leg as cached and skip, and the
+variance read would happen every one to two weeks. The plan step and the eval
+step use the same limit.
+
 Before any model call, the "Plan the graded run" step asks
 `run-behavioural-eval.py --plan-only` how many legs the cache below will **not**
 skip, and `scripts/eval-graded-budget.sh` prices only those against the job's

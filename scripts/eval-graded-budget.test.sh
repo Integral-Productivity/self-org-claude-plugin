@@ -87,10 +87,21 @@ run "$MUT" resolve --event schedule --schedule "$WEEKLY" --weekly-cron "$WEEKLY"
 [ "$(field runs)" = "3" ] && fail "mutation case is vacuous: removing the weekly match still gave runs=3"
 pass
 
+# 1b. The weekly cron uses a 6-day cache age. Its runs=3 entries are refreshed
+#     only by the weekly run, so they are about 7 days old next Sunday; at the
+#     runner's 7-day default about half of those Sundays would skip.
+run "$SCRIPT" resolve --event schedule --schedule "$WEEKLY" --weekly-cron "$WEEKLY" >/dev/null
+[ "$(field max_age_days)" = "6" ] || fail "the weekly cron did not resolve to max_age_days=6: $(cat "$TMP/out")"
+MUT="$(make_mutant weeklyage 'MAX_AGE=$WEEKLY_CACHE_MAX_AGE_DAYS' ':')" || fail "could not build the weekly-age mutant"
+run "$MUT" resolve --event schedule --schedule "$WEEKLY" --weekly-cron "$WEEKLY" >/dev/null
+[ "$(field max_age_days)" = "6" ] && fail "mutation case is vacuous: the weekly still resolved to max_age_days=6"
+pass
+
 # 2. Any other schedule runs at 1, whatever the dispatch default says.
 RC="$(run "$SCRIPT" resolve --event schedule --schedule "$NIGHTLY" --weekly-cron "$WEEKLY" --runs-input 3)"
 [ "$RC" = "0" ] || { cat "$TMP/err"; fail "resolve failed on the nightly cron"; }
 [ "$(field runs)" = "1" ] || fail "the nightly cron did not resolve to runs=1: $(cat "$TMP/out")"
+[ "$(field max_age_days)" = "7" ] || fail "the nightly did not keep the 7-day cache age: $(cat "$TMP/out")"
 MUT="$(make_mutant nightly 'RUNS=$NIGHTLY_RUNS' 'RUNS=$RUNS_INPUT')" || fail "could not build the nightly mutant"
 run "$MUT" resolve --event schedule --schedule "$NIGHTLY" --weekly-cron "$WEEKLY" --runs-input 3 >/dev/null
 [ "$(field runs)" = "1" ] && fail "mutation case is vacuous: the nightly ignored its own depth and still gave runs=1"
@@ -101,6 +112,7 @@ run "$SCRIPT" resolve --event workflow_dispatch --weekly-cron "$WEEKLY" --runs-i
 [ "$(field runs)" = "2" ] || fail "a dispatch did not keep runs=2: $(cat "$TMP/out")"
 run "$SCRIPT" resolve --event workflow_dispatch --weekly-cron "$WEEKLY" --runs-input "" >/dev/null
 [ "$(field runs)" = "3" ] || fail "an empty dispatch input did not default to runs=3: $(cat "$TMP/out")"
+[ "$(field max_age_days)" = "7" ] || fail "a dispatch did not keep the 7-day cache age: $(cat "$TMP/out")"
 pass
 
 # 4. runs must be a positive integer.
@@ -224,6 +236,13 @@ for name in ("Run the behavioural evals", "Aggregate", "Report against the commi
          f"step {name!r} is not gated on steps.plan.outputs.action == 'run'")
 run = step("Run the behavioural evals")
 need("steps.plan.outputs.runs" in run, "the eval step does not take runs from the plan step")
+# The plan and the eval must judge cache age by the same limit, or the plan
+# could count a leg as cached that the eval then runs (or the reverse).
+need("steps.plan.outputs.max_age_days" in run and "--cache-max-age-days" in run,
+     "the eval step does not take the cache age limit from the plan step")
+plan_body = step("Plan the graded run")
+need(re.search(r"--plan-only[^\n]*--cache-max-age-days", plan_body),
+     "the plan step does not pass the resolved cache age limit to --plan-only")
 plan = text.find("id: plan")
 need(plan > text.find("name: Prepare the eval-cache-index checkout"),
      "the plan step must run after the cache-index checkout")

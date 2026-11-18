@@ -2205,6 +2205,20 @@ OUT="$(run_plan "$TMP/idx-plan-stale.json" "$NOW" --configs with_skill)" \
 [ "$(plan_field "$OUT" fresh_legs)" = "1" ] || fail "an 8-night-old entry was counted as cached: $OUT"
 pass
 
+# 16e2. The weekly's 6-day limit: an entry 6 days 23 hours old counts as cached
+#       at the default 7 days, and as fresh at --cache-max-age-days 6. This is
+#       the case the weekly run meets every Sunday (issue #467 review).
+seed_cache_index "$TMP/idx-plan-weekly.json" "$CACHE_KEY_WS" \
+  "2026-08-10T01:00:00+00:00" true "mechanical-checks" with_skill \
+  "weekly-executor-model" 4 4
+OUT="$(run_plan "$TMP/idx-plan-weekly.json" "$NOW" --configs with_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero on a 6d23h entry"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "0" ] || fail "a 6d23h entry was not cached at the 7-day default: $OUT"
+OUT="$(run_plan "$TMP/idx-plan-weekly.json" "$NOW" --configs with_skill --cache-max-age-days 6)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero with --cache-max-age-days 6"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "1" ] || fail "a 6d23h entry was still cached at --cache-max-age-days 6: $OUT"
+pass
+
 # 16f. An entry with successful: false counts as fresh.
 seed_cache_index "$TMP/idx-plan-failed.json" "$CACHE_KEY_WS" \
   "2026-08-16T00:00:00+00:00" false "mechanical-checks" with_skill \
