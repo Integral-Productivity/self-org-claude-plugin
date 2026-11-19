@@ -247,7 +247,13 @@ def die(msg):
 MIN_MARKER_LEN = 20
 
 
-def derive_marker(path):
+def derive_marker(path, name="DIRECTIVE", required=True):
+    """First non-empty line of the quoted `name` heredoc in the hook source.
+
+    With required=False a missing heredoc returns None instead of dying: the
+    conditional form (#332) is optional in a hook source, and the test hooks
+    that predate it carry only the directive.
+    """
     if not os.path.isfile(path):
         die("directive source not found: %s\n"
             "  Pass --hook PATH or set HOLACRACY_HOOK_SOURCE." % path)
@@ -259,11 +265,13 @@ def derive_marker(path):
 
     start = delim = None
     for i, line in enumerate(lines):
-        m = re.search(r"<<-?'(DIRECTIVE)'", line)
+        m = re.search(r"<<-?'(%s)'" % re.escape(name), line)
         if m:
             start, delim = i + 1, m.group(1)
             break
     if start is None:
+        if not required:
+            return None
         die("no quoted `DIRECTIVE` heredoc in %s\n"
             "  The hook's directive block was renamed or removed; this readout\n"
             "  cannot tell whether the directive fired. Update the heredoc name\n"
@@ -275,12 +283,13 @@ def derive_marker(path):
             break
         body.append(line)
     else:
-        die("unterminated `DIRECTIVE` heredoc in %s" % path)
+        die("unterminated `%s` heredoc in %s" % (name, path))
 
     marker = next((s for s in (l.strip() for l in body) if s), "")
     if len(marker) < MIN_MARKER_LEN:
-        die("directive marker from %s is too short to be distinctive: %r\n"
-            "  Expected the directive's leading header line." % (path, marker))
+        die("%s marker from %s is too short to be distinctive: %r\n"
+            "  Expected the block's leading header line."
+            % (name.lower(), path, marker))
     return marker
 
 
@@ -296,7 +305,20 @@ MARKER = derive_marker(hook_path)
 # read as a session the directive never reached.
 LEGACY_MARKERS = (
     "**Holacracy plugin: role-grounding directive**",
+)
+
+# The conditional form (#332) and, before it, the withheld line (#283) mark a
+# session whose hook could not confirm a GlassFrog connector. Neither is a
+# firing (ADR-0008 A5, A7), and neither is a miss: the fire-rate check takes
+# these sessions out of its denominator (#285). The current header is derived
+# from the hook's `CONDITIONAL` heredoc, like the directive's; the legacy ones
+# cannot be, because their hook source is gone from HEAD. The rename (#408)
+# had briefly listed the legacy conditional header as a FIRING, which A7 rules
+# out; it lives here now.
+CONDITIONAL_MARKER = derive_marker(hook_path, "CONDITIONAL", required=False)
+LEGACY_CONDITIONAL_MARKERS = (
     "**Holacracy plugin: role-grounding check (conditional directive)**",
+    "role-grounding directive withheld -- no authenticated GlassFrog connector",
 )
 
 
@@ -307,6 +329,9 @@ def _forms(marker):
 
 MARKER_FORMS = tuple(dict.fromkeys(
     f for m in (MARKER,) + LEGACY_MARKERS for f in _forms(m)))
+CONDITIONAL_FORMS = tuple(dict.fromkeys(
+    f for m in ((CONDITIONAL_MARKER,) if CONDITIONAL_MARKER else ())
+    + LEGACY_CONDITIONAL_MARKERS for f in _forms(m)))
 
 
 # --- Signal patterns -------------------------------------------------------
@@ -363,6 +388,10 @@ def is_placeholder(role, circle):
 
 def has_marker(text):
     return any(form in text for form in MARKER_FORMS)
+
+
+def has_conditional(text):
+    return any(form in text for form in CONDITIONAL_FORMS)
 
 
 def is_hook_record(rec):
@@ -429,12 +458,12 @@ def emitted_by_assistant(rec):
 
 
 def scan(path):
-    fired = announce = remit = chapter = False
+    fired = announce = remit = chapter = conditional = False
     version = None
     try:
         fh = open(path, encoding="utf-8", errors="replace")
     except OSError:
-        return fired, announce, remit, chapter, version
+        return fired, announce, remit, chapter, version, conditional
     with fh:
         for line in fh:
             if not line.strip():
@@ -451,6 +480,8 @@ def scan(path):
             if is_hook_record(rec):
                 if not fired and has_marker(line):
                     fired = True
+                if not conditional and has_conditional(line):
+                    conditional = True
                 # Checked on EVERY hook record, not only the one carrying the
                 # directive: a session the hook stayed quiet in still emits the
                 # quiet marker, and that marker's version is exactly the
@@ -480,7 +511,9 @@ def scan(path):
                     remit = True
             if fired and announce and remit and chapter and version is not None:
                 break
-    return fired, announce, remit, chapter, version
+    # A session that got the full directive is a firing, whatever else its
+    # hook records say; it is never also counted as conditional.
+    return fired, announce, remit, chapter, version, conditional and not fired
 
 
 # --- Run -------------------------------------------------------------------
@@ -579,10 +612,11 @@ def tally(paths):
     """
     t = dict(total=len(paths), fired=0, announce=0, remit=0, chapter=0,
              f_announce=0, f_remit=0, f_chapter=0,
-             versions={}, no_version=0)
+             versions={}, no_version=0, conditional=0)
     for p in paths:
-        fired, announce, remit, chapter, version = scan(p)
+        fired, announce, remit, chapter, version, conditional = scan(p)
         t["fired"] += fired
+        t["conditional"] += conditional
         t["announce"] += announce
         t["remit"] += remit
         t["chapter"] += chapter
@@ -657,6 +691,13 @@ if want_json:
         "directive_marker_source": hook_path,
         "excluded": {"subagent_files": sub_excl, "self_sessions": self_excl},
         "directive_fired": {"count": n_fired, "rate": rate(n_fired, total)},
+        # Sessions whose hook could not confirm a GlassFrog connector and so
+        # emitted the conditional form (or, before #332, the withheld line).
+        # Not firings, not misses: the fire-rate check leaves them out of its
+        # denominator (#285).
+        "directive_conditional": {"count": main["conditional"],
+                                  "rate": rate(main["conditional"], total)},
+        "directive_conditional_marker": CONDITIONAL_MARKER,
         # Which plugin version actually ran, per session, read from the stamp
         # the hook writes into every payload. `sessions_without_plugin_version`
         # is the count that matters most: a copy old enough to predate the
@@ -686,6 +727,7 @@ if want_json:
         "in_repo": {
             "sessions": selfies["total"],
             "directive_fired": selfies["fired"],
+            "directive_conditional": selfies["conditional"],
             "resolve_announce": selfies["announce"],
             "remit_crossing": selfies["remit"],
             "chapter_mark": selfies["chapter"],
@@ -707,6 +749,8 @@ out.append("  scanned: %d session transcript(s)  "
            % (total, sub_excl, self_excl))
 out.append("  directive fired in: %d session(s)  (%s)"
            % (n_fired, pct(n_fired, total)))
+out.append("  conditional form in: %d session(s)  (%s)"
+           % (main["conditional"], pct(main["conditional"], total)))
 # Which version actually ran. Skew between this and the released version is the
 # #122 root cause; naming it here turns that diagnosis into a glance.
 out.append("  plugin versions seen: %s" % versions_line(main))

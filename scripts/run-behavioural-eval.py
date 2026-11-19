@@ -11,7 +11,7 @@ skill-creator plugin) consumes:
     <out>/eval-<suite>-<id>/<config>/run-<k>/grading.json
     <out>/eval-<suite>-<id>/<config>/run-<k>/timing.json
     <out>/eval-<suite>-<id>/<config>/run-<k>/cost.json
-    <out>/eval-<suite>-<id>/<config>/run-<k>/outputs/{transcript.md,writes.jsonl,metrics.json,events.jsonl}
+    <out>/eval-<suite>-<id>/<config>/run-<k>/outputs/{transcript.md,writes.jsonl,metrics.json,events.jsonl,grader-response.json}
 
 `<suite>` is the case file's directory name. It is part of the key because
 `eval_id` is unique only within one case file, and without it two suites'
@@ -1300,8 +1300,20 @@ Return one entry per expectation, in the order given.
 
 def grade_judged(assertions: list[dict], transcript: str, writes: list[dict],
                  ground_truth: str, model: str | None,
-                 timeout: int) -> tuple[list[dict], str | None, dict]:
+                 timeout: int,
+                 raw_path: Path | None = None) -> tuple[list[dict], str | None, dict]:
     """Returns (verdicts, the model that actually graded them, the cost record).
+
+    `raw_path`, when given, receives the grader's raw stdout verbatim (#269),
+    the grading twin of write_events() (#221). The analyzer model is resolved
+    from a one-event, non-stream payload with no assistant turn, so
+    observed_model() falls through to modelUsage's first key -- the order #222
+    found unreliable for the executor. Run 32058594541 reported
+    claude-haiku-4-5-20251001 as the analyzer on all 24 calls while
+    claude-sonnet-5 was requested; keeping the reply lets the next graded run
+    settle whether that is a resolution defect or the grader's real model,
+    without paying for a run only to gather evidence. It is written before
+    parsing, so an unparseable reply is kept too.
 
     The analyzer model is reported separately from the executor's because they
     are separately substitutable -- `--model` sets both today, but a benchmark
@@ -1355,6 +1367,8 @@ def grade_judged(assertions: list[dict], transcript: str, writes: list[dict],
         proc = subprocess.run(cmd, capture_output=True, text=True,
                               timeout=timeout, env=session_env(config_dir),
                               cwd=str(workdir))
+        if raw_path is not None:
+            raw_path.write_text(proc.stdout)
         payload = json.loads(proc.stdout)
         result = payload.get("result", payload)
         if isinstance(result, str):
@@ -1455,7 +1469,8 @@ def run_once(case: dict, config: str, run_dir: Path, model: str | None,
     elif grade:
         judged, analyzer_model, grader_cost = grade_judged(
             judged_specs, transcript, writes,
-            case.get("ground_truth", ""), model, timeout)
+            case.get("ground_truth", ""), model, timeout,
+            raw_path=outputs / "grader-response.json")
     else:
         judged = [{"text": a["text"], "passed": False,
                    "evidence": "grading disabled (--no-grade)"} for a in judged_specs]

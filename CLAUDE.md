@@ -246,14 +246,17 @@ that passes with the skill disabled measures nothing, and the only defensible
 exception is a constitutional floor that must hold in every configuration.
 
 `evals/benchmark.json` is the baseline [#173](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/173)'s
-regression alarm compares against. **It is still unmeasured**, and says so in its own
-body. `ANTHROPIC_API_KEY` is configured now — that blocker is gone — but the
-first graded run taken after it
-([31229964963](https://github.com/Integral-Productivity/self-org-claude-plugin/actions/runs/31229964963))
-ran its two arms on two different models and so measured the models. Seed it
-from a real `workflow_dispatch` run, never by hand: a baseline nobody measured
-is the same report-health-from-absent-evidence failure the grounding readout
-section below spends a page on.
+regression alarm compares against. **It is measured** (`"measured": true`): it was
+seeded on 2026-08-17 from `workflow_dispatch` run
+[32058594541](https://github.com/Integral-Productivity/self-org-claude-plugin/actions/runs/32058594541)
+(runs=3, executor `claude-sonnet-5`), and its `_note` records how. An earlier
+graded run, [31229964963](https://github.com/Integral-Productivity/self-org-claude-plugin/actions/runs/31229964963),
+ran its two arms on two different models and so measured the models; it is not
+the baseline. [#350](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/350)
+re-seeds the file after the two-server eval legs land. Re-seed it only from a
+real `workflow_dispatch` run, never by hand: a baseline nobody measured is the
+same report-health-from-absent-evidence failure the grounding readout section
+below spends a page on.
 
 **A baseline is only comparable against runs of the same model, and only against
 runs of a harness that loads the plugin.** The first condition is recorded in the
