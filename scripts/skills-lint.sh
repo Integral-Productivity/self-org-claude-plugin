@@ -995,6 +995,27 @@ check_command_names() {
   done < <(cd "$ROOT" && git ls-files 'commands/*.md')
 }
 
+# Check 19 -- the design checklist names only lint checks that exist (#465).
+#
+# docs/plugin-design-checklist.md marks items **lint** and names the check that
+# enforces each one. A check that is renumbered or removed would leave the
+# checklist claiming enforcement that is gone, and a contributor who trusts the
+# word "lint" would skip a manual review the item now needs. The check numbers
+# are read from this script's own "# Check N --" headers, so adding a check
+# needs no second list to update.
+# ---------------------------------------------------------------------------
+check_design_checklist() {
+  skipped 19 && return 0
+  local doc="docs/plugin-design-checklist.md" known n
+  (cd "$ROOT" && git ls-files --error-unmatch "$doc" >/dev/null 2>&1) || return 0
+  known="$(grep -oE '^# Check [0-9]+ --' "${BASH_SOURCE[0]}" | grep -oE '[0-9]+')"
+  while IFS= read -r n; do
+    [ -n "$n" ] || continue
+    grep -qxF "$n" <<< "$known" \
+      || finding 19 "$doc" "names lint check $n, which scripts/skills-lint.sh does not have"
+  done < <(grep -oiE 'checks? [0-9]+((, | and |, and )[0-9]+)*' "$ROOT/$doc" | grep -oE '[0-9]+' | sort -un)
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -1013,5 +1034,6 @@ check_decision_keys
 check_picker_path
 check_user_only_writers
 check_command_names
+check_design_checklist
 
 check_common_summarize "skills-lint"

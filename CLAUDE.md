@@ -77,6 +77,8 @@ Wired in via `.mcp.json` at the repo root under the key `glassfrog-extended`, wh
 
 When you add or change a command, skill, or subagent, check it against [`docs/plugin-design-checklist.md`](docs/plugin-design-checklist.md). Each item names its source and what enforces it; items marked **lint** are already checks in `skills-lint.sh`.
 
+Two guards keep this from drifting. The `Design checklist` workflow fails a pull request that changes `commands/`, `skills/`, or `agents/` unless its body has the ticked box `- [x] Checked against docs/plugin-design-checklist.md` (the PR template carries it). The box is a claim the reviewer can see, not proof of a reading. `skills-lint.sh` check 19 fails when the checklist names a lint check that the script does not have, so its **lint** claims cannot outlive the checks behind them. A git hook was not added: a hook cannot verify a reading either, and the lint already runs in CI.
+
 ## Editing skills
 
 The skills here are the canonical source of truth. The original five were extracted from the [Integral-Productivity/skills](https://github.com/Integral-Productivity/skills) monorepo; newer skills such as `checklist-metric-audit` originate here. Updates land here first.
@@ -101,7 +103,7 @@ no empty lifecycle cell, no pre-1.0 plugin name in a shipped surface, and
 Constitution citations that name a real v5.0 section and the right one for the
 topic (check 14, against `evals/constitution-v5.0-sections.txt`, pinned to
 HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md))), and menu keys that keep one meaning in every walk (check 15, against
-`skills/shared/decision-keys.md`, [#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)), and a walk that shows a letter menu cites the picker path in that file's Step 3 (check 16, [#461](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/461)), a GlassFrog-writing command that is user-only (check 17, [#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)), and a command name that fits its act type (check 18, against `evals/command-names.txt`, [ADR-0028](docs/adr/0028-commands-are-named-by-act-type.md)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
+`skills/shared/decision-keys.md`, [#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)), and a walk that shows a letter menu cites the picker path in that file's Step 3 (check 16, [#461](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/461)), a GlassFrog-writing command that is user-only (check 17, [#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)), a command name that fits its act type (check 18, against `evals/command-names.txt`, [ADR-0028](docs/adr/0028-commands-are-named-by-act-type.md)), and a design checklist whose **lint** items name checks that exist (check 19, [#465](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/465)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
 cloud sessions load, keeps the last version it accepted and every later release
 misses those sessions ([#368](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/368)).
 `claude plugin validate` does not check these limits.

@@ -24,6 +24,13 @@ Tracking issue: [#465](https://github.com/Integral-Productivity/self-org-claude-
    (see CLAUDE.md, "Do not add a check without adding its mutation case").
 5. When an item does not fit a surface, say so in the pull request. Do not add
    work to satisfy an item that does not apply.
+6. A pull request that changes `commands/`, `skills/`, or `agents/` must tick
+   `- [x] Checked against docs/plugin-design-checklist.md` in its body. The
+   `Design checklist` workflow (`scripts/design-checklist-gate.sh`) fails it
+   otherwise.
+7. Lint check 19 fails when this file names a lint check that
+   `scripts/skills-lint.sh` does not have. Change the **Enforced by** column
+   and the script together.
 
 The **Pilot** column records the first pass over this plugin (2026-11-19), after
 #460 to #464 merged. "Met" means every surface passed. A gap names the issue
