@@ -73,6 +73,10 @@ The plugin separates **tension readiness** (`/self-org:tension-triage` — is th
 
 Wired in via `.mcp.json` at the repo root under the key `glassfrog-extended`, which puts every tool at `mcp__plugin_self-org_glassfrog-extended__*`. The key must match `MCP_SERVER_NAME` in `scripts/run-behavioural-eval.py`, and `run-behavioural-eval.test.sh` fails if the two drift apart. Server is **GlassFrog Extended**, `https://ipllc-glassfrog-mcp-server.vercel.app/mcp`, hosted on Vercel by Integral Productivity LLC, OAuth-protected so each user brings their own GlassFrog API key. If that URL ever moves (e.g., to a canonical `mcp.glassfrog.*` once an official server lands), update `.mcp.json` and land it as a `feat:` commit — release-please computes the version bump. Do not hand-edit the version; see § Versioning.
 
+## Design checklist
+
+When you add or change a command, skill, or subagent, check it against [`docs/plugin-design-checklist.md`](docs/plugin-design-checklist.md). Each item names its source and what enforces it; items marked **lint** are already checks in `skills-lint.sh`.
+
 ## Editing skills
 
 The skills here are the canonical source of truth. The original five were extracted from the [Integral-Productivity/skills](https://github.com/Integral-Productivity/skills) monorepo; newer skills such as `checklist-metric-audit` originate here. Updates land here first.
