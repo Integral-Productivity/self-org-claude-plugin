@@ -1548,6 +1548,61 @@ def load_case_file(path: Path) -> dict:
     return doc
 
 
+def leg_cache_decision(case: dict, config: str, fixture: Path, *, cache_index: dict,
+                       runs: int, model: str | None, cli_version: str | None,
+                       now: datetime, max_age_days: int) -> tuple[str, dict | None, bool]:
+    """The skip/execute decision for one (case, config) leg.
+
+    Returns (cache_key, stored_entry, usable). The graded loop and --plan-only
+    both call this, so the count the workflow budgets from is the decision the
+    loop then makes: a second copy of this logic could drift, and a plan that
+    disagreed with the loop would skip a night that needed measuring.
+    """
+    skill_dirs = resolve_skill_dirs_for_leg(config)
+    cache_key = compute_cache_key(
+        case, skill_dirs=skill_dirs, fixture_path=fixture,
+        runs=runs, model=model, cli_version=cli_version)
+    entry = cache_index.get(cache_key)
+    usable = cache_entry_is_usable(entry, now=now, max_age_days=max_age_days)
+    return cache_key, entry, usable
+
+
+def plan_legs(case_paths: list[str], configs: list[str], *, eval_name: str | None,
+              cache_index: dict | None, runs: int, model: str | None,
+              cli_version: str | None, now: datetime | None,
+              max_age_days: int) -> tuple[dict, int]:
+    """Count the legs the graded loop would execute, without executing any.
+
+    No session, no run directory, no index write. Without a cache index every
+    leg is fresh, exactly as the graded loop runs everything without one.
+    Returns the plan and the number of errors (a missing fixture).
+    """
+    fresh = cached = errors = 0
+    for case_path in case_paths:
+        doc = load_case_file(Path(case_path))
+        for case in doc["evals"]:
+            if eval_name and case["eval_name"] != eval_name:
+                continue
+            fixture = REPO / case["fixture"]
+            if not fixture.exists():
+                print(f"ERROR {case['eval_name']}: fixture not found: {case['fixture']}",
+                      file=sys.stderr)
+                errors += 1
+                continue
+            for config in configs:
+                usable = False
+                if cache_index is not None:
+                    _, _, usable = leg_cache_decision(
+                        case, config, fixture, cache_index=cache_index, runs=runs,
+                        model=model, cli_version=cli_version, now=now,
+                        max_age_days=max_age_days)
+                if usable:
+                    cached += 1
+                else:
+                    fresh += 1
+    return {"fresh_legs": fresh, "cached_legs": cached, "runs": runs}, errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--case", action="append", required=True,
@@ -1577,12 +1632,20 @@ def main() -> int:
     parser.add_argument("--cache-max-age-days", type=int, default=DEFAULT_CACHE_MAX_AGE_DAYS,
                         help="force a fresh execution at least this often even when a "
                              "leg's cache key has not changed (R8)")
+    parser.add_argument("--plan-only", action="store_true",
+                        help="print one JSON line {fresh_legs, cached_legs, runs}: how "
+                             "many (case, config) legs the graded loop would execute "
+                             "under --cache-index at this --runs and --model, then exit. "
+                             "Starts no session and writes nothing. The workflow budgets "
+                             "and decides whether to skip from this count.")
     parser.add_argument("--now", default=None,
                         help="ISO8601 timestamp to treat as the current time for cache "
                              "freshness decisions; defaults to the real time. A test-only "
                              "affordance for deterministic cache-lifetime assertions, same "
                              "shape as this repo's other alarm scripts' --now.")
     args = parser.parse_args()
+    if args.plan_only and args.validate_only:
+        parser.error("--plan-only and --validate-only are separate modes; pass one")
 
     configs = [c.strip() for c in args.configs.split(",") if c.strip()]
     out_root = Path(args.out)
@@ -1607,6 +1670,14 @@ def main() -> int:
         cli_version = claude_cli_version()
         cache_now = (_parse_iso_as_utc(args.now) if args.now
                     else datetime.now(timezone.utc))
+
+    if args.plan_only:
+        plan, errors = plan_legs(
+            args.case, configs, eval_name=args.eval_name, cache_index=cache_index,
+            runs=args.runs, model=args.model, cli_version=cli_version, now=cache_now,
+            max_age_days=args.cache_max_age_days)
+        print(json.dumps(plan))
+        return 1 if errors else 0
 
     # The session-shape preflight. Free, keyless, and the thing that would have
     # caught #226 before four graded runs were spent on a harness measuring the
@@ -1706,15 +1777,14 @@ def main() -> int:
                 # run within a leg shares one decision.
                 cache_key = None
                 cache_entry = None
+                cache_usable = False
                 if cache_index is not None:
-                    skill_dirs = resolve_skill_dirs_for_leg(config)
-                    cache_key = compute_cache_key(
-                        case, skill_dirs=skill_dirs, fixture_path=fixture,
-                        runs=args.runs, model=args.model, cli_version=cli_version)
-                    cache_entry = cache_index.get(cache_key)
+                    cache_key, cache_entry, cache_usable = leg_cache_decision(
+                        case, config, fixture, cache_index=cache_index,
+                        runs=args.runs, model=args.model, cli_version=cli_version,
+                        now=cache_now, max_age_days=args.cache_max_age_days)
 
-                if cache_key is not None and cache_entry_is_usable(
-                        cache_entry, now=cache_now, max_age_days=args.cache_max_age_days):
+                if cache_usable:
                     # Case 6: a fresh, successful result already exists for
                     # this leg's current key. Reuse it for every one of this
                     # leg's runs -- no run_once, no touching run_dir, no

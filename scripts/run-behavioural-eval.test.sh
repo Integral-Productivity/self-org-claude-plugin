@@ -2134,4 +2134,135 @@ PY
 rm -rf "$PARITY_TMP"
 pass
 
+# ---------------------------------------------------------------------------
+# 16. --plan-only: HOW MANY LEGS WOULD EXECUTE, WITHOUT EXECUTING ANY.
+#
+# The graded workflow prices its wall-clock budget, and decides whether a night
+# has anything to measure at all, from this count. It must therefore make the
+# SAME skip/execute decision the graded loop makes (same key, same usability
+# rule) and must have no side effects: no session, no run_dir, no index write.
+# A plan that counts a stale or failed entry as cached would skip a night that
+# needed measuring; one that writes the index would corrupt tomorrow's cache.
+# ---------------------------------------------------------------------------
+run_plan() {  # $1=index_path or "" $2=now rest=extra args; prints the JSON line
+  local idx="$1" now="$2"; shift 2
+  local idx_args=()
+  [ -n "$idx" ] && idx_args=(--cache-index "$idx")
+  rm -rf "$TMP/out-plan"
+  : > "$TMP/cache-invoke.log"
+  CACHE_INVOKE_LOG="$TMP/cache-invoke.log" \
+    BEHAVIOURAL_EVAL_CLAUDE_BIN="$TMP/fake-claude-logged" \
+    python3 "${PLAN_RUNNER:-$CACHE_RUNNER}" --case "$TMP/case/evals.json" \
+      --out "$TMP/out-plan" --plan-only --now "$now" "${idx_args[@]}" "$@" \
+      2>"$TMP/plan.err"
+}
+plan_field() {  # $1=json line $2=field
+  python3 -c 'import json,sys;print(json.loads(sys.argv[1])[sys.argv[2]])' "$1" "$2"
+}
+
+# 16a. A fresh, successful entry for the only leg: nothing would execute. The
+#      CLI runs once (the --version probe the key needs) and never as a session.
+seed_cache_index "$TMP/idx-plan-hit.json" "$CACHE_KEY_WS" \
+  "2026-08-16T00:00:00+00:00" true "mechanical-checks" with_skill \
+  "stored-executor-model" 4 4
+BEFORE="$(sha256sum < "$TMP/idx-plan-hit.json")"
+OUT="$(run_plan "$TMP/idx-plan-hit.json" "$NOW" --configs with_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero on a cache hit"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "0" ] || fail "--plan-only counted a fresh, successful entry as fresh: $OUT"
+[ "$(plan_field "$OUT" cached_legs)" = "1" ] || fail "--plan-only did not count the cached leg: $OUT"
+[ "$(plan_field "$OUT" runs)" = "1" ] || fail "--plan-only did not report the runs it priced: $OUT"
+INVOCATIONS="$(wc -l < "$TMP/cache-invoke.log" | tr -d ' ')"
+if [ "$INVOCATIONS" != "1" ] || ! grep -q -- "--version" "$TMP/cache-invoke.log"; then
+  cat "$TMP/cache-invoke.log"; fail "--plan-only invoked the CLI for more than the --version probe"
+fi
+# 16b. No side effects: the index is byte-identical and no eval dir exists.
+[ "$BEFORE" = "$(sha256sum < "$TMP/idx-plan-hit.json")" ] || fail "--plan-only modified the cache index"
+compgen -G "$TMP/out-plan/eval-*" >/dev/null && fail "--plan-only created an eval directory"
+[ -e "$TMP/out-plan/run_metadata.json" ] && fail "--plan-only wrote run_metadata.json"
+pass
+
+# 16c. An empty index: every (case, config) leg would execute.
+echo '{}' > "$TMP/idx-plan-empty.json"
+OUT="$(run_plan "$TMP/idx-plan-empty.json" "$NOW" --configs with_skill,without_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero on an empty index"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "2" ] || fail "an empty index did not count both legs fresh: $OUT"
+[ "$(plan_field "$OUT" cached_legs)" = "0" ] || fail "an empty index reported a cached leg: $OUT"
+pass
+
+# 16d. runs is a key input: an entry stored at runs=1 does not cover runs=3.
+OUT="$(run_plan "$TMP/idx-plan-hit.json" "$NOW" --configs with_skill --runs 3)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero at runs=3"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "1" ] || fail "a runs=1 entry was counted as covering runs=3: $OUT"
+[ "$(plan_field "$OUT" runs)" = "3" ] || fail "--plan-only did not report runs=3: $OUT"
+pass
+
+# 16e. An entry older than --cache-max-age-days counts as fresh.
+seed_cache_index "$TMP/idx-plan-stale.json" "$CACHE_KEY_WS" \
+  "2026-08-09T00:00:00+00:00" true "mechanical-checks" with_skill \
+  "stale-executor-model" 4 4
+OUT="$(run_plan "$TMP/idx-plan-stale.json" "$NOW" --configs with_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero on a stale entry"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "1" ] || fail "an 8-night-old entry was counted as cached: $OUT"
+pass
+
+# 16e2. The weekly's 6-day limit: an entry 6 days 23 hours old counts as cached
+#       at the default 7 days, and as fresh at --cache-max-age-days 6. This is
+#       the case the weekly run meets every Sunday (issue #467 review).
+seed_cache_index "$TMP/idx-plan-weekly.json" "$CACHE_KEY_WS" \
+  "2026-08-10T01:00:00+00:00" true "mechanical-checks" with_skill \
+  "weekly-executor-model" 4 4
+OUT="$(run_plan "$TMP/idx-plan-weekly.json" "$NOW" --configs with_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero on a 6d23h entry"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "0" ] || fail "a 6d23h entry was not cached at the 7-day default: $OUT"
+OUT="$(run_plan "$TMP/idx-plan-weekly.json" "$NOW" --configs with_skill --cache-max-age-days 6)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero with --cache-max-age-days 6"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "1" ] || fail "a 6d23h entry was still cached at --cache-max-age-days 6: $OUT"
+pass
+
+# 16f. An entry with successful: false counts as fresh.
+seed_cache_index "$TMP/idx-plan-failed.json" "$CACHE_KEY_WS" \
+  "2026-08-16T00:00:00+00:00" false "mechanical-checks" with_skill \
+  "stored-executor-model" 0 4
+OUT="$(run_plan "$TMP/idx-plan-failed.json" "$NOW" --configs with_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero on an unsuccessful entry"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "1" ] || fail "an unsuccessful entry was counted as cached: $OUT"
+pass
+
+# 16g. Without --cache-index every leg is fresh, exactly as the graded loop
+#      runs everything fresh without one.
+OUT="$(run_plan "" "$NOW" --configs with_skill,without_skill)" \
+  || { cat "$TMP/plan.err"; fail "--plan-only exited non-zero without a cache index"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "2" ] || fail "without --cache-index not every leg counted fresh: $OUT"
+pass
+
+# 16h. Mutation: a plan that trusts any stored entry for the key, ignoring the
+#      usability rule (age and success), must fail 16e. The mutant is built in
+#      its own copy of the cache root so its key matches the one it computes.
+PLAN_MUT_ROOT="$TMP/plan-mut-root"
+rm -rf "$PLAN_MUT_ROOT"; mkdir -p "$PLAN_MUT_ROOT/scripts"
+ln -s "$REPO/evals" "$PLAN_MUT_ROOT/evals"
+ln -s "$REPO/.claude-plugin" "$PLAN_MUT_ROOT/.claude-plugin"
+cp -R "$CACHE_ROOT/skills" "$PLAN_MUT_ROOT/skills"
+MUT_OLD='    usable = cache_entry_is_usable(entry, now=now, max_age_days=max_age_days)' \
+MUT_NEW='    usable = entry is not None' \
+python3 - "$RUNNER" "$PLAN_MUT_ROOT/scripts/run-behavioural-eval.py" <<'PY' \
+  || fail "could not build the --plan-only usability mutant"
+import os, pathlib, sys
+src, dst = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+text = src.read_text()
+mutated = text.replace(os.environ["MUT_OLD"], os.environ["MUT_NEW"])
+assert mutated != text, f"mutation target not found: {os.environ['MUT_OLD'][:70]!r}"
+dst.write_text(mutated)
+PY
+MUT_KEY="$(cache_key_for "$PLAN_MUT_ROOT" "$TMP/case/evals.json" 0 with_skill 1 "" "$CLI_VERSION")"
+seed_cache_index "$TMP/idx-plan-mut.json" "$MUT_KEY" \
+  "2026-08-09T00:00:00+00:00" true "mechanical-checks" with_skill \
+  "stale-executor-model" 4 4
+OUT="$(PLAN_RUNNER="$PLAN_MUT_ROOT/scripts/run-behavioural-eval.py" \
+  run_plan "$TMP/idx-plan-mut.json" "$NOW" --configs with_skill)" \
+  || { cat "$TMP/plan.err"; fail "the --plan-only mutant did not run"; }
+[ "$(plan_field "$OUT" fresh_legs)" = "0" ] \
+  || fail "mutation case is vacuous: ignoring the usability rule did not change 16e's count ($OUT)"
+pass
+
 echo "run-behavioural-eval.test.sh: $CASES cases passed"
