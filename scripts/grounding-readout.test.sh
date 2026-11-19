@@ -557,8 +557,11 @@ assert d["excluded"]["subagent_files"]==2, ("unwindowed runs count the whole cor
 
 # 13. The plugin was renamed from `holacracy` to `self-org` (ADR-0020). Sessions
 #     that ran the pre-rename hook carry the old headers, which no longer
-#     appear in any hook source. They still count as firings, or every
-#     pre-rename session would read as one the directive never reached.
+#     appear in any hook source. The old directive header still counts as a
+#     firing, or every pre-rename session would read as one the directive never
+#     reached. The old CONDITIONAL header is not a firing: ADR-0008 A7 counts
+#     the conditional form as not fired, and the rename had briefly listed it
+#     as one (#285). It lands in the conditional bucket instead.
 L="$TMP/legacy"; mkdir -p "$L"
 cat > "$L/old-directive.jsonl" <<'JSONL'
 {"type":"attachment","stdout":"{\"additionalContext\":\"**Holacracy plugin: role-grounding directive**\"}"}
@@ -574,8 +577,73 @@ echo "$js" | python3 -c '
 import json,sys
 d=json.load(sys.stdin)
 assert d["sessions"]==3, d
-# Both legacy headers count; an assistant quoting one does not.
-assert d["directive_fired"]["count"]==2, d
-' || fail "legacy pre-rename markers must still count as firings: $js"
+# The legacy directive fires; the legacy conditional does not, and an
+# assistant quoting either does not count.
+assert d["directive_fired"]["count"]==1, d
+assert d["directive_conditional"]["count"]==1, d
+' || fail "legacy directive must fire and legacy conditional must not: $js"
+
+# 14. The conditional bucket (#285). Since #283/#332 a session whose hook could
+#     not confirm a GlassFrog connector gets the CONDITIONAL form instead of the
+#     directive. It is not a firing, but it is not a miss either: the fire-rate
+#     check must take it out of its denominator. The marker is DERIVED from the
+#     hook's `CONDITIONAL` heredoc, never hard-coded, for the same reason the
+#     directive marker is.
+C="$TMP/cond"; mkdir -p "$C"
+CHOOK="$TMP/session-start-cond.sh"
+cat > "$CHOOK" <<'HOOK_SRC'
+#!/usr/bin/env bash
+conditional=$(cat <<'CONDITIONAL'
+**Test plugin: role-grounding check (conditional directive)**
+
+If a glassfrog_get_me tool is available, ground; otherwise proceed.
+CONDITIONAL
+)
+grounding=$(cat <<'DIRECTIVE'
+**Test plugin: role-grounding directive**
+
+Resolve and announce the active role/circle.
+DIRECTIVE
+)
+HOOK_SRC
+cat > "$C/fired.jsonl" <<'JSONL'
+{"type":"attachment","stdout":"{\"additionalContext\":\"**Test plugin: role-grounding directive**\"}"}
+JSONL
+cat > "$C/cond.jsonl" <<'JSONL'
+{"type":"attachment","stdout":"{\"additionalContext\":\"**Test plugin: role-grounding check (conditional directive)**\"}"}
+JSONL
+cat > "$C/old-withheld.jsonl" <<'JSONL'
+{"type":"attachment","stdout":"{\"additionalContext\":\"_holacracy-claude-plugin v0.15.0: role-grounding directive withheld -- no authenticated GlassFrog connector detected, so role resolution is unavailable this session._\"}"}
+JSONL
+cat > "$C/quoted-cond.jsonl" <<'JSONL'
+{"type":"assistant","text":"The hook printed **Test plugin: role-grounding check (conditional directive)** first."}
+JSONL
+js="$(CLAUDE_PROJECTS_DIR="$C" bash "$SCRIPT" --hook "$CHOOK" --json)"
+echo "$js" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+assert d["sessions"]==4, d
+assert d["directive_fired"]["count"]==1, d
+# The derived conditional form and the pre-#332 withheld line both count;
+# an assistant quoting the conditional header does not.
+assert d["directive_conditional"]["count"]==2, d
+assert d["directive_conditional_marker"].startswith("**Test plugin: role-grounding check"), d
+assert d["in_repo"]["directive_conditional"]==0, d
+' || fail "conditional sessions must be counted from hook records, apart from firings: $js"
+out="$(CLAUDE_PROJECTS_DIR="$C" bash "$SCRIPT" --hook "$CHOOK")"
+echo "$out" | grep -q 'conditional form in: 2 session' \
+  || fail "the human output must show the conditional count; got: $out"
+
+# 14b. The real hook's CONDITIONAL heredoc yields a marker distinct from the
+#      directive's. If the heredoc is renamed this fails, instead of the
+#      conditional bucket reporting a confident zero.
+js="$(CLAUDE_PROJECTS_DIR="$C" bash "$SCRIPT" --json)"
+echo "$js" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+m=d["directive_conditional_marker"]
+assert m and "conditional" in m.lower(), d
+assert m != d["directive_marker"], d
+' || fail "the real hook must yield a distinct conditional marker: $js"
 
 echo "PASS: all grounding-readout tests"

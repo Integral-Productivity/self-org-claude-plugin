@@ -71,8 +71,10 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 READOUT="$HERE/grounding-readout.sh"
 
-# The directive is always-on by default (ADR-0008 A2), so in a healthy
-# deployment this rate is ~100%. The floor sits at 0.9 rather than 1.0 to
+# The rate is judged over ELIGIBLE sessions: all sessions minus those whose
+# hook emitted the conditional form because it could not confirm a GlassFrog
+# connector (ADR-0008 A5, A7; #285). Among eligible sessions the directive is
+# on by default, so in a healthy deployment this rate is ~100%. The floor sits at 0.9 rather than 1.0 to
 # absorb the legitimate misses: a session started before a re-install, or one
 # in a directory matched by HOLACRACY_GROUNDING_EXCLUDE. It is far above the
 # observed failure (0.3%), which is what it has to separate.
@@ -250,6 +252,11 @@ except ValueError as exc:
 
 sessions = int(d.get("sessions") or 0)
 fired = int((d.get("directive_fired") or {}).get("count") or 0)
+# Sessions whose hook could not confirm a GlassFrog connector got the
+# conditional form, not the directive (#283, #332). They are not misses, so
+# they leave the denominator (#285). A readout older than the key reports none.
+conditional = int((d.get("directive_conditional") or {}).get("count") or 0)
+eligible = max(sessions - conditional, 0)
 seen = d.get("plugin_versions_seen") or {}
 unstamped = int(d.get("sessions_without_plugin_version") or 0)
 
@@ -261,12 +268,15 @@ if unstamped:
     parts.append("no version stamp (%d)" % unstamped)
 versions = ", ".join(parts) if parts else "none"
 
-rate = (fired / sessions) if sessions else 0.0
+rate = (fired / eligible) if eligible else 0.0
 
 print("SESSIONS=%d" % sessions)
+print("CONDITIONAL=%d" % conditional)
+print("ELIGIBLE=%d" % eligible)
 print("FIRED=%d" % fired)
 print("RATE=%.4f" % rate)
-print("RATE_PCT=%s" % ("n/a" if not sessions else "%.0f%%" % (rate * 100)))
+print("RATE_PCT=%s" % ("n/a" if not eligible else "%.0f%%" % (rate * 100)))
+print("COND_PCT=%s" % ("n/a" if not sessions else "%.0f%%" % (conditional / sessions * 100)))
 print("VERSIONS=%s" % json.dumps(versions))
 ' )"; then
   die "could not read the readout output as JSON; refusing to report a rate from input it could not parse"
@@ -281,7 +291,10 @@ if [ "$SESSIONS" -eq 0 ]; then
   die "no sessions found in the window ($WINDOW_DESC). Nothing to measure, so this is NOT a pass. Check CLAUDE_PROJECTS_DIR and the window."
 fi
 
-summary="$FIRED of $SESSIONS session(s) ($RATE_PCT) — $WINDOW_DESC"
+summary="$FIRED of $ELIGIBLE eligible session(s) ($RATE_PCT) — $WINDOW_DESC"
+# Always printed, never silently subtracted: on a machine where GlassFrog IS
+# authenticated, a high conditional share is itself the defect (#285).
+cond_line="  $CONDITIONAL of $SESSIONS session(s) got the conditional form ($COND_PCT) and are not counted as eligible"
 
 # ---------------------------------------------------------------------------
 # 5. Tracking-issue plumbing (shared by the clear and alarm paths)
@@ -315,9 +328,21 @@ close_tracking_issue() {
 # 6. Under-powered — a stated non-verdict, not a pass
 # ---------------------------------------------------------------------------
 
-if [ "$SESSIONS" -lt "$MIN_SESSIONS" ]; then
+# Every session conditional: there is no eligible session to judge. Said out
+# loud, with a warning annotation: an operator who has authenticated GlassFrog
+# and still sees this has a broken gate, and a quiet exit 0 would hide it.
+if [ "$ELIGIBLE" -eq 0 ]; then
+  echo "NO VERDICT — every session got the conditional form: $summary"
+  echo "$cond_line"
+  echo "::warning title=grounding-fire-rate-check::all $SESSIONS session(s) in the window got the conditional form, so no fire rate can be judged. Expected only where no GlassFrog connector is authenticated; if one is, the hook's connector gate is not seeing it (ADR-0008 A5-A7)."
+  echo "  plugin versions seen: $VERSIONS"
+  exit 0
+fi
+
+if [ "$ELIGIBLE" -lt "$MIN_SESSIONS" ]; then
   echo "NO VERDICT — under-powered: $summary"
-  echo "  n=$SESSIONS is below the --min-sessions floor of $MIN_SESSIONS; the rate is not decidable yet."
+  echo "  n=$ELIGIBLE eligible is below the --min-sessions floor of $MIN_SESSIONS; the rate is not decidable yet."
+  echo "$cond_line"
   echo "  plugin versions seen: $VERSIONS"
   exit 0
 fi
@@ -332,6 +357,7 @@ below_floor="$(python3 -c "print('yes' if float('$RATE') < float('$MIN_RATE') el
 
 if [ "$below_floor" = "no" ]; then
   echo "Clear — directive fired in $summary (floor: $MIN_RATE)."
+  echo "$cond_line"
   echo "  plugin versions seen: $VERSIONS"
   close_tracking_issue "Cleared — the role-grounding directive fired in **$summary**, back at or above the floor of \`$MIN_RATE\`. Plugin versions seen: $VERSIONS. Closed automatically by \`scripts/grounding-fire-rate-check.sh\`."
   exit 0
@@ -341,18 +367,20 @@ fi
 # 8. ALARM
 # ---------------------------------------------------------------------------
 
-issue_title="Role-grounding directive fired in only $RATE_PCT of sessions ($FIRED/$SESSIONS)"
+issue_title="Role-grounding directive fired in only $RATE_PCT of eligible sessions ($FIRED/$ELIGIBLE)"
 
 report="$(cat <<EOF
 $MARKER
 **The role-grounding directive is not reaching sessions.** It fired in
-**$FIRED of $SESSIONS** session(s) — **$RATE_PCT** — against a floor of \`$MIN_RATE\`.
+**$FIRED of $ELIGIBLE** eligible session(s) — **$RATE_PCT** — against a floor of \`$MIN_RATE\`.
 
 |  |  |
 | --- | --- |
 | Window | $WINDOW_DESC |
 | Sessions measured | $SESSIONS |
-| Directive fired in | $FIRED ($RATE_PCT) |
+| Conditional form (not eligible) | $CONDITIONAL ($COND_PCT) |
+| Eligible sessions | $ELIGIBLE |
+| Directive fired in | $FIRED ($RATE_PCT of eligible) |
 | Floor | $MIN_RATE |
 | **Plugin versions seen** | $VERSIONS |
 

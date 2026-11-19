@@ -192,4 +192,75 @@ out="$(GROUNDING_MIN_SESSIONS=500 run --readout-json "$TMP/collapsed.json" 2>&1)
 [ "$rc" -eq 0 ] || fail "GROUNDING_MIN_SESSIONS should raise the n floor, got $rc: $out"
 echo "$out" | grep -q 'NO VERDICT' || fail "expected a non-verdict under a raised n floor; got: $out"
 
+# 13. Conditional sessions leave the denominator (#285). Since #283/#332 a
+#     session whose hook could not confirm a GlassFrog connector gets the
+#     conditional form, not the directive. On a machine without GlassFrog that
+#     is most sessions, and counting them as misses alarms on a working system.
+#     The rate judged is "of the sessions where the directive COULD fire".
+cat > "$TMP/mixed.json" <<'EOF'
+{"sessions": 100, "directive_fired": {"count": 19},
+ "directive_conditional": {"count": 80},
+ "plugin_versions_seen": {"1.8.0": 100}, "sessions_without_plugin_version": 0}
+EOF
+out="$(run --readout-json "$TMP/mixed.json" --min-sessions 10 2>&1)"; rc=$?
+[ "$rc" -eq 0 ] || fail "19 of 20 eligible sessions is above the floor; conditional sessions must not count as misses, got $rc: $out"
+echo "$out" | grep -q '19 of 20 eligible' || fail "expected the eligible denominator in the summary; got: $out"
+echo "$out" | grep -q '80 of 100 session(s) got the conditional form' \
+  || fail "the conditional count must be reported, not silently subtracted; got: $out"
+
+# 13b. The alarm still fires on the eligible sessions. An alarm nobody has seen
+#      fire is the fail-silent shape #122 is about.
+cat > "$TMP/mixed-bad.json" <<'EOF'
+{"sessions": 100, "directive_fired": {"count": 5},
+ "directive_conditional": {"count": 80},
+ "plugin_versions_seen": {"1.8.0": 100}, "sessions_without_plugin_version": 0}
+EOF
+out="$(run --readout-json "$TMP/mixed-bad.json" 2>&1)"; rc=$?
+[ "$rc" -eq 1 ] || fail "5 of 20 eligible sessions must alarm, got $rc: $out"
+echo "$out" | grep -q '5 of 20\*\* eligible' || fail "expected the eligible counts in the alarm; got: $out"
+
+# 13c. Every session conditional: no rate can be judged, and that must be LOUD.
+#      An operator who authenticated GlassFrog and still sees every session
+#      conditional has a real problem; a quiet exit 0 would hide it.
+cat > "$TMP/all-cond.json" <<'EOF'
+{"sessions": 40, "directive_fired": {"count": 0},
+ "directive_conditional": {"count": 40},
+ "plugin_versions_seen": {"1.8.0": 40}, "sessions_without_plugin_version": 0}
+EOF
+out="$(run --readout-json "$TMP/all-cond.json" 2>&1)"; rc=$?
+[ "$rc" -eq 0 ] || fail "an all-conditional window is a non-verdict, not an alarm, got $rc: $out"
+echo "$out" | grep -q 'NO VERDICT' || fail "an all-conditional window must say NO VERDICT; got: $out"
+echo "$out" | grep -q '::warning' || fail "an all-conditional window must raise a visible warning; got: $out"
+echo "$out" | grep -q '^Clear' && fail "an all-conditional window must not report Clear: $out"
+
+# 13d. Live wiring for the new key: conditional sessions read by the real
+#      readout leave the denominator. A renamed key would fail here instead of
+#      silently putting them back in.
+cat > "$HOOK" <<'HOOK_SRC'
+#!/usr/bin/env bash
+conditional=$(cat <<'CONDITIONAL'
+**Test plugin: role-grounding check (conditional directive)**
+
+Ground only if a glassfrog_get_me tool is available.
+CONDITIONAL
+)
+grounding=$(cat <<'DIRECTIVE'
+**Test plugin: role-grounding directive**
+
+Resolve and announce the active role/circle before your first substantive action.
+DIRECTIVE
+)
+HOOK_SRC
+rm -f "$PROJ/reader.jsonl"
+for i in $(seq 1 30); do
+  cat > "$PROJ/cond-$i.jsonl" <<'JSONL'
+{"type":"attachment","timestamp":"2020-01-01T00:00:00Z","stdout":"{\"additionalContext\":\"**Test plugin: role-grounding check (conditional directive)**\"}"}
+JSONL
+done
+out="$(live 2>&1)"; rc=$?
+[ "$rc" -eq 0 ] || fail "live wiring: 12 of 13 eligible should be clear with 30 conditional sessions, got $rc: $out"
+echo "$out" | grep -q '12 of 13 eligible' || fail "live wiring: expected 12 of 13 eligible; got: $out"
+echo "$out" | grep -q '30 of 43 session(s) got the conditional form' \
+  || fail "live wiring: expected the conditional count from the real readout; got: $out"
+
 echo "PASS: all grounding-fire-rate-check tests"
