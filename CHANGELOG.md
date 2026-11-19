@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.3...v1.8.0) (2026-11-19)
+
+
+### Features
+
+* menu keys, picker, user-only writers, act-type names ([#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)-[#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)) ([#466](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/466)) ([ee3f9a2](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/ee3f9a2de2a4a0861c1d62cd352f275d82a48f82))
+
 ## [1.7.3](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.2...v1.7.3) (2026-11-19)
 
 
