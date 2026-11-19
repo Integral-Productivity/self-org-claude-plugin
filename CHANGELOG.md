@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.3](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.2...v1.7.3) (2026-11-19)
+
+
+### Bug Fixes
+
+* **evals:** run the graded eval nightly at runs=1 and weekly at runs=3 ([#468](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/468)) ([436b694](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/436b694f2a1133d0daa1387f5aac166de6d9c1a3))
+
 ## [1.7.2](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.1...v1.7.2) (2026-11-15)
 
 
