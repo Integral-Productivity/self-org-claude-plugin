@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.8.0...v1.8.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* bug bash over four ready-for-agent bugs ([#270](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/270), [#364](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/364), [#285](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/285), [#269](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/269)) ([#481](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/481)) ([3732dc1](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/3732dc185fbec68712ca1f18ca867eec4422c3f8))
+
 ## [1.8.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.7.3...v1.8.0) (2026-11-19)
 
 
