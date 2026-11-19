@@ -1221,6 +1221,42 @@ assert 'user' in types, 'the all-events mutant did not reproduce an unfiltered s
 pass
 
 # ---------------------------------------------------------------------------
+# 9c. The grader's raw reply survives the run too (#269).
+# ---------------------------------------------------------------------------
+# `metadata.analyzer_model` read claude-haiku-4-5-20251001 on all 24 grading
+# calls of run 32058594541, while --model claude-sonnet-5 was passed. The
+# grader call is `--output-format json`, not a stream, so observed_model() gets
+# one synthetic result event with no assistant turn and falls through to
+# modelUsage's first key -- the path #222 found unreliable for the executor.
+# Whether that is what happened cannot be checked: the reply was discarded.
+# This keeps it, so the next graded run settles the question for free.
+python3 -c "
+import json
+p = '$TMP/out-model/eval-case-model-0/with_skill/run-1/outputs/grader-response.json'
+d = json.load(open(p))
+assert 'fake-analyzer-model' in (d.get('modelUsage') or {}), d
+assert 'usage' in d, d
+" || fail "grader-response.json did not survive the run with the grader's modelUsage (#269)"
+pass
+
+mkdir -p "$TMP/mut-no-grader-raw/scripts"
+ln -s "$REPO/evals" "$TMP/mut-no-grader-raw/evals"
+ln -s "$REPO/.claude-plugin" "$TMP/mut-no-grader-raw/.claude-plugin"
+python3 - "$RUNNER" "$TMP/mut-no-grader-raw/scripts/run-behavioural-eval.py" <<'PY'
+import pathlib, sys
+src, dst = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+text = src.read_text()
+mutated = text.replace('raw_path.write_text(proc.stdout)', 'pass')
+assert mutated != text, "mutation target not found: the grader-response.json write moved"
+dst.write_text(mutated)
+PY
+record_models "$TMP/mut-no-grader-raw/scripts/run-behavioural-eval.py" "$TMP/out-model-nograderraw"
+if [ -f "$TMP/out-model-nograderraw/eval-case-model-0/with_skill/run-1/outputs/grader-response.json" ]; then
+  fail "the grader-response-skipping mutant still produced the file, so this case does not prove the write is load-bearing"
+fi
+pass
+
+# ---------------------------------------------------------------------------
 # 10. THE SESSION HAD THE SHAPE ITS CONFIGURATION CLAIMS.
 # ---------------------------------------------------------------------------
 # The defect these catch is the one this suite could not previously see: a
