@@ -32,7 +32,7 @@ Cases are grouped by **surface**, not one file per case, so several golden cases
 that exercise the same command share a file. Three of the four live under
 `/self-org:tension-triage`, because that is where the gates they test are
 specified — including successor-before-archive, which reads like a job for
-`/self-org:supersession-sweep` and is not: that command handles supersession
+`/self-org:tension-sweep` and is not: that command handles supersession
 *between two tensions* and explicitly does not file new ones, while a tension
 superseded *structurally by a role* is Step 1 territory and triage's to act on.
 
@@ -120,7 +120,10 @@ known-correct disposition that a human reached and recorded on
 | Blended tension partitioned | `ten_22537203` | The body is **partitioned**, not refused (loses the structural half) and not left fused (unresolvable — it sat that way 15 months). |
 | Successor before archive | `ten_5c9a90ba`, `ten_c615496d`, superseded by ◎Data Steward | The successor is written **before** the archive. Archiving alone drops a live, material exposure. |
 | Person tension refused | synthetic | No `create_tension` is drafted; the IDR route is surfaced. |
+| Decision offered in the picker | synthetic, ◎Offer Design holds the roadmap-tool accountability | With `AskUserQuestion` offered, the walk calls it for the per-item decision: recommended key first, at most four options, `More options` last ([#461](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/461)). |
 | Circle sweep completeness | 47 tensions across 18 circles; a root call returns 21 | All 47 surface. This is [glassfrog-mcp-server#122](https://github.com/Integral-Productivity/glassfrog-mcp-server/issues/122) caught from the consumer side. |
+
+A case can add tools to the session with an `extra_tools` list. Only `AskUserQuestion` is allowed, so a case can check a walk's picker path; the runner refuses any other tool, because a shell or a file writer would undo the hermetic tool set.
 
 A case is only worth keeping if it can fail. Assertions that pass with the skill
 disabled are non-discriminating and should be cut — the aggregation step reports

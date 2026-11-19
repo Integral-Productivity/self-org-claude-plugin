@@ -57,7 +57,8 @@ pass() { cases=$((cases + 1)); }
 command -v jq >/dev/null 2>&1 || fail "jq is required"
 command -v python3 >/dev/null 2>&1 || fail "python3 is required by the mutant builder"
 
-SELF="Integral-Productivity/holacracy-claude-plugin"
+SELF="Integral-Productivity/self-org-claude-plugin"
+FORMER="Integral-Productivity/holacracy-claude-plugin"
 LABS="Integral-Productivity/marketplace-labs"
 
 # ---------------------------------------------------------------------------
@@ -202,7 +203,7 @@ p_dup() { local d o r; d="$(world "pd-$RANDOM")"
   o="$(run "$1" "$d" 2>&1)"; r=$?; [ "$r" -eq 1 ] && echo "$o" | grep -q 'ambiguous'; }
 p_dup "$SCRIPT" || fail "duplicate entries must exit 1 naming the ambiguity"; pass
 
-W="$(world s2case)"; catalog "$W/$LABSFX" integral-productivity-labs "$(entry integral-productivity/HOLACRACY-claude-plugin stable)"
+W="$(world s2case)"; catalog "$W/$LABSFX" integral-productivity-labs "$(entry integral-productivity/SELF-ORG-claude-plugin stable)"
 out="$(run "$SCRIPT" "$W" 2>&1)"; rc=$?
 [ "$rc" -eq 0 ] || fail "GitHub repo names are case-insensitive; a case-only difference must pass (rc=$rc): $out"; pass
 
@@ -246,12 +247,19 @@ p_orphan_channel() { local d o r; d="$(world "po-$RANDOM")"
   sed -i.bak '/^\/plugin install self-org@integral-productivity-labs$/d' "$d/README.md"
   o="$(run "$1" "$d" 2>&1)"; r=$?; [ "$r" -eq 1 ] && echo "$o" | grep -q 'catalog integral-productivity-labs is added but no'; }
 
+# #463: the repo's former slug in a channel line fails, even though GitHub
+# still redirects it today.
+p_former_slug() { local d o r; d="$(world "pf-$RANDOM")"
+  sed -i.bak "s#^/plugin marketplace add $SELF\$#/plugin marketplace add $FORMER#" "$d/README.md"
+  grep -qx "/plugin marketplace add $FORMER" "$d/README.md" || return 2
+  o="$(run "$1" "$d" 2>&1)"; r=$?; [ "$r" -eq 1 ] && echo "$o" | grep -q "names this repo's former slug"; }
 p_bare_install "$SCRIPT"   || fail "a bare '/plugin install self-org' must exit 1"; pass
 p_undeclared "$SCRIPT"     || fail "an install target that is not its channel's catalog must exit 1"; pass
 p_swapped "$SCRIPT"        || fail "install lines swapped across blocks must exit 1, naming each wrong pair"; pass
 p_no_channel "$SCRIPT"     || fail "an install line with no channel above it must exit 1"; pass
 p_orphan_channel "$SCRIPT" || fail "a channel with no install line must exit 1"; pass
 p_no_install "$SCRIPT"     || fail "an Install section with no install line must exit 1"; pass
+p_former_slug "$SCRIPT"    || fail "a channel naming the former repo slug must exit 1 (#463)"; pass
 p_dup_heading "$SCRIPT"    || fail "a second '## Install...' heading must exit 1, not be silently ignored"; pass
 
 # Unrecognised install instructions: each was silently dropped before, and each
@@ -301,7 +309,7 @@ p_local_judged() { local d o r; d="$(world "pl-$RANDOM")"
 p_local_judged "$SCRIPT" || fail "--local-only must still judge the local catalog"; pass
 
 p_nothing_measured() { local d o r; d="$(world "pn-$RANDOM")"
-  sed -i.bak "/marketplace add Integral-Productivity\/holacracy-claude-plugin/d; /integral-productivity-self-org/d" "$d/README.md"
+  sed -i.bak "/marketplace add Integral-Productivity\/self-org-claude-plugin/d; /integral-productivity-self-org/d" "$d/README.md"
   o="$(run "$1" "$d" --local-only 2>&1)"; r=$?; [ "$r" -eq 2 ] && echo "$o" | grep -q 'no channel was measured'; }
 p_nothing_measured "$SCRIPT" || fail "--local-only with no local channel measured nothing and must exit 2, not 0"; pass
 
@@ -397,6 +405,8 @@ mutant_fails pair_mismatch 'elif [ "$name" != "$target" ]; then'           'elif
 mutant_fails undeclared    'elif [ "$name" != "$target" ]; then'           'elif false; then' p_undeclared
 mutant_fails no_channel    'if [ -z "$via" ]; then'                         'if false; then' p_no_channel
 mutant_fails local_pair    'if [ "$status" != measured ]; then'             'if true; then' p_local_pair_judged
+# #463: the former repo slug
+mutant_fails former_slug   'if is_former_slug "$current"; then'             'if false; then' p_former_slug
 # #7: a value-taking option with no value
 mutant_fails need_value    '[ $# -ge 2 ] || die "$1 needs a value"'         'true' p_missing_value
 

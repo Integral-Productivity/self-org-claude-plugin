@@ -9,7 +9,7 @@ A public (MIT, public-repo) Claude Code plugin, named `self-org`, for engaging w
 ## Layout
 
 ```
-holacracy-claude-plugin/
+self-org-claude-plugin/
 ├── .claude-plugin/plugin.json     manifest
 ├── .claude-plugin/marketplace.json  self-hosted public catalog (ADR-0016)
 ├── .mcp.json                      GlassFrog MCP connector (HTTP + OAuth)
@@ -41,15 +41,19 @@ it on its first CI run. Two things kept the old name on purpose: the
 are local configuration that working setups already reference, and the
 SessionStart hook still accepts routine titles under `holacracy/`.
 
+## Command names
+
+Commands are named by act type ([ADR-0028](docs/adr/0028-commands-are-named-by-act-type.md)). An authority act on one work item is `<verb>-<item>`, with the verb from #159 (`sense-tension`, `commit-project`). A backlog walk is `<item>-<walk>` (`tension-triage`, `project-sweep`). Session and reference commands keep fixed names (`context`, `governance`). The words live in `evals/command-names.txt`, and `skills-lint.sh` check 18 fails a name that fits no shape. The six names renamed under ADR-0028 survive as deprecated alias commands until 2.0.0.
+
 ## Shared reference
 
 `skills/shared/authority-boundaries.md` is loaded by the four role skills via the relative path `../shared/authority-boundaries.md`. If a role skill's `references/` file needs to load it, the path is `../../shared/authority-boundaries.md`. **This rule is now enforced** — `scripts/skills-lint.sh` check 1 resolves every backticked path from the file that cites it. It had been stated here for months and three files violated it anyway, with nine broken load paths sitting on `main` until the check found them.
 
-`skills/shared/triage-gates.md` holds the five gates every tension passes through, loaded by the `tension-capture` subagent, `/self-org:capture-tension`, `/self-org:tension-triage`, `/self-org:supersession-sweep`, the `self-org-ai-governance` skill, and the Rep Link's `references/tension-triage-guide.md` (which extends it and keeps its own filename). Callers cite gates by number, so renumbering the file means editing every caller — it was renamed from `tension-triage.md` and gained a new Step 1 in one pass ([ADR-0011](docs/adr/0011-separate-tension-readiness-from-tension-disposition.md)), which shifted all four original steps. **You no longer have to remember this**: `skills-lint.sh` check 2 asserts every `` `X.md` Step N `` citation names a heading that exists in `X.md`.
+`skills/shared/triage-gates.md` holds the five gates every tension passes through, loaded by the `tension-capture` subagent, `/self-org:sense-tension`, `/self-org:tension-triage`, `/self-org:tension-sweep`, the `self-org-ai-governance` skill, and the Rep Link's `references/tension-triage-guide.md` (which extends it and keeps its own filename). Callers cite gates by number, so renumbering the file means editing every caller — it was renamed from `tension-triage.md` and gained a new Step 1 in one pass ([ADR-0011](docs/adr/0011-separate-tension-readiness-from-tension-disposition.md)), which shifted all four original steps. **You no longer have to remember this**: `skills-lint.sh` check 2 asserts every `` `X.md` Step N `` citation names a heading that exists in `X.md`.
 
-The plugin separates **tension readiness** (`/self-org:tension-triage` — is this well-formed, non-duplicate, still real?) from **tension disposition** (`/self-org:process-tension` — what output does it become?). Do not let a readiness surface start producing outputs; that conflation is what ADR-0011 exists to undo. `/self-org:process-tension` and the authority-class write commands are not built yet — see [#120](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/120) and its child issues.
+The plugin separates **tension readiness** (`/self-org:tension-triage` — is this well-formed, non-duplicate, still real?) from **tension disposition** (`/self-org:process-tension` — what output does it become?). Do not let a readiness surface start producing outputs; that conflation is what ADR-0011 exists to undo. `/self-org:process-tension` and the authority-class write commands are not built yet — see [#120](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/120) and its child issues.
 
-`skills/shared/project-well-formedness.md` (the project-quality rubric) and `skills/shared/project-review-critics.md` (the five critic lenses + finding schema) are loaded by the `/self-org:review-project` command and the `project-critic` subagent. The rubric is also loaded (Family A only) by the `/self-org:capture-project` command and the `project-capture` subagent, and by `/self-org:stalled-project-sweep` (which emits the rubric's reserved `stale`/`blocked` states — the sweep owns the detection logic that produces them). The rubric is the single source of truth for "well-formed enough"; keep it and the critic spec in sync.
+`skills/shared/project-well-formedness.md` (the project-quality rubric) and `skills/shared/project-review-critics.md` (the five critic lenses + finding schema) are loaded by the `/self-org:project-review` command and the `project-critic` subagent. The rubric is also loaded (Family A only) by the `/self-org:commit-project` command and the `project-capture` subagent, and by `/self-org:project-sweep` (which emits the rubric's reserved `stale`/`blocked` states — the sweep owns the detection logic that produces them). The rubric is the single source of truth for "well-formed enough"; keep it and the critic spec in sync.
 
 `skills/shared/tension-well-formedness.md` (the tension-body rubric, checks T1–T7) is the twin of the project rubric for tensions. It is loaded by `skills/shared/tension-capture-flow.md` (a soft check inside Step 4), the `tension-capture` subagent, `/self-org:tension-triage` (the standard for `[e] edit body`), and `scripts/tension-lint.py` (the Jev lint, [ADR-0024](docs/adr/0024-tensions-are-checked-for-well-formedness-by-one-rubric.md)). It judges the body only; whether a tension belongs in governance stays with `triage-gates.md`.
 
@@ -57,9 +61,13 @@ The plugin separates **tension readiness** (`/self-org:tension-triage` — is th
 
 `skills/shared/project-triage-gates.md` holds the four project reality gates (outcome reached, duplicate, superseded, owner role gone), the routing order, the timestamped note line, and the movement rule that decides when a `needs-info` project is shown again. It is loaded by `/self-org:project-triage` and is the project twin of `triage-gates.md`, kept separate because callers cite steps by number.
 
-`skills/shared/project-capture-flow.md` (the draft-and-confirm P-flow for filing a well-formed project at intake) is loaded by the `/self-org:capture-project` command and the `project-capture` subagent. It is the create-flow twin of `skills/shared/tension-capture-flow.md`; keep the two flows' constitutional-safeguard and confirmation-block conventions aligned.
+`skills/shared/decision-keys.md` is the one vocabulary for per-item menu keys: every walk command and both capture flows cite it next to their menus. A key has one meaning everywhere; a new action gets a new key, never an existing one. `skills-lint.sh` check 15 fails a menu key or label the table does not hold. It exists because `[a]` meant *archive* in three walks and *apply* in `/self-org:project-review` (#460). Its Step 3 is the picker path: a walk shows each per-item decision in the host's question tool (recommended key, two likeliest others, `More options`), and the letter menu is the fallback. Check 16 fails a walk command that shows a menu and does not cite Step 3 (#461).
 
-`skills/checklist-metric-audit/` audits a circle's checklist items and metrics against its purpose, accountabilities, and domains, then remediates directly through the GlassFrog MCP. It leans on the constitutional distinction that checklist items and metrics are **operational, not governance** (Art. 3.2), so — unlike governance edits — it applies changes without a proposal. Its companion command is `/self-org:audit-portfolio`. When an audit finding actually needs a new accountability or domain, it hands off to `/self-org:capture-tension` rather than papering over the gap.
+`skills/shared/project-capture-flow.md` (the draft-and-confirm P-flow for filing a well-formed project at intake) is loaded by the `/self-org:commit-project` command and the `project-capture` subagent. It is the create-flow twin of `skills/shared/tension-capture-flow.md`; keep the two flows' constitutional-safeguard and confirmation-block conventions aligned.
+
+`skills/checklist-metric-audit/` audits a circle's checklist items and metrics against its purpose, accountabilities, and domains, then remediates directly through the GlassFrog MCP. It leans on the constitutional distinction that checklist items and metrics are **operational, not governance** (Art. 3.2), so — unlike governance edits — it applies changes without a proposal. Its companion command is `/self-org:portfolio-audit`. When an audit finding actually needs a new accountability or domain, it dispatches the `tension-capture` subagent rather than papering over the gap.
+
+**Commands that write to GlassFrog are user-only.** Each carries `disable-model-invocation: true`, so only the user's `/name` starts it; the model never does ([#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)). The per-item confirmation stays the first guard; this is the second. Two walks are exempt on purpose, `tension-triage` and `project-triage`, because the behavioural evals start them from plain language. A hand-off into a user-only command therefore names the command for the user to type, or dispatches the matching subagent (`tension-capture`, `project-capture`); it never starts the command. `skills-lint.sh` check 17 fails a command that names a GlassFrog write tool and lacks the flag.
 
 ## GlassFrog MCP
 
@@ -88,9 +96,10 @@ triage-state names that are in the closed list, a work-item surface map with
 no empty lifecycle cell, no pre-1.0 plugin name in a shipped surface, and
 Constitution citations that name a real v5.0 section and the right one for the
 topic (check 14, against `evals/constitution-v5.0-sections.txt`, pinned to
-HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
+HolacracyOne commit cc93b0b by [ADR-0026](docs/adr/0026-constitutional-guidance-cites-the-adopted-text-by-version-and-section.md))), and menu keys that keep one meaning in every walk (check 15, against
+`skills/shared/decision-keys.md`, [#460](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/460)), and a walk that shows a letter menu cites the picker path in that file's Step 3 (check 16, [#461](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/461)), a GlassFrog-writing command that is user-only (check 17, [#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)), and a command name that fits its act type (check 18, against `evals/command-names.txt`, [ADR-0028](docs/adr/0028-commands-are-named-by-act-type.md)). The upload-limit check exists because a rejected upload is silent: the org's claude.ai copy, which Cowork and scheduled
 cloud sessions load, keeps the last version it accepted and every later release
-misses those sessions ([#368](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/368)).
+misses those sessions ([#368](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/368)).
 `claude plugin validate` does not check these limits.
 
 The surface-map check (check 13) holds `docs/surface-map.md` to the closed lists
@@ -173,7 +182,7 @@ coupling to real code, and drift in it must be loud.
 `.github/workflows/skills-eval.yml` runs `scripts/run-behavioural-eval.py`
 nightly and on `workflow_dispatch`, against `ANTHROPIC_API_KEY`. That asymmetry
 is deliberate and it is also the risk: an instrument that executes once a day
-against a secret no laptop holds is [#122](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/122)'s
+against a secret no laptop holds is [#122](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/122)'s
 shape exactly. So the suite substitutes a fake model that replays a scripted plan
 through the *real* stub over the *real* generated MCP config, and everything but
 the model is exercised offline, per PR.
@@ -190,7 +199,7 @@ Three things about the runner are worth knowing before you change it:
 - **The session's shape is checked, not assumed.** Read off the `system/init`
   event: the session must offer a `Skill` tool, `with_skill` must have at least
   one `self-org:` command registered, and the control must have none. Before
-  [#226](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/226)
+  [#226](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/226)
   the harness could not tell "the plugin did not load" from "the plugin loaded
   and changed nothing" — both produce a healthy transcript and a scoreable
   grading — and four graded runs reported deltas between two configurations that
@@ -230,11 +239,11 @@ carry `why_kept`. The runner refuses a case file that omits either. An assertion
 that passes with the skill disabled measures nothing, and the only defensible
 exception is a constitutional floor that must hold in every configuration.
 
-`evals/benchmark.json` is the baseline [#173](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/173)'s
+`evals/benchmark.json` is the baseline [#173](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/173)'s
 regression alarm compares against. **It is still unmeasured**, and says so in its own
 body. `ANTHROPIC_API_KEY` is configured now — that blocker is gone — but the
 first graded run taken after it
-([31229964963](https://github.com/Integral-Productivity/holacracy-claude-plugin/actions/runs/31229964963))
+([31229964963](https://github.com/Integral-Productivity/self-org-claude-plugin/actions/runs/31229964963))
 ran its two arms on two different models and so measured the models. Seed it
 from a real `workflow_dispatch` run, never by hand: a baseline nobody measured
 is the same report-health-from-absent-evidence failure the grounding readout
@@ -243,9 +252,9 @@ section below spends a page on.
 **A baseline is only comparable against runs of the same model, and only against
 runs of a harness that loads the plugin.** The first condition is recorded in the
 file (`metadata.executor_model`); the second is not, and is what
-[#226](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/226)
+[#226](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/226)
 turned from a theoretical caveat into a rule — every number produced before
-[#227](https://github.com/Integral-Productivity/holacracy-claude-plugin/pull/227)
+[#227](https://github.com/Integral-Productivity/self-org-claude-plugin/pull/227)
 merged compared the base model against itself. Re-seed after any change to how
 the session is constructed, and read the `--validate-only` session-shape
 preflight before trusting a run at all.
@@ -323,7 +332,7 @@ Convention of record: [`docs/adr/0010-release-please-is-the-sole-writer-of-the-p
 grep -l "Holacracy plugin: role-grounding" ~/.claude/projects/*/*.jsonl
 ```
 
-On 2026-08-03 that returned **10 files** against a true **3**. Whole-file grep cannot tell *the hook injected this* from *the session read or quoted it* — and the sessions most likely to read the hook source are this repo's own. It is the same mistake that produced the false 2.2% in [#122](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/122) and the 23 false positives in [#123](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/123).
+On 2026-08-03 that returned **10 files** against a true **3**. Whole-file grep cannot tell *the hook injected this* from *the session read or quoted it* — and the sessions most likely to read the hook source are this repo's own. It is the same mistake that produced the false 2.2% in [#122](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/122) and the 23 false positives in [#123](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/123).
 
 Use the instrument, which counts only hook-output records and derives its marker from the live hook:
 
@@ -336,13 +345,13 @@ Two things to get right when reading it:
 - **`--since-start`, not `--since`.** `--since` filters on file mtime, which misfiles any session that began before the cutoff and was appended to afterwards — five of them in the 2026-08-03 window. `--since-start` buckets by the session's first record.
 - **The in-repo line is corroboration, not the result.** This repo's own sessions are held out of every headline figure and reported separately, because they work on the directive itself. Judge the experiment on the cross-repo figures.
 
-- **`plugin versions seen` is the first thing to read on a bad number.** The hook stamps the running version into every payload, and the readout reports which versions actually ran. A large `no version stamp` count means copies too old to carry the stamp — which is the [#122](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/122) condition exactly, and what took archaeology across three install channels to find the first time.
+- **`plugin versions seen` is the first thing to read on a bad number.** The hook stamps the running version into every payload, and the readout reports which versions actually ran. A large `no version stamp` count means copies too old to carry the stamp — which is the [#122](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/122) condition exactly, and what took archaeology across three install channels to find the first time.
 
-The instrument is a proxy and says so: an assistant verbatim-quoting a documentation example still scores. [#71](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/71) tracks the structured session log that would replace it.
+The instrument is a proxy and says so: an assistant verbatim-quoting a documentation example still scores. [#71](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/71) tracks the structured session log that would replace it.
 
 ### The alarms
 
-The readout is descriptive — it has no thresholds and always exits 0. Three alarms fail loudly. (The heading carried a count until [#187](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/187); it was wrong by one for as long as the third alarm had existed, which is why the count is gone rather than corrected — the same fix [#143](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/143) made to `scripts-test.yml`'s header.)
+The readout is descriptive — it has no thresholds and always exits 0. Three alarms fail loudly. (The heading carried a count until [#187](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/187); it was wrong by one for as long as the third alarm had existed, which is why the count is gone rather than corrected — the same fix [#143](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/143) made to `scripts-test.yml`'s header.)
 
 ```bash
 scripts/grounding-fire-rate-check.sh      # did the directive stop reaching sessions?
@@ -354,7 +363,7 @@ The first two read the readout's output and run **operator-local**, alongside th
 
 **The third is not operator-local, and that is the thing to get right about it.** It reads only the GitHub API — no `~/.claude`, no local install — so it runs anywhere `gh` is authenticated, and it already runs on a schedule: `.github/workflows/release-latency-alarm.yml` fires it daily at 15:17 UTC and on `workflow_dispatch`. Hand-running it is for verification, not coverage. Its verification affordances are `--now` (a synthetic clock) and `--pr-json` (substitute the open-PR list for a fixture — PR metadata only; the reads of `stable` and of the PR's head branch still hit the live repo). Neither is used by the workflow. Reading this section and coming away thinking all three need a human at a laptop is the misread that leaves the scheduled one hand-run and the operator-local two uncovered.
 
-It belongs in this section because it guards the precondition the other two measure against: merging is not shipping. Consumers install from `stable`, `stable` only advances when `promote-stable.yml` fires on a `vX.Y.Z` tag, and that tag only exists once the release PR merges. A directive that has not been released cannot reach any session no matter what the handler says — that is Layer 1 of [#122](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/122), the 34-day freeze [#129](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/129) was filed for.
+It belongs in this section because it guards the precondition the other two measure against: merging is not shipping. Consumers install from `stable`, `stable` only advances when `promote-stable.yml` fires on a `vX.Y.Z` tag, and that tag only exists once the release PR merges. A directive that has not been released cannot reach any session no matter what the handler says — that is Layer 1 of [#122](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/122), the 34-day freeze [#129](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/129) was filed for.
 
 Exit codes are the same for all three: `0` clear, `1` alarm (a tracking issue is filed and updated, and auto-closed when it recovers), `2` usage or operational error. Add `--dry-run` to see the report without writing to GitHub — on all three, a `--dry-run` that *would* have alarmed still exits 1. The release check adds one notification layer the other two have nowhere to put: a sticky comment on the release PR itself, upserted by the same marker as the tracking issue, so the alarm appears where the merge happens.
 
@@ -362,10 +371,10 @@ The skew check adds `n/a` for a channel that is provably not in use — no plugi
 
 **`2` includes "nothing to measure."** An empty window, an unreadable readout, or a probe root with no plugin channels all exit 2 rather than reporting clear. Reporting health from absent evidence is precisely the failure #122 documents, and neither operator-local alarm is permitted to commit it.
 
-**The release check also alarms when there is no release PR at all** ([#145](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/145)). Until then, `stable` behind `main` with no open release PR was a `::warning::` on an exit `0`, and the same path closed the tracking issue as "cleared". That is how [#310](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/310) went about 15 hours with no alarm: the release PR merged, release-please failed at the tag step, and nothing was old enough to report. Now the no-release-PR path exits `1` and names one of three causes:
+**The release check also alarms when there is no release PR at all** ([#145](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/145)). Until then, `stable` behind `main` with no open release PR was a `::warning::` on an exit `0`, and the same path closed the tracking issue as "cleared". That is how [#310](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/310) went about 15 hours with no alarm: the release PR merged, release-please failed at the tag step, and nothing was old enough to report. Now the no-release-PR path exits `1` and names one of three causes:
 
 - **tag-missing** — `main`'s `.release-please-manifest.json` names a version with no `vX.Y.Z` tag. The release PR merged but did not release (the #310 case).
-- **promotion-failed** — the tag exists but `stable` carries an older version: `promote-stable.yml` did not run ([#108](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/108)). This one is checked whether or not a release PR is open, because the next releasable merge opens a new release PR while `stable` stays behind.
+- **promotion-failed** — the tag exists but `stable` carries an older version: `promote-stable.yml` did not run ([#108](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/108)). This one is checked whether or not a release PR is open, because the next releasable merge opens a new release PR while `stable` stays behind.
 - **no-release-pr** — a releasable commit (`feat`, `fix`, `perf`, `revert`, `deps`, or any breaking change) is on `main` but not `stable`, and release-please never opened a PR. That is its soft-failure path: missing credentials exit `0` by design.
 
 A `docs:`/`ci:`/`chore:`-only delta is not a stall and does not alarm; release-please opens no PR for it. Each stall alarms only after a grace window (`RELEASE_STALL_GRACE_HOURS`, default 2h). Inside the window the run exits `0` but does **not** close the tracking issue: "cleared" is never reported while a releasable change waits. A stall whose age cannot be read counts as past the window.

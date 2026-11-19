@@ -1,0 +1,104 @@
+---
+description: Adversarial review of one GlassFrog project against the well-formedness rubric. Runs five critic lenses (actionability, goal-alignment, scope-authority, assignment-fit, red-team), surfaces findings with drafted fixes, and applies additive fixes with a single per-item confirmation. Never auto-writes. Backlog triage moved to /self-org:project-triage.
+argument-hint: [project name/id]
+disable-model-invocation: true
+---
+
+# /self-org:project-review
+
+Review GlassFrog **projects** for quality: is each one well-formed (an actionable outcome with a next-action and a clear owner) and well-placed (serving a goal, within the owner role's authority, on the best-fit role)? For each finding, Claude drafts a fix; the human confirms per-item; only additive fixes are written to GlassFrog. This is the project-side analog of `/self-org:tension-triage`.
+
+Load three shared references at the start:
+
+1. `skills/shared/project-well-formedness.md` -- the rubric (the seven dimensions, the state vocabulary, the DoD-as-body-convention, the status enum).
+2. `skills/shared/project-review-critics.md` -- the five critic lenses, the finding schema, and the severity/floor/cap/dedupe rules.
+3. `skills/shared/glassfrog-id-and-url-resolution.md` -- how to resolve a user-supplied pointer (a pasted URL, a name) to a v5 record, and why `/projects/<id>` URLs sometimes name an action.
+
+## The safeguard (non-negotiable)
+
+**Draft and confirm only.** Do not call `glassfrog_create_action` or `glassfrog_link_goal_supporting_project` without an explicit per-item human confirmation. Do not call `glassfrog_update_project` at all in this command -- description reframes and archives are surfaced as drafts the human applies themselves. Scope-authority and assignment-fit findings **never** write to the project; they route to the tension flow. Per-item confirmation, never batched. The user can quit at any point.
+
+## What this command does
+
+1. **Resolve actor + role roster.** Follow `skills/shared/actor-and-role-resolution.md` Steps 1-2: `glassfrog_get_me`, then `glassfrog_list_my_roles`.
+
+2. **Arg gate -- pick the target set** from `$ARGUMENTS`:
+   - **No argument, or a circle name** -> **deprecated.** The backlog walk moved to `/self-org:project-triage` ([ADR-0018](../docs/adr/0018-separate-project-readiness-from-project-quality.md)). Say in one line: *"Backlog triage moved to /self-org:project-triage, which saves each project's route so the next pass resumes. Running it now."* Then run `/self-org:project-triage` with the same argument and stop here. This dispatch stays until a major release.
+   - **A named/identified project** -> resolve one project (by id `proj_<32hex>`, or by matching the name against `list_role_projects(..., q: "<name>")`; if ambiguous, ask which one) and run the **deep single-project review** (independent critic subagents -- see "Deep review" below).
+   - **A pasted GlassFrog URL** -> the legacy numeric ID in it has no direct lookup, and search does not index it. Follow `skills/shared/glassfrog-id-and-url-resolution.md`: ask for the item's title first and resolve that by search, fall back to that doc's legacy-ID scan on GlassFrog Extended only when the title is unavailable, and confirm whether it is a project or an action before running the rubric on it.
+
+   If a target can't be resolved (no matching project, actor fills no role in the named circle), name the constraint honestly and stop.
+
+3. **Run the five lenses** against the target project, seeded from `project-review-critics.md`: fan out one `project-critic` subagent per lens (see "Deep review" below).
+
+4. **Dedupe, rank, cap.** Merge duplicate findings (same dimension + project -> keep highest severity), drop `low` findings (the floor), keep at most 6 per project (the cap).
+
+5. **Present the project.** Show its verdict -- the state (`well-formed`, `needs-outcome`, ...) of the highest-severity surviving finding -- and expand the full findings block.
+
+6. **The per-project findings block** (modeled on `/self-org:tension-triage`):
+
+   ```
+   Project [N of M]: [description excerpt]   (proj_xxx, owned by [Role] of [Circle])
+   Verdict: [state]
+
+   Finding [i]:  [lens] · [severity]
+     [plain-language gap statement]
+     Drafted fix: [the drafted fix, rendered per its kind]
+
+     Apply as:
+       [w] write         -> additive write on confirm (create-action / link-goal only)
+       [v] view draft    -> advisory draft (reframe / archive) — you apply it in GlassFrog
+       [t] route tension -> dispatch tension-capture (scope-authority / assignment)
+       [s] skip          -> no action on this finding
+       [q] quit          -> stop the whole review, leave everything untouched
+   ```
+
+   The keys follow `skills/shared/decision-keys.md`: each key has one meaning in every walk.
+
+   **Picker first.** When the host offers a multiple-choice question tool, show this decision in it, per `skills/shared/decision-keys.md` Step 3: the verdict and one sentence of reason above, then the recommended key, the two likeliest other keys, and `More options`. The block above is the fallback for a host with no question tool.
+
+7. **Apply the confirmed fix** by its `write_class`:
+   - **additive-on-confirm** (`create-action`, `link-goal`): fire the single call. `create-action` **must** pass `parent_project_id` (this project) plus the owning `role_id` and a concrete `description`, `status: "current"`. `link-goal` passes the chosen `goal_id` + `project_id`. Trust the returned id as the same-session confirmation -- do **not** list-back to verify (same propagation caveat as tensions).
+   - **advisory-draft** (`reframe-description`, `archive`): show the exact text/action the human would apply (e.g. the reframed description, or `update_project(project_id, status: "archived")`). Do not call the write.
+   - **advisory-route** (scope-authority / assignment): see "Hand-off to tension capture" below.
+   - Surface any write failure honestly -- never swallow it: *"I couldn't apply the fix -- GlassFrog returned [error]. The draft is still here; retry or adjust?"*
+
+8. **Summarize at the end.** The project reviewed, verdict distribution, actions created, goals linked, drafts handed to the user, tensions routed, findings skipped.
+
+## Deep review (single named project)
+
+When the argument resolves to one project, run the panel as **independent adversarial critics** for genuine independence:
+
+1. Gather the project data once: the project record, its actions (`include: ["actions"]`), the owning role's context (`glassfrog_get_role_context`), goals (`list_role_goals`), domains (`list_role_domains`), and fillers (`glassfrog_list_role_assignments` -- each carries `actor.kind`, which the assignment-fit lens's executor-fit check needs).
+2. Dispatch five `project-critic` subagents in parallel (`agents/project-critic.md`), one per lens, each seeded with that shared data + its lens name. Each returns findings in the schema.
+3. Merge, dedupe, rank, cap (step 4 above), then present the expanded findings block (step 6) and apply per step 7.
+
+## Hand-off to tension capture (scope-authority & assignment-fit)
+
+A confirmed `advisory-route` finding is a *structural* gap -- the project is on a role that isn't authorized for its scope, or isn't the best-fit owner. That is a governance tension, not a project edit. On `[t]`:
+
+- Dispatch the `tension-capture` subagent (`agents/tension-capture.md`) with: the tension text (front-loaded topic, e.g. *"Scope-authority gap: [Role] owns project [X] whose scope reaches into [other role/domain] -- ..."*), the sensing role hint, and an attribution preamble if carried on someone's behalf.
+- The `tension-capture` subagent runs its own draft-and-confirm flow. It files a tension on a role's backlog; it does **not** touch the project.
+- Reason about scope-authority from `skills/shared/authority-boundaries.md`, exactly as `/self-org:check-authority` does.
+
+Assignment-fit defaults to the structural role-fit reading. Only surface the person-fit reading when the user explicitly asks -- it's a Lead Link question.
+
+An **executor-fit** finding (assignment-fit, `executor-mismatch`) routes the same way: `tension-capture` files it on the sensing role's backlog as usual, and the body names the circle's Circle Lead as the role whose call this is -- whether a human or an agent should carry the next action is a question about who fills the role. If the actor fills that Circle Lead role, `tension-capture` stops at `triage-gates.md` Step 1 and reports that the role already holds it and it may just need doing; present that as the outcome, not a failure, and do not count it as a tension routed. Front-load the topic, e.g. *"Executor-fit: [Role]'s next action on [project] needs a person for [judgment / relationship / access], and the role is filled only by agents -- ..."*. It never reassigns the role and never changes the project's status or tags.
+
+## Behaviour
+
+- **Per-finding decision -- never batched.** `[q]` stops the whole review; everything not yet applied stays untouched.
+- **Additive writes only.** `create-action` and `link-goal` are the only calls this command makes to GlassFrog. Reframe and archive are drafts; scope/assignment route to tensions. This is deliberate (protects the role-filler's authorship of their own project wording).
+- **No manufactured critique.** A well-formed project returns no findings. Do not invent gaps to look thorough.
+- **Degrade gracefully.** If a read tool is unavailable on an older MCP server, name the constraint and run the lenses that can (*"Your GlassFrog MCP server doesn't expose goal listing yet -- skipping the goal-alignment lens."*).
+
+## What this command does NOT do
+
+- It does not edit project descriptions or archive projects on the user's behalf (advisory drafts only).
+- It does not make governance changes, re-assign roles, or re-file projects.
+- It does not resolve tensions -- it can *route* a structural gap to the tension flow, where the human decides.
+- It does not write anything without a per-item human keystroke.
+
+## Why this command exists
+
+Projects get captured in GlassFrog with ease but arrive thin -- an activity instead of an outcome, no next-action, no definition of done, sometimes on the wrong role or serving no goal. The backlog then fills with items nobody can act on without re-thinking them. This command is the operational surface that turns thin projects into well-formed, well-placed ones -- and, by showing *why* each is weak from several angles, models good project form so the role-filler needs the review less over time.

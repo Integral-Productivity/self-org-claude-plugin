@@ -638,10 +638,11 @@ check_state_names() {
 #
 # Matched: the old command prefix, the old MCP tool prefix, an install line
 # (`holacracy@`), a `"name": "holacracy"` manifest value, and any
-# `holacracy-<x>` / `holacratic-<x>` identifier. Not matched: the repository
-# slug `holacracy-claude-plugin`, which keeps its name until it is renamed on
-# GitHub, and an ADR filename inside a link (`0005-holacracy-...`), which is a
-# historical record. Descriptive prose ("Holacracy", "Holacratic") is not an
+# `holacracy-<x>` / `holacratic-<x>` identifier, and the repository's former
+# slug `holacracy-claude-plugin` anywhere, URLs included. The repo was renamed on GitHub; the
+# old slug resolves only through a redirect, which breaks the day another repo
+# takes the name (#463). Not matched: an ADR filename inside a link
+# (`0005-holacracy-...`), which is a historical record. Descriptive prose ("Holacracy", "Holacratic") is not an
 # identifier and stays. A file that must name an old identifier -- the
 # migration note -- is allowlisted by pair in evals/legacy-names-allow.txt.
 # ---------------------------------------------------------------------------
@@ -666,13 +667,12 @@ check_legacy_names() {
   skipped 12 && return 0
   local line f n tok hits
   hits="$(cd "$ROOT" && _legacy_files | xargs -r grep -noE \
-    '/holacracy:|mcp__plugin_holacracy_|holacracy@|"name": *"holacracy"|(^|[^/0-9A-Za-z-])holacra(cy|tic)-[a-z][a-z-]*' 2>/dev/null)"
+    '/holacracy:|mcp__plugin_holacracy_|holacracy@|"name": *"holacracy"|holacracy-claude-plugin|(^|[^/0-9A-Za-z-])holacra(cy|tic)-[a-z][a-z-]*' 2>/dev/null)"
   while IFS= read -r line; do
     [ -n "$line" ] || continue
     # Split by hand: `IFS=: read` would drop the trailing colon of `/holacracy:`.
     f="${line%%:*}"; line="${line#*:}"; n="${line%%:*}"; tok="${line#*:}"
     tok="${tok#"${tok%%[/m\"h]*}"}"   # drop the one leading boundary character
-    [ "$tok" = "holacracy-claude-plugin" ] && continue
     _legacy_allowed "$f" "$tok" && continue
     finding 12 "$f:$n" "$tok is the plugin's pre-1.0 name; use self-org (ADR-0020)"
   done <<< "$hits"
@@ -875,6 +875,126 @@ check_constitution_citations() {
   done <<< "$lines"
 }
 
+# ---------------------------------------------------------------------------
+# Check 15 -- a menu key has one meaning in every walk (#460).
+#
+# Before skills/shared/decision-keys.md, `[a]` meant archive (a status change)
+# in three walks and apply (a new action) in review-project; `[c]` had three
+# meanings. A user who learned one walk could make the wrong write in another.
+#
+# The vocabulary is the Step 1 table of that file: `| \`[k]\` | \`label\` |`.
+# In every live file except the vocabulary itself, each `[k] label` that
+# follows the start of a line or whitespace must (a) use a key in the table and
+# (b) start with that key's label, word for word. Text after the label is free.
+# ---------------------------------------------------------------------------
+KEYS_FILE="skills/shared/decision-keys.md"
+
+_decision_keys() {  # prints "<key><TAB><label>" for each row of the key table
+  [ -f "$ROOT/$KEYS_FILE" ] || return 0
+  sed -nE 's/^\| `\[([a-z])\]` \| `([^`]+)` \|.*/\1	\2/p' "$ROOT/$KEYS_FILE"
+}
+
+check_decision_keys() {
+  skipped 15 && return 0
+  local vocab hits line f n text key rest label dup
+  vocab="$(_decision_keys)"
+  while IFS= read -r dup; do
+    [ -n "$dup" ] && finding 15 "$KEYS_FILE" "[$dup] is defined more than once; a key has one meaning"
+  done < <(cut -f1 <<< "$vocab" | sort | uniq -d)
+  hits="$(cd "$ROOT" && _live_md | grep -vxF "$KEYS_FILE" \
+    | xargs -r grep -HnoE '(^|[[:space:]])\[[a-z]\] [a-z]+( [a-z]+)*' 2>/dev/null)"
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    f="${line%%:*}"; line="${line#*:}"; n="${line%%:*}"; text="${line#*:}"
+    text="${text#"${text%%\[*}"}"
+    key="${text:1:1}"; rest="${text:4}"
+    label="$(awk -F'\t' -v k="$key" '$1 == k { print $2; exit }' <<< "$vocab")"
+    if [ -z "$label" ]; then
+      finding 15 "$f:$n" "[$key] is not a key in $KEYS_FILE; add it there with one meaning (#460)"
+      continue
+    fi
+    case "$rest" in
+      "$label"|"$label "*) ;;
+      *) finding 15 "$f:$n" "[$key] '$rest' here, but [$key] means '$label' in every walk ($KEYS_FILE)" ;;
+    esac
+  done <<< "$hits"
+}
+
+# Check 16 -- a walk shows its per-item decision in the picker (#461). Every command
+#     that writes out a letter menu must cite decision-keys.md Step 3, which
+#     holds the picker path; the letter menu is only the fallback. Commands
+#     only: the capture flows' confirm blocks are not walks.
+check_picker_path() {
+  skipped 16 && return 0
+  local f
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    grep -qF "decision-keys.md\` Step 3" "$ROOT/$f" \
+      || finding 16 "$f" "shows a letter menu but does not cite \`skills/shared/decision-keys.md\` Step 3, the picker path (#461)"
+  done < <(cd "$ROOT" && _live_md | grep '^commands/' \
+    | xargs -r grep -lE '(^|[[:space:]])\[[a-z]\] [a-z]+' 2>/dev/null)
+}
+
+# Check 17 -- a command that writes to GlassFrog is user-only (#464).
+#
+# `disable-model-invocation: true` stops the model starting a command on its
+# own; only the user's `/name` runs it. Every write still waits for a per-item
+# confirmation, so this is the second guard, not the first. A command whose
+# body names a write tool from evals/glassfrog-tools.tsv must carry the flag.
+# The two triage walks are exempt by decision on #464: nine of ten eval cases
+# start them from plain language, and the flag would stop the eval measuring
+# them. Writes reached by other routes (audit-portfolio through its skill,
+# routines through the scheduler) carry the flag by hand; this check sees
+# only the tool names it can read.
+# ---------------------------------------------------------------------------
+MODEL_INVOCABLE_WRITERS="commands/tension-triage.md commands/project-triage.md"
+
+check_user_only_writers() {
+  skipped 17 && return 0
+  local inv="$ROOT/evals/glassfrog-tools.tsv" writers f
+  [ -f "$inv" ] || return 0
+  writers="$(grep -v '^#' "$inv" | awk -F'\t' '$2 == "write" { print $1 }')"
+  [ -n "$writers" ] || return 0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    case " $MODEL_INVOCABLE_WRITERS " in *" $f "*) continue ;; esac
+    sed -n '/^---$/,/^---$/p' "$ROOT/$f" | grep -qE '^disable-model-invocation:[[:space:]]*true' \
+      || finding 17 "$f" "names a GlassFrog write tool but lacks 'disable-model-invocation: true' (#464)"
+  done < <(cd "$ROOT" && git ls-files 'commands/*.md' \
+    | xargs -r grep -lwF -f <(printf '%s\n' "$writers") 2>/dev/null)
+}
+
+# Check 18 -- commands are named by act type (ADR-0028, #462).
+#
+# An authority act is <verb>-<item>, a backlog walk is <item>-<walk>, and a
+# session or reference command has a fixed name. The words are in
+# evals/command-names.txt. A deprecated alias is exempt by its description.
+# Before this check, 14 commands used four shapes and no row of the surface map
+# sorted together in the slash menu.
+# ---------------------------------------------------------------------------
+check_command_names() {
+  skipped 18 && return 0
+  local vocab="$ROOT/evals/command-names.txt" f name verbs walks items fixed ok v i
+  [ -n "$(cd "$ROOT" && git ls-files 'commands/*.md')" ] || return 0
+  [ -f "$vocab" ] || { finding 18 "evals/command-names.txt" "missing, but commands exist to name (ADR-0028)"; return 0; }
+  verbs="$(awk '$1 == "verb" { print $2 }' "$vocab")"
+  walks="$(awk '$1 == "walk" { print $2 }' "$vocab")"
+  items="$(awk '$1 == "item" { print $2 }' "$vocab")"
+  fixed="$(awk '$1 == "fixed" { print $2 }' "$vocab")"
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    name="$(basename "$f" .md)"
+    sed -n '/^---$/,/^---$/p' "$ROOT/$f" | grep -qE '^description:[[:space:]]*Deprecated alias for /self-org:' && continue
+    ok=""
+    grep -qxF "$name" <<< "$fixed" && ok=1
+    for i in $items; do
+      for v in $verbs; do [ "$name" = "$v-$i" ] && ok=1; done
+      for v in $walks; do [ "$name" = "$i-$v" ] && ok=1; done
+    done
+    [ -n "$ok" ] || finding 18 "$f" "'$name' fits no act type: name it <verb>-<item> or <item>-<walk> from evals/command-names.txt, or amend ADR-0028"
+  done < <(cd "$ROOT" && git ls-files 'commands/*.md')
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -889,5 +1009,9 @@ check_state_names
 check_legacy_names
 check_surface_map
 check_constitution_citations
+check_decision_keys
+check_picker_path
+check_user_only_writers
+check_command_names
 
 check_common_summarize "skills-lint"

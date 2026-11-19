@@ -121,6 +121,8 @@ EOF
 EOF
   printf '# allowlist\n' > "$d/evals/lint-allow-paths.txt"
   printf '# forward references\n' > "$d/evals/forward-references.txt"
+  printf 'verb commit\nwalk triage\nitem project\nitem tension\nfixed demo-cmd\nfixed rogue\nfixed wellformed\n' \
+    > "$d/evals/command-names.txt"
   printf '# inventory\nglassfrog_get_me\tread\nglassfrog_list_my_roles\tread\nglassfrog_get_role\tread\nglassfrog_create_tension\twrite\nglassfrog_set_project_tags\twrite\n' \
     > "$d/evals/glassfrog-tools.tsv"
   printf '# prefixes\nmcp__plugin_self-org_glassfrog-extended__  plugin\nmcp__GlassFrog_Extended__  cowork\n' \
@@ -466,15 +468,22 @@ printf '| `needs-info` | also a verdict |\n' >> "$TMP/c11c/skills/shared/project
 git -C "$TMP/c11c" add -A && git -C "$TMP/c11c" commit -qm c11c
 _assert_load_bearing 11 "$TMP/c11c" "name in both the state list and the verdict table"
 
-# 12. No pre-1.0 plugin name in a shipped surface (ADR-0020). The repo slug and
-#     an ADR filename in a link are not identifiers and must pass.
+# 12. No pre-1.0 plugin name in a shipped surface (ADR-0020). An ADR filename
+#     in a link is a historical record, not an identifier, and must pass.
 _fixture "$TMP/c12a"
-printf '\nClone holacracy-claude-plugin; see [the seam](docs/adr/0005-holacracy-identity.md).\n' >> "$TMP/c12a/skills/demo/SKILL.md"
+printf '\nSee [the seam](docs/adr/0005-holacracy-identity.md).\n' >> "$TMP/c12a/skills/demo/SKILL.md"
 mkdir -p "$TMP/c12a/docs/adr" && printf '# ADR\n' > "$TMP/c12a/docs/adr/0005-holacracy-identity.md"
 git -C "$TMP/c12a" add -A && git -C "$TMP/c12a" commit -qm c12a
 SKILLS_LINT_ROOT="$TMP/c12a" bash "$LINT" >/dev/null 2>&1 \
-  || { SKILLS_LINT_ROOT="$TMP/c12a" bash "$LINT"; fail "check 12 flagged the repo slug or an ADR filename"; }
+  || { SKILLS_LINT_ROOT="$TMP/c12a" bash "$LINT"; fail "check 12 flagged an ADR filename"; }
 CASES=$((CASES + 1))
+
+# 12d. The repository's former slug (#463). GitHub redirects it today; the
+#      redirect breaks if another repo takes the name.
+_fixture "$TMP/c12d"
+printf '\nFiled as [#1](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/1).\n' >> "$TMP/c12d/skills/demo/SKILL.md"
+git -C "$TMP/c12d" add -A && git -C "$TMP/c12d" commit -qm c12d
+_assert_load_bearing 12 "$TMP/c12d" "former repo slug in a skill"
 
 # 12b. An old skill name in prose -- nothing else in the lint looks at it.
 _fixture "$TMP/c12b"
@@ -629,7 +638,7 @@ CASES=$((CASES + 1))
 # 13m. The same gap in isolation: today's map with only the July
 #      Project x Readiness cell put back. It must be the one and only finding.
 _july_fixture "$TMP/c13m" "$(sed 's/| `project-triage` |/| |/' "$HERE/../docs/surface-map.md")"
-for c in tension-triage audit-portfolio; do printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c13m/commands/$c.md"; done
+for c in tension-triage sense-tension commit-project tension-sweep project-review project-sweep portfolio-audit; do printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c13m/commands/$c.md"; done
 git -C "$TMP/c13m" add -A && git -C "$TMP/c13m" commit -qm today
 got="$(_findings13 "$TMP/c13m" "")"
 if [ "$(printf '%s\n' "$got" | grep -c .)" != 1 ] || ! grep -q 'Project × Readiness is empty' <<< "$got"; then
@@ -678,7 +687,94 @@ printf '\nSee S.4.1.\n' >> "$TMP/c14d/skills/demo/SKILL.md"
 git -C "$TMP/c14d" add -A && git -C "$TMP/c14d" commit -qm c14d
 _assert_load_bearing 14 "$TMP/c14d" "citation with no pinned section list"
 
-# 15. The real repository is clean. Fixtures prove the checks work; this proves
+# 15. A menu key keeps one meaning in every walk (#460). The fixture gets a
+#     two-row vocabulary and a command whose menu cites it.
+_keys_fixture() {  # $1 = destination dir
+  _fixture "$1"
+  cat > "$1/skills/shared/decision-keys.md" <<'EOF'
+# Decision Keys
+
+| Key | Label | Meaning | Write |
+|---|---|---|---|
+| `[a]` | `archive` | Set status archived. | status change |
+| `[w]` | `write` | Write the draft shown. | the draft shown |
+
+## Step 3 -- Showing the menu in the picker
+EOF
+  printf '\nKeys follow `skills/shared/decision-keys.md`.\n\n     [a] archive it   -> status archived\n     [w] write        -> the draft\n\nPicker first, per `skills/shared/decision-keys.md` Step 3.\n' \
+    >> "$1/commands/demo-cmd.md"
+}
+_keys_fixture "$TMP/c15a"
+git -C "$TMP/c15a" add -A && git -C "$TMP/c15a" commit -qm c15a
+SKILLS_LINT_ROOT="$TMP/c15a" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c15a" bash "$LINT"; fail "check 15 flagged keys that match the vocabulary"; }
+CASES=$((CASES + 1))
+
+# 15b. The #460 defect: [a] used for apply, a write that is not a status change.
+_keys_fixture "$TMP/c15b"
+printf '     [a] apply        -> create the action\n' >> "$TMP/c15b/skills/demo/SKILL.md"
+git -C "$TMP/c15b" add -A && git -C "$TMP/c15b" commit -qm c15b
+_assert_load_bearing 15 "$TMP/c15b" "key with a second meaning"
+
+# 15c. A key the vocabulary does not define, inline after other keys.
+_keys_fixture "$TMP/c15c"
+printf '\nFile this? [w] write  [z] zap\n' >> "$TMP/c15c/skills/demo/SKILL.md"
+git -C "$TMP/c15c" add -A && git -C "$TMP/c15c" commit -qm c15c
+_assert_load_bearing 15 "$TMP/c15c" "key not in the vocabulary"
+
+# 15d. The vocabulary itself defines a key twice.
+_keys_fixture "$TMP/c15d"
+printf '| `[a]` | `apply` | Create an action. | new action |\n' >> "$TMP/c15d/skills/shared/decision-keys.md"
+git -C "$TMP/c15d" add -A && git -C "$TMP/c15d" commit -qm c15d
+_assert_load_bearing 15 "$TMP/c15d" "key defined twice in the vocabulary"
+
+# 16. A walk command shows a letter menu but has no picker path (#461).
+_keys_fixture "$TMP/c16"
+sed -i.bak '/Picker first/d' "$TMP/c16/commands/demo-cmd.md" && rm -f "$TMP/c16/commands/demo-cmd.md.bak"
+git -C "$TMP/c16" add -A && git -C "$TMP/c16" commit -qm c16
+_assert_load_bearing 16 "$TMP/c16" "walk menu without the picker path"
+
+# 17. A command names a GlassFrog write tool but the model can still start it
+#     (#464). Then the same command with the flag, and an exempt triage walk
+#     without it, both pass.
+_fixture "$TMP/c17"
+printf '\nFiles it with `glassfrog_create_tension(role_id, body)` on confirmation.\n' \
+  >> "$TMP/c17/commands/demo-cmd.md"
+git -C "$TMP/c17" add -A && git -C "$TMP/c17" commit -qm c17
+_assert_load_bearing 17 "$TMP/c17" "writing command without disable-model-invocation"
+
+_fixture "$TMP/c17b"
+sed -i.bak 's/^argument-hint: \[thing, optional\]$/&\ndisable-model-invocation: true/' "$TMP/c17b/commands/demo-cmd.md"
+rm -f "$TMP/c17b/commands/demo-cmd.md.bak"
+printf '\nFiles it with `glassfrog_create_tension(role_id, body)` on confirmation.\n' \
+  >> "$TMP/c17b/commands/demo-cmd.md"
+cp "$TMP/c17/commands/demo-cmd.md" "$TMP/c17b/commands/tension-triage.md"
+sed -i.bak 's#demo-cmd#tension-triage#' "$TMP/c17b/commands/tension-triage.md" && rm -f "$TMP/c17b/commands/tension-triage.md.bak"
+git -C "$TMP/c17b" add -A && git -C "$TMP/c17b" commit -qm c17b
+grep -q '^disable-model-invocation: true' "$TMP/c17b/commands/demo-cmd.md" || fail "c17b fixture did not get the flag"
+SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT"; fail "check 17 flagged a flagged command or an exempt triage walk"; }
+CASES=$((CASES + 1))
+
+# 18. A command named in neither act-type shape (ADR-0028, #462). Then a
+#     name in each shape, and a deprecated alias, all pass.
+_fixture "$TMP/c18"
+printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c18/commands/capture-project.md"
+git -C "$TMP/c18" add -A && git -C "$TMP/c18" commit -qm c18
+_assert_load_bearing 18 "$TMP/c18" "command named in neither act-type shape"
+
+_fixture "$TMP/c18b"
+for c in commit-project project-triage; do
+  printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c18b/commands/$c.md"
+done
+printf -- '---\ndescription: Deprecated alias for /self-org:commit-project.\nargument-hint: [x]\n---\n' \
+  > "$TMP/c18b/commands/capture-project.md"
+git -C "$TMP/c18b" add -A && git -C "$TMP/c18b" commit -qm c18b
+SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT"; fail "check 18 flagged a well-named command or a deprecated alias"; }
+CASES=$((CASES + 1))
+
+# 19. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))

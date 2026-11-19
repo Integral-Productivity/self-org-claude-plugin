@@ -3,7 +3,7 @@ name: self-org-ai-governance
 description: >
   Governance-aware AI operating skill for organizations using Holacracy and GlassFrog. Use this skill whenever the user mentions GlassFrog, Holacracy, circles, roles (in a Holacratic context), accountabilities, domains, governance meetings, tactical meetings, tensions, lead link, rep link, facilitator, secretary, or any organizational governance topic. Also trigger when the user asks for help with work and GlassFrog MCP tools are connected -- this skill teaches how to ground AI responses in actual governance structure rather than operating generically. Trigger even for adjacent requests like "help me think about my role," "what should I focus on," "draft a governance proposal," or "what tensions exist in my organization." This skill is essential for any AI interaction where organizational context from GlassFrog would improve the quality, authority-awareness, or developmental sophistication of the response.
 status: draft
-version: 2.0.0
+version: 2.0.2
 ---
 # Holacratic AI Governance
 
@@ -177,9 +177,9 @@ When you observe these patterns:
 
 When the user signals session closing ("done for now", "that's it for today", "wrapping up", "good enough"), and at least one tension was filed during this session, offer:
 
-> *"Before we close -- want me to sweep the tensions filed this session for supersession?"*
+> *"Before we close -- you can sweep the tensions filed this session for supersession with `/self-org:tension-sweep`."*
 
-If yes, run `/self-org:supersession-sweep` with default scope. If no, close normally. Silent when no tensions were filed.
+Name the command for the user to type; do not start it. It writes to GlassFrog, so it is user-only (`disable-model-invocation`, #464). Silent when no tensions were filed.
 
 ### Pattern 4: Governance-Aware Response Calibration
 

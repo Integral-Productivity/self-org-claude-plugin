@@ -1,6 +1,6 @@
 # Project Review Critics -- Shared Reference
 
-The five critic lenses, the finding schema, and the severity/cap/dedupe rules for `/self-org:review-project`. Written so **both** execution modes seed from one spec with no drift:
+The five critic lenses, the finding schema, and the severity/cap/dedupe rules for `/self-org:project-review`. Written so **both** execution modes seed from one spec with no drift:
 
 - **Inline mode** -- retired. The backlog walk moved to `/self-org:project-triage`, which runs no lenses ([ADR-0018](../../docs/adr/0018-separate-project-readiness-from-project-quality.md)). A lens may still be run as a sequential reasoning pass in one context when no subagent mechanism exists.
 - **Subagent mode** (deep single-project review) -- the `project-critic` subagent (`agents/project-critic.md`) runs one lens per dispatch and returns findings in the schema below.

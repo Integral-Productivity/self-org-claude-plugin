@@ -91,7 +91,7 @@ Per ADR-0007 §Decision.2:
 
 - **Read live at first need**, then **cache the resolved routing for the remainder of the session.** Subsequent artifacts for the same role reuse the cached resolution — no repeated seam calls at every artifact moment.
 - **Re-read on a major pivot** — a new circle or role comes into play, or the operator signals a governance change. This is the same Step-5 re-validation as `actor-and-role-resolution.md`.
-- Not pure-live-every-call (avoidable API load) and not a persisted cross-session table (drifts). The session cache also closes the no-cross-turn-cache gap ([#36](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/36)) for routing specifically.
+- Not pure-live-every-call (avoidable API load) and not a persisted cross-session table (drifts). The session cache also closes the no-cross-turn-cache gap ([#36](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/36)) for routing specifically.
 
 ---
 

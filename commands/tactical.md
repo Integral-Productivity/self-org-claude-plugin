@@ -1,6 +1,7 @@
 ---
 description: Prime Secretary scope for an in-meeting Tactical capture session. Resolves actor + Secretary role, optionally loads a pre-tactical-prep packet, and operates MCP-first for durable tension capture.
 argument-hint: [circle name to focus on, optional]
+disable-model-invocation: true
 ---
 
 # /self-org:tactical

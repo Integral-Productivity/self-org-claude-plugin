@@ -75,7 +75,7 @@ absolute path on the same disk in both configurations, and a `find /` gets to it
 `contamination_error` fails any control run whose visible tool calls name the
 checkout.
 
-That is a reduction, not a proof. `Task` is offered — `/self-org:capture-tension`
+That is a reduction, not a proof. `Task` is offered — `/self-org:sense-tension`
 dispatches a subagent and withholding it would measure a crippled plugin — and a
 subagent's own tool calls do not surface in the parent event stream, so a control
 run that delegated a filesystem search would not be caught. Stated rather than
@@ -127,10 +127,16 @@ PLUGIN_NAME = json.loads(
 
 # The built-in tools an eval session may use. `Skill` is the point of the list:
 # without it the plugin's skills are unreachable however they are loaded (#226).
-# `Task` is here because /self-org:capture-tension dispatches a subagent.
+# `Task` is here because /self-org:sense-tension dispatches a subagent.
 # `Bash`, `Glob`, `Grep` and `Write` are deliberately absent — see the module
 # docstring's note on what the control can reach.
 EVAL_TOOLS = "Skill,Task,Read"
+
+# Tools a case may add to EVAL_TOOLS with its `extra_tools` field, and nothing
+# else. `AskUserQuestion` lets a case check that a walk offers its per-item
+# decision in the picker (#461). A shell or a file writer is never on this list:
+# the control reached the checkout with `find /` when it had one.
+ALLOWED_EXTRA_TOOLS = frozenset({"AskUserQuestion"})
 
 # The stub must register under the same server name as the real connector in
 # .mcp.json, or every `mcp__glassfrog-extended__*` tool name the skills were written
@@ -178,14 +184,14 @@ DEFAULT_CONFIGS = ("with_skill", "without_skill")
 #                       discovered the same way skills-lint.sh check 1 proves
 #                       a load path resolves (see discover_shared_references).
 #   commands/*.md       every eval's `surface` field names a slash command
-#                       (e.g. `/self-org:capture-tension`), implemented here
+#                       (e.g. `/self-org:sense-tension`), implemented here
 #                       -- not under skills/<dir>, so nothing above hashes it.
 #                       Hashed as one whole-directory digest rather than a
 #                       per-surface mapping, matching the with_skill
 #                       skill_versions precedent of over- rather than
 #                       under-invalidating (R4).
 #   agents/*.md          a command can dispatch a subagent (e.g.
-#                       capture-tension.md -> the tension-capture subagent),
+#                       sense-tension.md -> the tension-capture subagent),
 #                       which can itself load skills/shared/*.md content no
 #                       skills/<dir>/{SKILL.md,references/*.md} ever cites --
 #                       content discover_shared_references cannot see because
@@ -650,11 +656,16 @@ def probe_stub(fixture: Path, write_log: Path) -> tuple[bool, str]:
 # Execution
 # ---------------------------------------------------------------------------
 
-def build_command(prompt: str, config: str, cfg_path: Path, model: str | None) -> list[str]:
+def build_command(prompt: str, config: str, cfg_path: Path, model: str | None,
+                  extra_tools: tuple[str, ...] = ()) -> list[str]:
+    unknown = set(extra_tools) - ALLOWED_EXTRA_TOOLS
+    if unknown:
+        raise ValueError(f"extra_tools not allowed: {sorted(unknown)}")
+    tools = ",".join([EVAL_TOOLS, *extra_tools])
     cmd = [
         CLAUDE_BIN,
         "-p", prompt,
-        "--tools", EVAL_TOOLS,
+        "--tools", tools,
         "--output-format", "stream-json",
         "--verbose",
         "--strict-mcp-config",
@@ -824,7 +835,8 @@ def contamination_error(events: list, config: str) -> str | None:
 
 
 def execute(prompt: str, config: str, run_dir: Path, fixture: Path,
-            model: str | None, timeout: int) -> dict:
+            model: str | None, timeout: int,
+            extra_tools: tuple[str, ...] = ()) -> dict:
     """Run one (eval, config, run) and capture everything it produced."""
     outputs = run_dir / "outputs"
     outputs.mkdir(parents=True, exist_ok=True)
@@ -860,7 +872,7 @@ def execute(prompt: str, config: str, run_dir: Path, fixture: Path,
     started = time.time()
     try:
         proc = subprocess.run(
-            build_command(prompt, config, cfg_path, model),
+            build_command(prompt, config, cfg_path, model, extra_tools),
             capture_output=True, text=True, timeout=timeout,
             cwd=str(workdir), env=session_env(config_dir),
         )
@@ -1401,7 +1413,8 @@ def run_once(case: dict, config: str, run_dir: Path, model: str | None,
         raise SystemExit(f"fixture not found: {fixture}")
 
     started = time.time()
-    outcome = execute(case["prompt"], config, run_dir, fixture, model, timeout)
+    outcome = execute(case["prompt"], config, run_dir, fixture, model, timeout,
+                      tuple(case.get("extra_tools", ())))
     transcript, metrics = render_transcript(outcome["events"], case["prompt"])
     if outcome["error"]:
         transcript += f"\n## Execution error\n\n{outcome['error']}\n"
@@ -1532,6 +1545,11 @@ def load_case_file(path: Path) -> dict:
         for field in ("eval_id", "eval_name", "prompt", "fixture", "assertions"):
             if field not in case:
                 raise SystemExit(f"{path}: eval #{i} is missing required field '{field}'")
+        extra = case.get("extra_tools", [])
+        if not isinstance(extra, list) or set(extra) - ALLOWED_EXTRA_TOOLS:
+            raise SystemExit(
+                f"{path}: {case['eval_name']} asks for extra_tools {extra!r}; only "
+                f"{sorted(ALLOWED_EXTRA_TOOLS)} may be added, so the run stays hermetic")
         for assertion in case["assertions"]:
             if "text" not in assertion:
                 raise SystemExit(f"{path}: {case['eval_name']} has an assertion with no 'text'")

@@ -1,0 +1,24 @@
+# Command naming vocabulary (ADR-0028). Read by scripts/skills-lint.sh check 18.
+# A command file is named <verb>-<item> (an authority act), <item>-<walk>
+# (a backlog walk), or one of the fixed names (session or reference commands).
+# A deprecated alias is exempt by its description. Add a word here in the same
+# PR as the command that needs it, and amend ADR-0028 when you add a kind.
+verb sense
+verb commit
+verb define
+verb propose
+verb file
+verb process
+walk triage
+walk sweep
+walk review
+walk audit
+item tension
+item project
+item action
+item portfolio
+fixed context
+fixed governance
+fixed tactical
+fixed routines
+fixed check-authority

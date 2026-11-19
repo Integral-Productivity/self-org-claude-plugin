@@ -1,6 +1,6 @@
 # Stalled-sweep routine
 
-A draft-only agentic routine that assembles a **stalled-project review packet** from live GlassFrog data on a cadence and writes it to the routine ledger, so the session-start hook and `/self-org:stalled-project-sweep` can surface it. Draft only — the routine surfaces stalled candidates; the human runs the sweep to actually re-energize or archive.
+A draft-only agentic routine that assembles a **stalled-project review packet** from live GlassFrog data on a cadence and writes it to the routine ledger, so the session-start hook and `/self-org:project-sweep` can surface it. Draft only — the routine surfaces stalled candidates; the human runs the sweep to actually re-energize or archive.
 
 `../../shared/agentic-routines.md` defines the mechanism (scheduler fires → ledger → surfaces); this file defines the routine's content. The routine runs as a scheduled-task `SKILL.md` whose prompt is built from the template below at registration time (`/self-org:routines register stalled-sweep <circle>`).
 
@@ -12,7 +12,7 @@ The registered prompt opens with the canonical scheduled-work preamble from `../
 
 1. **Resolve scope.** Confirm the acting agent and the target circle per `../../shared/actor-and-role-resolution.md` Steps 1-2, scoped to the one circle. Never bulk-load the roster (see `docs/solutions/tooling-decisions/glassfrog-v5-inherited-context-single-call.md`).
 2. **Read the circle's projects with actions:** for each role in the circle, `glassfrog_list_role_projects(role_id, status: "current", include: ["actions"])`, plus a `status: "waiting"` read for the `blocked` signal. Read only what the resolved circle needs.
-3. **Apply the staleness heuristic** — the same detection defined in `commands/stalled-project-sweep.md` step 4; do not re-derive or drift it:
+3. **Apply the staleness heuristic** — the same detection defined in `commands/project-sweep.md` step 4; do not re-derive or drift it:
    - `stale` primary: a `current` project with **zero attached actions** (rubric A2).
    - Age (default 90 days, from the registration argument) corroborates — shown, never the sole trigger.
    - `status: "waiting"` → `blocked`.
@@ -23,7 +23,7 @@ The registered prompt opens with the canonical scheduled-work preamble from `../
 
 ## Draft-only boundary
 
-The routine reads and drafts a packet. It **never** archives a project, drafts or files an action, assigns people, issues rulings, or modifies governance (ADR-0003, `../../shared/tension-capture-flow.md`). A stalled project surfaced in the packet stays a *candidate* — the human runs `/self-org:stalled-project-sweep` to make the per-item re-energize/archive decision, where every write is a confirmed keystroke. The routine's job is only to make the stall *visible on a cadence*; the acting stays with the human and the interactive command.
+The routine reads and drafts a packet. It **never** archives a project, drafts or files an action, assigns people, issues rulings, or modifies governance (ADR-0003, `../../shared/tension-capture-flow.md`). A stalled project surfaced in the packet stays a *candidate* — the human runs `/self-org:project-sweep` to make the per-item re-energize/archive decision, where every write is a confirmed keystroke. The routine's job is only to make the stall *visible on a cadence*; the acting stays with the human and the interactive command.
 
 ## Degradation
 

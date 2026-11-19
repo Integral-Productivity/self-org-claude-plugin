@@ -41,6 +41,11 @@
 #   - at ref `stable`           (ADR-0002: installs follow the release channel)
 #   - with no `version` field   (ADR-0002: a pinned version is what drifted)
 #
+# A channel that names a former slug of this repo (`FORMER_SELF_REPOS`) is a
+# FAIL before any catalog is read. GitHub redirects a renamed repo, so the old
+# slug still resolves today; the redirect breaks the day another repo takes the
+# old name, and then the public install line points at someone else (#463).
+#
 # Then it pairs them, in order: each install line belongs to the most recent
 # channel above it, and its `@<name>` must equal THAT channel's catalog `.name`.
 # An install line with no channel above it fails, and so does a channel with no
@@ -76,7 +81,10 @@
 
 set -euo pipefail
 
-DEFAULT_SELF_REPO="Integral-Productivity/holacracy-claude-plugin"
+DEFAULT_SELF_REPO="Integral-Productivity/self-org-claude-plugin"
+# Space-separated owner/repo slugs this repo was published under before. A
+# README channel naming one of them fails (#463).
+FORMER_SELF_REPOS="${INSTALL_CHECK_FORMER_SELF_REPOS:-Integral-Productivity/holacracy-claude-plugin}"
 PLUGIN_NAME="self-org"
 REQUIRED_REF="stable"
 CATALOG_PATH=".claude-plugin/marketplace.json"
@@ -93,7 +101,7 @@ Usage: install-channel-check.sh [options]
 
   --readme PATH         README to read (default: README.md)
   --local-catalog PATH  this repo's catalog (default: .claude-plugin/marketplace.json)
-  --self-repo O/R       this repo's owner/name (default: Integral-Productivity/holacracy-claude-plugin)
+  --self-repo O/R       this repo's owner/name (default: Integral-Productivity/self-org-claude-plugin)
   --fixture-dir DIR     read remote catalogs from DIR/<owner>__<repo>.json instead of
                         the GitHub API. Verification affordance; unused in CI.
   --local-only          measure only the channel served from this repo; report the
@@ -136,6 +144,14 @@ if [ -n "$FIXTURE_DIR" ] && [ ! -d "$FIXTURE_DIR" ]; then
 fi
 
 lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
+# is_former_slug OWNER/REPO -> 0 when it names one of FORMER_SELF_REPOS
+is_former_slug() {
+  local s
+  for s in $FORMER_SELF_REPOS; do
+    [ "$(lower "$1")" = "$(lower "$s")" ] && return 0
+  done
+  return 1
+}
 trim()  { printf '%s' "$1" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//'; }
 
 failures=0
@@ -174,6 +190,11 @@ current=""
 while IFS= read -r line; do
   if [[ $line =~ $CHANNEL_RE ]]; then
     current="${BASH_REMATCH[1]}"
+    if is_former_slug "$current"; then
+      failures=$((failures + 1))
+      report+="  FAIL          '/plugin marketplace add $current' names this repo's former slug — use $SELF_REPO (#463)"$'\n'
+      current="$SELF_REPO"
+    fi
     channels+="$current"$'\n'
   elif [[ $line =~ $INSTALL_RE ]]; then
     install_count=$((install_count + 1))

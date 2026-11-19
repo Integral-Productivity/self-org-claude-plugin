@@ -20,7 +20,7 @@ A project carries **at most one** of these tags. No tag means the project has ne
 
 **`needs-info` and status.** The project stays `current` when the owner role must answer, and moves to `waiting` when another role, circle, or outside party must (ADR-0022). The tag is the same in both cases, so one tag lists the whole queue.
 
-**Archive is not a state.** A project that fails a reality gate (done, duplicate, superseded, owner role gone) leaves the list through its GlassFrog `status` (`archived`, or `completed` when the outcome exists), with the reason in its note. `/self-org:stalled-project-sweep` already archives this way.
+**Archive is not a state.** A project that fails a reality gate (done, duplicate, superseded, owner role gone) leaves the list through its GlassFrog `status` (`archived`, or `completed` when the outcome exists), with the reason in its note. `/self-org:project-sweep` already archives this way.
 
 The names match the hand-set tags already found on live projects and the issue-triage labels in `docs/agents/triage-labels.md`, so one vocabulary covers both.
 
