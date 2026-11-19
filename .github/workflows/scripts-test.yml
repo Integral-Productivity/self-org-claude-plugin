@@ -284,6 +284,11 @@ jobs:
         # a naive suite while buying nothing.
         run: bash scripts/skills-lint.test.sh
 
+      - name: design-checklist gate suite
+        # The PR-body gate in design-checklist.yml (#465). Offline: it feeds the
+        # gate fixture bodies and changed-file lists and asserts the exit code.
+        run: bash scripts/design-checklist-gate.test.sh
+
       - name: skills-lint on this ref
         # The suite above proves the checks work against fixtures. This runs
         # them against the actual plugin, which is the point.

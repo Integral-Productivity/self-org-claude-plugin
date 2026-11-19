@@ -1,0 +1,42 @@
+name: Design checklist
+
+# Fails a pull request that changes a command, skill, or subagent unless its
+# body carries a ticked box naming docs/plugin-design-checklist.md (#465).
+#
+# A box is a claim, not proof that the checklist was read. It puts the claim
+# where the reviewer reads it, and the items marked "lint" in the checklist are
+# enforced separately by scripts/skills-lint.sh (check 19 keeps those claims
+# tied to checks that exist).
+#
+# Security: the PR body is untrusted. It reaches the script through an
+# environment variable written to a file, never through `${{ }}` interpolation
+# into the shell. The job holds no secrets and only reads the repo.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    name: Design checklist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check the PR body for the design-checklist box
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '%s\n' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+          git diff --name-only "$BASE_SHA...$HEAD_SHA" > "$RUNNER_TEMP/changed.txt"
+          bash scripts/design-checklist-gate.sh \
+            --body-file "$RUNNER_TEMP/pr-body.md" \
+            --changed-file "$RUNNER_TEMP/changed.txt"

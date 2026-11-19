@@ -774,7 +774,24 @@ SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT" >/dev/null 2>&1 \
   || { SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT"; fail "check 18 flagged a well-named command or a deprecated alias"; }
 CASES=$((CASES + 1))
 
-# 19. The real repository is clean. Fixtures prove the checks work; this proves
+# 19. The design checklist names a lint check that does not exist (#465 review).
+#     The checklist says which items lint enforces; a renumbered or removed check
+#     must not leave it claiming enforcement that is gone. Then a checklist that
+#     names only real checks, in each phrasing it uses, passes.
+_fixture "$TMP/c19"
+printf '# Checklist\n\n| P1 | item | how | **lint**, check 99 | Met |\n' > "$TMP/c19/docs/plugin-design-checklist.md"
+git -C "$TMP/c19" add -A && git -C "$TMP/c19" commit -qm c19
+_assert_load_bearing 19 "$TMP/c19" "design checklist names a nonexistent lint check"
+
+_fixture "$TMP/c19b"
+printf '# Checklist\n\n| P1 | a | b | **lint**, check 17 | Met |\n| P2 | a | b | **lint**, checks 15, 16, 18 | Met |\n| P3 | a | b | **lint**, checks 11 and 15 | Met |\n' \
+  > "$TMP/c19b/docs/plugin-design-checklist.md"
+git -C "$TMP/c19b" add -A && git -C "$TMP/c19b" commit -qm c19b
+SKILLS_LINT_ROOT="$TMP/c19b" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c19b" bash "$LINT"; fail "check 19 flagged a checklist that names only real checks"; }
+CASES=$((CASES + 1))
+
+# 20. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))
