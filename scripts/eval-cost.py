@@ -73,6 +73,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import pathlib
 import sys
 
@@ -231,6 +232,23 @@ def derive_pass(record: dict | None, label: str) -> dict:
     }
 
 
+
+def write_json_atomic(path: pathlib.Path, data) -> None:
+    """Write `data` as JSON so `path` is never seen half-written (#270).
+
+    The text goes to a sibling temp file first and then os.replace() swaps it
+    in, which is atomic within one filesystem. A job killed mid-write leaves the
+    previous file intact and a stray temp file, never a truncated target. The
+    sibling location matters: a temp file on another filesystem would make the
+    replace a copy, and a copy can be torn again.
+    """
+    tmp = path.with_name(f".{path.name}.tmp")
+    try:
+        tmp.write_text(json.dumps(data, indent=2))
+        os.replace(tmp, path)
+    finally:
+        tmp.unlink(missing_ok=True)
+
 def read_json(path: pathlib.Path):
     """One unreadable record must not take the whole run tree with it.
 
@@ -372,7 +390,7 @@ def cmd_aggregate(args) -> int:
              + ", ".join(collected["cli_versions"]))
     out = pathlib.Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(summary, indent=2))
+    write_json_atomic(out, summary)
     print(f"cost summary written to {out} ({len(collected['runs'])} runs)")
     return 0
 
@@ -533,7 +551,7 @@ def cmd_correct(args) -> int:
     if missed:
         warn(f"{missed} benchmark row(s) had no matching cost record")
 
-    bench_path.write_text(json.dumps(benchmark, indent=2))
+    write_json_atomic(bench_path, benchmark)
     print(f"corrected {changed} tokens figure(s) in {bench_path}")
 
     # A correction that corrected NOTHING is the failure this command exists to

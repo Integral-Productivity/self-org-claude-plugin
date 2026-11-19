@@ -1107,4 +1107,58 @@ print(int(float(d['run_summary']['with_skill']['tokens']['mean'])))")" != "780" 
   || fail "Site 2 still wrote the stats block with its assignment removed; that site is not covered"
 pass
 
+# ---------------------------------------------------------------------------
+# #270: both outputs are written atomically.
+# ---------------------------------------------------------------------------
+# The reader already survives a job killed mid-write (read_json catches the
+# truncated multi-byte case). The writer must not create one: a failure partway
+# through the write has to leave the previous file intact, because the file it
+# would destroy is the output of a paid graded run. The harness simulates the
+# kill by making every write_text() write half its data and then raise.
+torn_write() {  # $1=script $2.. = its arguments
+  python3 - "$@" <<'PY2'
+import pathlib, runpy, sys
+real = pathlib.Path.write_text
+def torn(self, data, *a, **k):
+    real(self, data[: len(data) // 2], *a, **k)
+    raise OSError("simulated kill mid-write")
+pathlib.Path.write_text = torn
+script, *argv = sys.argv[1:]
+sys.argv = [script, *argv]
+try:
+    runpy.run_path(script, run_name="__main__")
+except (OSError, SystemExit):
+    pass
+PY2
+}
+still_valid() {  # $1=file $2=pristine copy
+  python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$1" 2>/dev/null \
+    && cmp -s "$1" "$2"
+}
+
+cp "$TMP/bench-once.json" "$TMP/bench-torn.json"
+cp "$TMP/bench-torn.json" "$TMP/bench-torn.orig"
+torn_write "$COST" correct --benchmark "$TMP/bench-torn.json" \
+  --cost "$TMP/summary.json" >/dev/null 2>&1
+still_valid "$TMP/bench-torn.json" "$TMP/bench-torn.orig" \
+  || fail "a write killed partway left benchmark.json truncated (#270)"
+pass
+
+cp "$TMP/summary.json" "$TMP/summary-torn.json"
+cp "$TMP/summary-torn.json" "$TMP/summary-torn.orig"
+torn_write "$COST" aggregate --run-tree "$TREE" --out "$TMP/summary-torn.json" >/dev/null 2>&1
+still_valid "$TMP/summary-torn.json" "$TMP/summary-torn.orig" \
+  || fail "a write killed partway left cost-summary.json truncated (#270)"
+pass
+
+# The temp-then-replace step, removed: the same torn write must now destroy the
+# file, or the two cases above are not what holds it intact.
+mutate atomic 'tmp.write_text(json.dumps(data, indent=2))' 'path.write_text(json.dumps(data, indent=2))'
+cp "$TMP/bench-torn.orig" "$TMP/bench-torn-mut.json"
+torn_write "$TMP/mut-atomic.py" correct --benchmark "$TMP/bench-torn-mut.json" \
+  --cost "$TMP/summary.json" >/dev/null 2>&1
+! still_valid "$TMP/bench-torn-mut.json" "$TMP/bench-torn.orig" \
+  || fail "the direct-write mutant still left benchmark.json intact; the #270 case is not load-bearing"
+pass
+
 echo "eval-cost.test.sh: $CASES cases passed"
