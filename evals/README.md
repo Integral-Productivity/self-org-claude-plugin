@@ -269,11 +269,20 @@ result-moving input nobody has enumerated yet, which still depends on manual
 review. `commands/**` and `agents/**` were added to the enumeration after code
 review found the original five-entry list never hashed the actual eval
 surfaces (`commands/*.md`, plus any `agents/*.md` subagent a command
-dispatches). `hooks/**` and `hooks-handlers/**` can also run during a
-`with_skill` session (the plugin's own `SessionStart` hook is live there) and
-are **not yet** in the enumeration — a disclosed, deliberately scoped gap
-rather than an oversight, since a general "which files can move this leg's
-result" detector was already settled as unimplementable (KTD2).
+dispatches).
+
+`hooks/**` and `hooks-handlers/**` are in the enumeration too (#333). The
+plugin's own `SessionStart` hook runs in every `with_skill` session, and since
+#332 it emits a directive the stub can satisfy (`glassfrog_get_me`), so a hook
+edit changes what that leg does before it reaches the case. Decision
+(2026-11-19, option (b) on #333): hash the hooks into the key; do **not** pin
+the directive off in eval sessions, because the eval measures what installing
+the plugin does. This reopens the KTD2 scope decision for these two named
+classes only. A general "which files can move this leg's result" detector is
+still unimplementable, so a wholly new sensitive class still depends on review.
+The committed `benchmark.json` was seeded on 2026-08-17 (run 32058594541),
+before #332 closed on 2026-10-08, so it does not span the change. Re-seed it
+only from a run made entirely after #332.
 
 ## Status
 

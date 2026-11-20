@@ -1558,8 +1558,12 @@ runner = importlib.util.module_from_spec(spec); spec.loader.exec_module(runner)
 # absorb. commands/** and agents/** were added after code review found the
 # original five-entry list never hashed the actual with_skill/without_skill
 # eval surfaces (implemented in commands/*.md + dispatched agents/*.md).
+# hooks/** and hooks-handlers/** were added by #333: the plugin's own
+# SessionStart hook is live in every with_skill session, so a hook change
+# moves what that leg measures.
 assert list(runner.CACHE_KEY_INPUT_CLASSES) == [
     "skills/**", "skills/shared/**", "commands/**", "agents/**",
+    "hooks/**", "hooks-handlers/**",
     "evals/cases/**", "evals/stub/**", "scripts/run-behavioural-eval.py",
 ], runner.CACHE_KEY_INPUT_CLASSES
 
@@ -1572,6 +1576,8 @@ def build_repo(root):
     (root / "skills" / "shared").mkdir(parents=True)
     (root / "commands").mkdir(parents=True)
     (root / "agents").mkdir(parents=True)
+    (root / "hooks").mkdir(parents=True)
+    (root / "hooks-handlers").mkdir(parents=True)
     (root / "evals" / "stub").mkdir(parents=True)
     (root / "evals" / "fixtures" / "glassfrog").mkdir(parents=True)
     (root / "scripts").mkdir(parents=True)
@@ -1585,6 +1591,8 @@ def build_repo(root):
         "Loads `../../shared/shared-b.md`, one level deeper than SKILL.md.\n")
     (root / "commands" / "my-command.md").write_text("command v1\n")
     (root / "agents" / "my-agent.md").write_text("agent v1\n")
+    (root / "hooks" / "hooks.json").write_text('{"hooks": "v1"}\n')
+    (root / "hooks-handlers" / "session-start.sh").write_text("# hook v1\n")
     (root / "evals" / "stub" / "glassfrog_stub.py").write_text("# stub v1\n")
     (root / "scripts" / "run-behavioural-eval.py").write_text("# runner v1\n")
     (root / "evals" / "fixtures" / "glassfrog" / "fixture.json").write_text('{"v":1}\n')
@@ -1679,6 +1687,26 @@ try:
     agent_file.write_text("agent v1\n")
     assert key_for(base, skill_dir) == baseline
 
+    # 3e. hooks/** and hooks-handlers/** (#333) -- the plugin's SessionStart
+    #     hook runs in every with_skill session (#227), so editing its
+    #     registration or its handler moves what that leg measures. Same
+    #     with_skill-only gating as commands/ and agents/: a without_skill
+    #     leg never loads --plugin-dir, so no plugin hook can fire there.
+    for hook_file, v1 in (
+        (base / "hooks" / "hooks.json", '{"hooks": "v1"}\n'),
+        (base / "hooks-handlers" / "session-start.sh", "# hook v1\n"),
+    ):
+        without_skill_before = key_for(base, skill_dir, skill_dirs=[])
+        hook_file.write_text(v1 + "# EDITED\n")
+        assert key_for(base, skill_dir) != baseline, \
+            f"editing {hook_file.relative_to(base)} did not change the " \
+            "with_skill key -- a cached leg would survive a hook change (#333)"
+        assert key_for(base, skill_dir, skill_dirs=[]) == without_skill_before, \
+            f"a without_skill key moved on a {hook_file.relative_to(base)} " \
+            "edit, but that leg never loads the plugin's hooks"
+        hook_file.write_text(v1)
+        assert key_for(base, skill_dir) == baseline
+
     # 4. fixture hash
     fixture = base / "evals" / "fixtures" / "glassfrog" / "fixture.json"
     fixture.write_text('{"v":2}\n')
@@ -1736,7 +1764,7 @@ try:
 finally:
     shutil.rmtree(base, ignore_errors=True)
 
-print("compute_cache_key: all eleven inputs independently discriminating; "
+print("compute_cache_key: all thirteen inputs independently discriminating; "
       "shared-file discovery walks references/; CACHE_KEY_INPUT_CLASSES intact")
 PY
 pass
@@ -1763,7 +1791,7 @@ ln -s "$REPO/.claude-plugin" "$CACHE_ROOT/.claude-plugin"
 cp -R "$REPO/skills" "$CACHE_ROOT/skills"
 CACHE_RUNNER="$CACHE_ROOT/scripts/run-behavioural-eval.py"
 # Fixed and matched by the "--version" branch added to fake-claude.py above --
-# claude_cli_version() is one of the eleven inputs compute_cache_key hashes,
+# claude_cli_version() is one of the thirteen inputs compute_cache_key hashes,
 # so the test's own key computation and the runner's must agree on it exactly.
 CLI_VERSION="1.2.3-fake (Claude Code)"
 
