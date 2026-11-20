@@ -209,7 +209,20 @@ the eval exercises the real MCP path rather than a simulation of it.
 
 `benchmark.json` reports pass-rate, time, and tokens per configuration with mean
 ± stddev and the delta. High-variance cases are flaky, not hard — treat a wide
-stddev as a defect in the case, not a finding about the skill.
+run-to-run spread as a defect in the case, not a finding about the skill.
+
+Two different spreads hide in that file, and only one of them means flaky
+(#224). The per-configuration stddev in `run_summary` pools every run of every
+eval, so it mostly measures how different the evals are from one another. That
+is a description of the suite, not a fault. The flakiness signal is the
+**run-to-run spread**: the stddev of one eval's pass rate across its own
+repeats. `scripts/eval-report.py` groups `runs[]` by the case-qualified
+`eval_id` and configuration, computes that spread per eval, and warns only when
+the worst eval exceeds 0.20, naming the eval. With `runs=1` no eval has repeats,
+so the report says "not measured: one run per eval" instead of warning or
+showing a zero. Rows that repeat a run number inside one group (an unqualified
+`eval_id` shared by two cases, #244's shape) are reported as not measured, not
+merged into a fake flaky eval.
 
 ## Cadence and budget
 
@@ -269,11 +282,20 @@ result-moving input nobody has enumerated yet, which still depends on manual
 review. `commands/**` and `agents/**` were added to the enumeration after code
 review found the original five-entry list never hashed the actual eval
 surfaces (`commands/*.md`, plus any `agents/*.md` subagent a command
-dispatches). `hooks/**` and `hooks-handlers/**` can also run during a
-`with_skill` session (the plugin's own `SessionStart` hook is live there) and
-are **not yet** in the enumeration — a disclosed, deliberately scoped gap
-rather than an oversight, since a general "which files can move this leg's
-result" detector was already settled as unimplementable (KTD2).
+dispatches).
+
+`hooks/**` and `hooks-handlers/**` are in the enumeration too (#333). The
+plugin's own `SessionStart` hook runs in every `with_skill` session, and since
+#332 it emits a directive the stub can satisfy (`glassfrog_get_me`), so a hook
+edit changes what that leg does before it reaches the case. Decision
+(2026-11-19, option (b) on #333): hash the hooks into the key; do **not** pin
+the directive off in eval sessions, because the eval measures what installing
+the plugin does. This reopens the KTD2 scope decision for these two named
+classes only. A general "which files can move this leg's result" detector is
+still unimplementable, so a wholly new sensitive class still depends on review.
+The committed `benchmark.json` was seeded on 2026-08-17 (run 32058594541),
+before #332 closed on 2026-10-08, so it does not span the change. Re-seed it
+only from a run made entirely after #332.
 
 ## Status
 

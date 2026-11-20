@@ -164,7 +164,7 @@ DEFAULT_CONFIGS = ("with_skill", "without_skill")
 #
 # WHAT GOES INTO THE KEY, AND WHY EACH PIECE
 # -------------------------------------------
-# Eleven inputs, each independently capable of moving a leg's result:
+# Thirteen inputs, each independently capable of moving a leg's result:
 #
 #   case content       the eval's own prompt, assertions, ground truth and
 #                       fixture path -- editing any of them is editing the
@@ -197,6 +197,12 @@ DEFAULT_CONFIGS = ("with_skill", "without_skill")
 #                       content discover_shared_references cannot see because
 #                       it only treats those two locations as citing files.
 #                       Same whole-directory-digest treatment as commands/.
+#   hooks/**             hooks.json registers the plugin's SessionStart hook,
+#   hooks-handlers/**    and the handler emits the role-grounding directive
+#                       into every with_skill session (#227). After #332 the
+#                       stub can satisfy that directive, so a hook edit changes
+#                       what the leg does before it reaches the case (#333).
+#                       Every file under each tree is hashed; with_skill only.
 #   fixture             the synthetic org state the case exercises
 #   harness script       run-behavioural-eval.py itself participates in
 #                       producing a leg's result -- it drives execution,
@@ -214,7 +220,7 @@ DEFAULT_CONFIGS = ("with_skill", "without_skill")
 #                       nothing here having changed at all
 #
 # CACHE_KEY_INPUT_CLASSES below is a narrower, DELIBERATELY SHORTER list: the
-# file-tree globs among the eleven, not the runtime values (runs/model/cli
+# file-tree globs among the thirteen, not the runtime values (runs/model/cli
 # version) or the fixture. Planning Contract KTD2 originally fixed five
 # entries (skills/**, skills/shared/**, evals/cases/**, evals/stub/**,
 # scripts/run-behavioural-eval.py); commands/** and agents/** were added after
@@ -225,14 +231,14 @@ DEFAULT_CONFIGS = ("with_skill", "without_skill")
 # (scripts/cache-key-completeness-check.sh, R7) asserts against -- a static
 # assertion design, not a git-diff scan. Extending compute_cache_key to a new
 # sensitive input class must extend this constant in the same change, or the
-# later check has nothing to catch the drift with (R4). NOTE: hooks/ and
-# hooks-handlers/ can also run during a with_skill session (the plugin's own
-# SessionStart hook is live there per #227) and are NOT yet in this list --
-# a deliberately scoped, disclosed gap (see evals/README.md), not an
-# oversight; KTD2 already settled that a general "which files can move this
-# leg's result" detector is unimplementable, so a wholly new sensitive class
-# still depends on a human noticing it during review, same as before this
-# fix.
+# later check has nothing to catch the drift with (R4). hooks/** and
+# hooks-handlers/** were added by #333 (Kraig's decision, option (b)): the
+# plugin's own SessionStart hook is live in every with_skill session (#227),
+# and #332 made that hook emit a directive the stub can satisfy, so a hook
+# change now moves what the leg measures. This reopens KTD2's scope only for
+# these two named classes: a general "which files can move this leg's result"
+# detector is still unimplementable, so a wholly new sensitive class still
+# depends on a human noticing it during review.
 # ---------------------------------------------------------------------------
 
 CACHE_KEY_INPUT_CLASSES = (
@@ -240,6 +246,8 @@ CACHE_KEY_INPUT_CLASSES = (
     "skills/shared/**",
     "commands/**",
     "agents/**",
+    "hooks/**",
+    "hooks-handlers/**",
     "evals/cases/**",
     "evals/stub/**",
     "scripts/run-behavioural-eval.py",
@@ -349,7 +357,7 @@ def compute_cache_key(case: dict, *, skill_dirs: list[Path] = (), fixture_path: 
                        repo: Path = REPO) -> str:
     """A stable, content-addressed cache key for one (case, config) leg.
 
-    Hashes exactly the eleven inputs documented in the section header above
+    Hashes exactly the thirteen inputs documented in the section header above
     -- the list is treated as exhaustive by design (R4): adding a new input
     that could move a result is a required edit here, not an optional
     enhancement, so a cache hit never masks an actual change.
@@ -392,6 +400,18 @@ def compute_cache_key(case: dict, *, skill_dirs: list[Path] = (), fixture_path: 
     agents_paths = sorted((repo / "agents").glob("*.md")) if skill_dirs else []
     agents_digest = _sha256_hex(
         "".join(_sha256_file(p) for p in agents_paths).encode())
+    # hooks/** and hooks-handlers/** (#333): same with_skill-only gating as
+    # commands/ and agents/ -- a without_skill leg never passes --plugin-dir,
+    # so no plugin hook can fire in it. Every file under each tree is hashed,
+    # in path order, because hooks.json can point at any handler there.
+    hooks_paths = sorted(
+        p for p in (repo / "hooks").rglob("*") if p.is_file()) if skill_dirs else []
+    hooks_digest = _sha256_hex(
+        "".join(_sha256_file(p) for p in hooks_paths).encode())
+    hooks_handlers_paths = sorted(
+        p for p in (repo / "hooks-handlers").rglob("*") if p.is_file()) if skill_dirs else []
+    hooks_handlers_digest = _sha256_hex(
+        "".join(_sha256_file(p) for p in hooks_handlers_paths).encode())
 
     components = {
         "case": _sha256_hex(json.dumps(case, sort_keys=True).encode()),
@@ -399,6 +419,8 @@ def compute_cache_key(case: dict, *, skill_dirs: list[Path] = (), fixture_path: 
         "shared_refs": shared_digest,
         "commands": commands_digest,
         "agents": agents_digest,
+        "hooks": hooks_digest,
+        "hooks_handlers": hooks_handlers_digest,
         "fixture": _sha256_file(fixture_path),
         "runner": _sha256_file(runner_path),
         "runs": runs,

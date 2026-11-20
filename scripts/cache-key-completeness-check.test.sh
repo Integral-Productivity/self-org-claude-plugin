@@ -62,6 +62,8 @@ STUB = "evals/stub/glassfrog_stub.py"
 CACHE_KEY_INPUT_CLASSES = (
     "skills/**",
     "skills/shared/**",
+    "hooks/**",
+    "hooks-handlers/**",
     "evals/cases/**",
     "evals/stub/**",
     "scripts/run-behavioural-eval.py",
@@ -87,11 +89,16 @@ def compute_cache_key(case, *, skill_dirs=(), fixture_path, runs, model,
         p for d in skill_dirs for p in discover_shared_references(d, repo)
     })
     shared_digest = "digest"
+    hooks_paths = sorted(p for p in (repo / "hooks").rglob("*") if p.is_file())
+    hooks_handlers_paths = sorted(
+        p for p in (repo / "hooks-handlers").rglob("*") if p.is_file())
 
     components = {
         "case": _sha256_hex(json.dumps(case, sort_keys=True).encode()),
         "skill_versions": skill_versions,
         "shared_refs": shared_digest,
+        "hooks": hooks_paths,
+        "hooks_handlers": hooks_handlers_paths,
         "fixture": _sha256_file(fixture_path),
         "runner": _sha256_file(runner_path),
         "runs": runs,
@@ -140,6 +147,15 @@ sedi '/discover_shared_references(d, repo)/d' "$TMP/c1b/scripts/run-behavioural-
 sedi '/"shared_refs": shared_digest,/d' "$TMP/c1b/scripts/run-behavioural-eval.py"
 _assert_load_bearing 1 "$TMP/c1b" "enumerated class whose code handling was removed"
 
+# 1c. #333: hooks-handlers/** is enumerated, but compute_cache_key no longer
+#     hashes it -- the plugin's SessionStart handler could change and every
+#     cached with_skill leg would survive. Both the read and the components
+#     entry go, so this is check 1's shape, not check 2's.
+_fixture "$TMP/c1c"
+sedi '/hooks_handlers_paths = sorted(/,+1d' "$TMP/c1c/scripts/run-behavioural-eval.py"
+sedi '/"hooks_handlers": hooks_handlers_paths,/d' "$TMP/c1c/scripts/run-behavioural-eval.py"
+_assert_load_bearing 1 "$TMP/c1c" "hooks-handlers/** enumerated but no longer hashed"
+
 # 2. Code references something new the enumeration doesn't list: a mutant
 #    adds a hashed input to compute_cache_key's components dict with no
 #    corresponding CACHE_KEY_INPUT_CLASSES entry.
@@ -174,6 +190,8 @@ CACHE_KEY_CHECK_SKIP=2 CACHE_KEY_CHECK_ROOT="$TMP/c1a" bash "$CHECK" >/dev/null 
   && fail "isolation: check 1's bogus-class fixture did not fail with check 2 skipped -- check 1 isn't actually catching it"
 CACHE_KEY_CHECK_SKIP=2 CACHE_KEY_CHECK_ROOT="$TMP/c1b" bash "$CHECK" >/dev/null 2>&1 \
   && fail "isolation: check 1's removed-handling fixture did not fail with check 2 skipped -- check 1 isn't actually catching it"
+CACHE_KEY_CHECK_SKIP=2 CACHE_KEY_CHECK_ROOT="$TMP/c1c" bash "$CHECK" >/dev/null 2>&1 \
+  && fail "isolation: check 1's removed-hooks-handlers fixture did not fail with check 2 skipped -- check 1 isn't actually catching it"
 CACHE_KEY_CHECK_SKIP=1 CACHE_KEY_CHECK_ROOT="$TMP/c2" bash "$CHECK" >/dev/null 2>&1 \
   && fail "isolation: check 2's extra-component fixture did not fail with check 1 skipped -- check 2 isn't actually catching it"
 CASES=$((CASES + 1))

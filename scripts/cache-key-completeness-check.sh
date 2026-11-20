@@ -160,6 +160,14 @@ _class_markers() {  # $1 = class string; sets MARKER_CALL, MARKER_KEY; 1 if unkn
       MARKER_CALL='agents_paths = sorted\(\(repo / "agents"\)\.glob'
       MARKER_KEY='agents'
       ;;
+    "hooks/**")
+      MARKER_CALL='hooks_paths = sorted\('
+      MARKER_KEY='hooks'
+      ;;
+    "hooks-handlers/**")
+      MARKER_CALL='hooks_handlers_paths = sorted\('
+      MARKER_KEY='hooks_handlers'
+      ;;
     "evals/cases/**")
       MARKER_CALL='json\.dumps\(case,'
       MARKER_KEY='case'

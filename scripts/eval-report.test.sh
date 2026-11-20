@@ -231,9 +231,13 @@ OUT="$(report "$TMP/new-config.json" "$TMP/measured-baseline.json")" \
   || { echo "$OUT"; fail "a config missing from the baseline crashed the report"; }
 echo "$OUT" | grep -q '^| brand_new_config | 0.800 | 0.300 | n/a | n/a |' \
   || { echo "$OUT"; fail "an unknown config did not fall back to n/a"; }
-# It is still eligible for the wide-variance warning; being new is not being exempt.
+# A pooled 0.30 stddev is spread ACROSS evals, not flakiness, so it must not
+# trigger the wide-variance warning on its own (#224). With no runs[] rows the
+# report says the run-to-run spread was not measured.
 echo "$OUT" | grep -q 'Wide variance' \
-  || { echo "$OUT"; fail "a 0.30 stddev did not trigger the wide-variance warning"; }
+  && { echo "$OUT"; fail "a pooled 0.30 stddev with no per-run rows triggered the wide-variance warning"; }
+echo "$OUT" | grep -q 'Run-to-run spread: not measured' \
+  || { echo "$OUT"; fail "a run with no per-run rows did not say the run-to-run spread was not measured"; }
 pass
 
 # ---------------------------------------------------------------------------
@@ -642,6 +646,154 @@ pass
 # isolating the loader rather than breaking cost rendering generally.
 cost_report "$TMP/cost.json" "" "$M" >/dev/null 2>&1 \
   || fail "the strict-load mutant also broke the well-formed case; it is not isolating the loader"
+pass
+
+# ---------------------------------------------------------------------------
+# 9. RUN-TO-RUN SPREAD PER EVAL (#224). The wide-variance warning reads the
+#    spread of ONE eval's pass rate across its repeats, worst eval first, and
+#    never the stddev the aggregator pools across every eval of a config.
+# ---------------------------------------------------------------------------
+# row <eval_id> <config> <run_number> <pass_rate>
+row() { printf '{"eval_id": "%s", "configuration": "%s", "run_number": %s, "result": {"pass_rate": %s}}' "$1" "$2" "$3" "$4"; }
+# runs_file <dest> <pooled stddev> <row>...
+runs_file() {
+  local dest="$1" pooled="$2"; shift 2
+  local IFS=,
+  printf '{"run_summary": {"with_skill": {"pass_rate": {"mean": 0.75, "stddev": %s}}}, "runs": [%s]}\n' \
+    "$pooled" "$*" > "$dest"
+}
+
+# 9a. A DIVERSE suite: three evals that each score the same on every repeat,
+#     but differ from one another. The pooled stddev is wide (0.25); the
+#     run-to-run spread is zero. No warning.
+runs_file "$TMP/diverse.json" 0.25 \
+  "$(row suite-a-0 with_skill 1 0.5)"  "$(row suite-a-0 with_skill 2 0.5)"  "$(row suite-a-0 with_skill 3 0.5)" \
+  "$(row suite-a-1 with_skill 1 0.75)" "$(row suite-a-1 with_skill 2 0.75)" "$(row suite-a-1 with_skill 3 0.75)" \
+  "$(row suite-b-0 with_skill 1 1.0)"  "$(row suite-b-0 with_skill 2 1.0)"  "$(row suite-b-0 with_skill 3 1.0)"
+OUT="$(report "$TMP/diverse.json" "$BASELINE")" || { echo "$OUT"; fail "a diverse suite crashed the report"; }
+echo "$OUT" | grep -q 'Wide variance' \
+  && { echo "$OUT"; fail "a diverse but stable suite triggered the wide-variance warning"; }
+echo "$OUT" | grep -q 'Run-to-run spread: worst eval .* 0.00' \
+  || { echo "$OUT"; fail "a diverse but stable suite did not report a 0.00 worst run-to-run spread"; }
+pass
+
+# 9b. A FLAKY eval: one eval swings between repeats while the pooled figure
+#     stays under the threshold. The warning fires and names that eval, its
+#     config, and the quantity.
+runs_file "$TMP/flaky.json" 0.10 \
+  "$(row suite-a-0 with_skill 1 1.0)" "$(row suite-a-0 with_skill 2 0.5)" "$(row suite-a-0 with_skill 3 1.0)" \
+  "$(row suite-b-0 with_skill 1 0.75)" "$(row suite-b-0 with_skill 2 0.75)" "$(row suite-b-0 with_skill 3 0.75)"
+OUT="$(report "$TMP/flaky.json" "$BASELINE")" || { echo "$OUT"; fail "a flaky eval crashed the report"; }
+echo "$OUT" | grep -q 'Wide variance' \
+  || { echo "$OUT"; fail "a flaky eval did not trigger the wide-variance warning"; }
+# shellcheck disable=SC2016  # literal Markdown backticks, not a command substitution
+echo "$OUT" | grep -q '`suite-a-0` (`with_skill`)' \
+  || { echo "$OUT"; fail "the warning did not name the flaky eval and its config"; }
+echo "$OUT" | grep -q 'run-to-run spread' \
+  || { echo "$OUT"; fail "the warning did not name the quantity it reports"; }
+pass
+
+# 9c. runs=1: no eval has repeats. Say so plainly; do not warn, and do not
+#     report a zero spread as if it were stable. Two evals from different
+#     cases share the local id 0 -- the qualified ids keep them apart.
+runs_file "$TMP/single.json" 0.32 \
+  "$(row suite-a-0 with_skill 1 0.5)" "$(row suite-b-0 with_skill 1 1.0)"
+OUT="$(report "$TMP/single.json" "$BASELINE")" || { echo "$OUT"; fail "a runs=1 benchmark crashed the report"; }
+echo "$OUT" | grep -q 'Wide variance' \
+  && { echo "$OUT"; fail "a runs=1 benchmark triggered the wide-variance warning"; }
+echo "$OUT" | grep -q 'Run-to-run spread: not measured: one run per eval' \
+  || { echo "$OUT"; fail "a runs=1 benchmark did not say the spread was not measured"; }
+echo "$OUT" | grep -q '0\.00' \
+  && { echo "$OUT"; fail "a runs=1 benchmark reported a zero spread"; }
+pass
+
+# 9d. Rows that cannot be told apart (an unqualified eval_id shared by two
+#     cases, #244's shape: the same run number twice in one group) are not
+#     merged into a fake flaky eval. They are reported as not measured.
+runs_file "$TMP/collide.json" 0.25 \
+  "$(row 0 with_skill 1 0.0)" "$(row 0 with_skill 1 1.0)" \
+  "$(row 0 with_skill 2 0.0)" "$(row 0 with_skill 2 1.0)"
+OUT="$(report "$TMP/collide.json" "$BASELINE")" || { echo "$OUT"; fail "colliding eval ids crashed the report"; }
+echo "$OUT" | grep -q 'Wide variance' \
+  && { echo "$OUT"; fail "colliding eval ids were merged into a fake flaky eval"; }
+echo "$OUT" | grep -q 'cannot be told apart' \
+  || { echo "$OUT"; fail "colliding eval ids were not reported as ambiguous"; }
+pass
+
+# 9e. Both arms of the same eval are separate groups. A runs=3 benchmark
+#     where each eval is stable in each config must report a measured 0.00
+#     spread, not "cannot be told apart" (which is what merging the two
+#     configs into one group would produce, since their run numbers repeat).
+runs_file "$TMP/two-configs.json" 0.25 \
+  "$(row suite-a-0 with_skill 1 1.0)" "$(row suite-a-0 with_skill 2 1.0)" \
+  "$(row suite-a-0 without_skill 1 0.5)" "$(row suite-a-0 without_skill 2 0.5)"
+OUT="$(report "$TMP/two-configs.json" "$BASELINE")" || { echo "$OUT"; fail "a two-config benchmark crashed the report"; }
+echo "$OUT" | grep -q 'Run-to-run spread: worst eval .* 0.00' \
+  || { echo "$OUT"; fail "a stable two-config benchmark did not report a 0.00 worst spread"; }
+echo "$OUT" | grep -q 'cannot be told apart' \
+  && { echo "$OUT"; fail "the two configs of one eval were merged into one ambiguous group"; }
+pass
+
+# 9f. When every group collides there is no "one run per eval" claim to make;
+#     only the ambiguity line may appear.
+OUT="$(report "$TMP/collide.json" "$BASELINE")"
+echo "$OUT" | grep -q 'one run per eval' \
+  && { echo "$OUT"; fail "an all-colliding benchmark claimed one run per eval"; }
+pass
+
+# 9-mut4. Drop configuration from the grouping key: case 9e must then fail.
+M="$(mutate noconfig 'key = (str(row.get("eval_id")), str(row.get("configuration")))' \
+  'key = (str(row.get("eval_id")), "any")')" || fail "could not build the no-config mutant"
+report "$TMP/two-configs.json" "$BASELINE" "$M" | grep -q 'cannot be told apart' \
+  || fail "the no-config mutant did not merge the two arms, so case 9e proves nothing"
+pass
+report "$TMP/flaky.json" "$BASELINE" "$M" | grep -q 'Wide variance' \
+  || fail "the no-config mutant also broke case 9b; it is not isolating the key"
+pass
+
+# 9-mut5. Drop the "spreads and" guard: case 9f must then fail.
+M="$(mutate allcollide 'elif spreads and not measured:' 'elif not measured:')" \
+  || fail "could not build the all-collide mutant"
+report "$TMP/collide.json" "$BASELINE" "$M" | grep -q 'one run per eval' \
+  || fail "the all-collide mutant did not claim one run per eval, so case 9f proves nothing"
+pass
+
+# 9-mut1. Restore the pooled reading: warn on run_summary's per-config stddev,
+#         which is what the report did before #224. The diverse suite (pooled
+#         0.25, every eval stable) must then warn, so case 9a proves the
+#         per-eval reading is what stops it.
+M="$(mutate pooled 'lines.extend(render_spread(cur.get("runs")))' \
+  'lines.extend(["> **Wide variance.** pooled"] if any((stats_of(e).get("stddev") or 0) > WIDE_STDDEV for e in cur_summary.values()) else [])')" \
+  || fail "could not build the pooled-reading mutant"
+report "$TMP/diverse.json" "$BASELINE" "$M" | grep -q 'Wide variance' \
+  || fail "the pooled-reading mutant did not warn on the diverse suite, so case 9a proves nothing"
+pass
+# ...and it is specific: case 1's real aggregator shape still renders its rows.
+report "$TMP/real.json" "$TMP/measured-baseline.json" "$M" | grep -qF '| with_skill | 0.938 | 0.125 |' \
+  || fail "the pooled-reading mutant also broke case 1; it is not isolating the spread reading"
+pass
+
+# 9-mut2. Drop the repeat guard: a single run must then read as measured, so
+#         case 9c's "not measured" line disappears.
+M="$(mutate repeats 'if len(rates) >= 2 else None' 'if len(rates) >= 1 else None')" \
+  || fail "could not build the repeat-guard mutant"
+OUT="$(report "$TMP/single.json" "$BASELINE" "$M" 2>&1)"
+echo "$OUT" | grep -q 'Run-to-run spread: not measured: one run per eval' \
+  && fail "the repeat-guard mutant still said not measured, so case 9c proves nothing"
+pass
+report "$TMP/flaky.json" "$BASELINE" "$M" | grep -q 'Wide variance' \
+  || fail "the repeat-guard mutant also broke case 9b; it is not isolating the guard"
+pass
+
+# 9-mut3. Drop the duplicate-run-number guard: the colliding rows then merge
+#         into one fake flaky eval and warn.
+M="$(mutate collide 'if len(set(numbers)) != len(numbers):' 'if False:')" \
+  || fail "could not build the collision-guard mutant"
+report "$TMP/collide.json" "$BASELINE" "$M" | grep -q 'Wide variance' \
+  || fail "the collision-guard mutant did not merge the colliding rows, so case 9d proves nothing"
+pass
+report "$TMP/flaky.json" "$BASELINE" "$M" | grep -q 'Wide variance' \
+  || fail "the collision-guard mutant also broke case 9b; it is not isolating the guard"
 pass
 
 echo "eval-report.test.sh: $CASES cases passed"
