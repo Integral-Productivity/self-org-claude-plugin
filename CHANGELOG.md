@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.8.2...v1.9.0) (2026-11-20)
+
+
+### Features
+
+* **evals:** let a case script follow-up user turns ([#497](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/497)) ([#498](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/498)) ([a40e860](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/a40e860fb15a87d51285a32cbee3bfb36b69f7fe))
+
 ## [1.8.2](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.8.1...v1.8.2) (2026-11-20)
 
 
