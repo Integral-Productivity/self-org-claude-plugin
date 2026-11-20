@@ -159,11 +159,11 @@ def render_spread(runs):
     if not spreads and not ambiguous:
         lines.append("\nRun-to-run spread: not measured: this benchmark has no "
                      "per-run rows.")
-    elif not measured:
+    elif spreads and not measured:
         lines.append("\nRun-to-run spread: not measured: one run per eval. "
                      "The stddev column above is spread across evals, not "
                      "flakiness.")
-    else:
+    elif measured:
         (eval_id, config), worst = max(measured.items(), key=lambda kv: (kv[1], kv[0]))
         if worst > WIDE_STDDEV:
             others = sum(1 for v in measured.values() if v > WIDE_STDDEV) - 1

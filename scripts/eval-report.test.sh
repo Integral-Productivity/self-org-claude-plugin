@@ -719,6 +719,44 @@ echo "$OUT" | grep -q 'cannot be told apart' \
   || { echo "$OUT"; fail "colliding eval ids were not reported as ambiguous"; }
 pass
 
+# 9e. Both arms of the same eval are separate groups. A runs=3 benchmark
+#     where each eval is stable in each config must report a measured 0.00
+#     spread, not "cannot be told apart" (which is what merging the two
+#     configs into one group would produce, since their run numbers repeat).
+runs_file "$TMP/two-configs.json" 0.25 \
+  "$(row suite-a-0 with_skill 1 1.0)" "$(row suite-a-0 with_skill 2 1.0)" \
+  "$(row suite-a-0 without_skill 1 0.5)" "$(row suite-a-0 without_skill 2 0.5)"
+OUT="$(report "$TMP/two-configs.json" "$BASELINE")" || { echo "$OUT"; fail "a two-config benchmark crashed the report"; }
+echo "$OUT" | grep -q 'Run-to-run spread: worst eval .* 0.00' \
+  || { echo "$OUT"; fail "a stable two-config benchmark did not report a 0.00 worst spread"; }
+echo "$OUT" | grep -q 'cannot be told apart' \
+  && { echo "$OUT"; fail "the two configs of one eval were merged into one ambiguous group"; }
+pass
+
+# 9f. When every group collides there is no "one run per eval" claim to make;
+#     only the ambiguity line may appear.
+OUT="$(report "$TMP/collide.json" "$BASELINE")"
+echo "$OUT" | grep -q 'one run per eval' \
+  && { echo "$OUT"; fail "an all-colliding benchmark claimed one run per eval"; }
+pass
+
+# 9-mut4. Drop configuration from the grouping key: case 9e must then fail.
+M="$(mutate noconfig 'key = (str(row.get("eval_id")), str(row.get("configuration")))' \
+  'key = (str(row.get("eval_id")), "any")')" || fail "could not build the no-config mutant"
+report "$TMP/two-configs.json" "$BASELINE" "$M" | grep -q 'cannot be told apart' \
+  || fail "the no-config mutant did not merge the two arms, so case 9e proves nothing"
+pass
+report "$TMP/flaky.json" "$BASELINE" "$M" | grep -q 'Wide variance' \
+  || fail "the no-config mutant also broke case 9b; it is not isolating the key"
+pass
+
+# 9-mut5. Drop the "spreads and" guard: case 9f must then fail.
+M="$(mutate allcollide 'elif spreads and not measured:' 'elif not measured:')" \
+  || fail "could not build the all-collide mutant"
+report "$TMP/collide.json" "$BASELINE" "$M" | grep -q 'one run per eval' \
+  || fail "the all-collide mutant did not claim one run per eval, so case 9f proves nothing"
+pass
+
 # 9-mut1. Restore the pooled reading: warn on run_summary's per-config stddev,
 #         which is what the report did before #224. The diverse suite (pooled
 #         0.25, every eval stable) must then warn, so case 9a proves the
