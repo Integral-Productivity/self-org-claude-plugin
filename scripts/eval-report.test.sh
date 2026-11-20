@@ -686,6 +686,7 @@ runs_file "$TMP/flaky.json" 0.10 \
 OUT="$(report "$TMP/flaky.json" "$BASELINE")" || { echo "$OUT"; fail "a flaky eval crashed the report"; }
 echo "$OUT" | grep -q 'Wide variance' \
   || { echo "$OUT"; fail "a flaky eval did not trigger the wide-variance warning"; }
+# shellcheck disable=SC2016  # literal Markdown backticks, not a command substitution
 echo "$OUT" | grep -q '`suite-a-0` (`with_skill`)' \
   || { echo "$OUT"; fail "the warning did not name the flaky eval and its config"; }
 echo "$OUT" | grep -q 'run-to-run spread' \
