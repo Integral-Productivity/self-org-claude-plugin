@@ -175,13 +175,15 @@ This is the same pattern as the existing `self-org-ai-governance` SKILL.md "Requ
 
 **Unattended:** skip step 2. Nobody can declare the context, so write `Operating **unbound**: GlassFrog is not available in this session, so no role is resolved.` and carry on. Step 3 still holds: an unbound session assumes no actor and no role.
 
+This branch is for a role skill or a routine that runs this procedure. The session-start conditional directive does not send a session here when no `glassfrog_get_me` tool is listed. That session makes no GlassFrog call and writes no unbound line. The conditional directive in its transcript is the record that grounding was not available.
+
 ---
 
 ## Unattended Sessions and the Unbound State
 
 Every "ask the user" step above assumes someone can answer. Some sessions have nobody: a scheduled routine, a headless or pipeline run, a session started by a trigger, an agent working alone. A question there is never answered, so the session either stalls on it or drops grounding without a word, and a reader of the transcript cannot tell that from forgetting.
 
-**When a session is unattended.** Treat the session as unattended when no person can answer in it, or when you cannot tell. An unasked question costs less than an unanswered one. The session-start role-grounding directive fires before anyone has spoken, so a `glassfrog_get_me` failure on that path takes the unattended branch even when a person later turns up. A role skill a person invokes during the session follows the interactive asks above.
+**When a session is unattended.** Treat the session as unattended when no person can answer in it, or when you cannot tell. An unasked question costs less than an unanswered one. The session-start role-grounding directive fires before anyone has spoken, so a `glassfrog_get_me` failure on that path takes the unattended branch even when a person later turns up. A role skill a person invokes during the session follows the interactive asks above. A session that has no `glassfrog_get_me` tool and runs no role skill never starts this procedure, so it writes no unbound line.
 
 **The rule.** On an unattended path, every ask becomes one line that names the gap, and the session proceeds **unbound**. No retry loop, and no question.
 
