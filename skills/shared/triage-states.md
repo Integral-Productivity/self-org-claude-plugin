@@ -29,20 +29,24 @@ The names match the hand-set tags already found on live projects and the issue-t
 Before any `glassfrog_set_project_tags` call that sets a triage state:
 
 1. Compare the state name to the table in Step 1, character for character. Lowercase, hyphens, no plural, no prefix.
-2. If it is not in the table, **refuse the write** and say which name was refused. Do not create a tag. Do not pick the nearest match.
+2. If it is not in the table, **refuse the write** and say which name was refused. Do not pick the nearest match, and never create a tag (`glassfrog_create_tag`) to make a write succeed.
 
-**Why:** GlassFrog creates any tag name it is sent. A misspelled state (a stray plural `s` on `ready-for-agent`) silently becomes a new tag that no queue reads, and the project drops out of triage without an error.
+**Why:** the four states are **org tags**. Roles, projects and actions share one org-tag list, and `glassfrog_set_project_tags` links only names already on that list ([ADR-0029](../../docs/adr/0029-triage-states-are-org-tags-created-by-glassfrog-config.md)). A misspelled state (a stray plural `s` on `ready-for-agent`) now fails with "No org tag is named" and writes nothing. A wrong name that *is* an org tag, such as a role tag, would still be linked, so this check stays.
 
-## Step 3 -- Keep the project's other tags
+**Who creates them:** this file names the states; `glassfrog-config` imports the names and creates the org tags (its ADR 0007). If a write fails with "No org tag is named" for a name in the Step 1 table, the org tag is missing in GlassFrog: say so, keep the state as a draft, and point to `glassfrog-config`. Do not create the tag from here.
 
-`glassfrog_set_project_tags` replaces the whole tag set: the array sent becomes every tag on the project, and `[]` clears them all. So a state change is a read-modify-write:
+## Step 3 -- Keep the project's other org tags
 
-1. Read the project's current tags.
-2. Remove any tag that is in the Step 1 table.
+`glassfrog_set_project_tags` replaces the project's whole **org-tag** set: the array sent becomes every org tag on the project, and `[]` clears them. Older **string tags**, written by the GlassFrog web app before tags moved to org tags, are not org tags. The tool cannot send, list or remove them, and a string-tag name in the array fails the whole call with "No org tag is named". So a state change is a read-modify-write over org tags only:
+
+1. Read the project's current org tags. Use the `org_tags` array of the last `glassfrog_set_project_tags` response for this project in this session. Before the first write, read the project's `tags` with `glassfrog_get_project` and the org-tag names with `glassfrog_list_tags` (read once per pass), and keep only the names that are on the org-tag list, compared without case.
+2. Remove any name that is in the Step 1 table.
 3. Add the one new state.
-4. Send the result.
+4. Send the result. Never send a name from the response's `string_tags`.
 
-Never send only the new state. That deletes every tag the project's owner set for another reason.
+Never send only the new state. That removes every org tag the project's owner set for another reason.
+
+**Older string tags stay.** A project can keep a string tag that names a state, for example a hand-set `ready-for-human`, next to the org tag this command writes. The API cannot remove it, so leave it in place and do not count it: when a project shows more than one state name, the route on its last triage note line wins, and the org tag in the last response's `org_tags` confirms it. List each leftover state string tag in the pass summary, so a person can remove it in the GlassFrog web app.
 
 The live argument is `tag_names`. Every state write also appends a dated reason line to the project note, before the tag write; the format and the order are in `./project-triage-gates.md` Step 6.
 

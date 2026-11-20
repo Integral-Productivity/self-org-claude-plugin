@@ -4,7 +4,7 @@ Date: 2026-10-22
 
 ## Status
 
-Accepted (2026-10-23, Kraig Parkinson)
+Accepted (2026-10-23, Kraig Parkinson). Amended by [ADR-0029](0029-triage-states-are-org-tags-created-by-glassfrog-config.md): the states are org tags that `glassfrog-config` creates; GlassFrog no longer creates a tag from a name.
 
 Amends [ADR-0018](0018-separate-project-readiness-from-project-quality.md):
 replaces the part of its decision 4 that says `glassfrog-config` owns the tag
