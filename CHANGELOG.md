@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.2](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.8.1...v1.8.2) (2026-11-20)
+
+
+### Bug Fixes
+
+* **evals:** hash hooks into the eval cache key; warn on per-eval run-to-run spread ([#495](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/495)) ([7b2b656](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/7b2b65610ceb766665db9f75c4154f73d867d379))
+
 ## [1.8.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.8.0...v1.8.1) (2026-11-19)
 
 
