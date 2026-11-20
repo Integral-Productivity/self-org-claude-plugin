@@ -111,6 +111,29 @@ if os.environ.get("FAKE_CLAUDE_DIE"):
     sys.stderr.write("simulated executor failure\n")
     sys.exit(3)
 
+# Sessions, for scripted follow-up turns (#497). The real CLI keeps a session
+# in its store under CLAUDE_CONFIG_DIR and `--resume <id>` continues it; an id
+# the store does not hold is an error. The fake models that dependency rather
+# than accepting any resume, so a runner that dropped the sandbox between turns
+# (or resumed the wrong id) fails here the way it would fail live.
+SESSION_ID = None
+TURN = 0
+if "--json-schema" not in argv:
+    store = os.path.join(os.environ.get("CLAUDE_CONFIG_DIR", "."), "fake-session.json")
+    resume = opt("--resume")
+    if resume is None:
+        SESSION_ID = "fake-session-" + os.urandom(4).hex()
+        json.dump({"id": SESSION_ID, "turn": 0}, open(store, "w"))
+    else:
+        held = json.load(open(store)) if os.path.exists(store) else {}
+        if held.get("id") != resume or os.environ.get("FAKE_RESUME_FAIL"):
+            print(json.dumps({"type": "result", "is_error": True,
+                              "result": f"No conversation found with session ID: {resume}"}))
+            sys.exit(1)
+        SESSION_ID = resume
+        TURN = held["turn"] + 1
+        json.dump({"id": SESSION_ID, "turn": TURN}, open(store, "w"))
+
 # The session/init event, emitted first exactly as the real CLI emits it. Its
 # `tools` and `slash_commands` are what session_shape_error reads, and the fake
 # has to model the real dependency: --plugin-dir is what registers the plugin's
@@ -132,7 +155,7 @@ if "--json-schema" not in argv:
                           "tools": tools + [f"mcp__glassfrog-extended__{t}" for t in
                                             ("glassfrog_get_me", "glassfrog_create_tension")],
                           "mcp_servers": [{"name": "glassfrog-extended", "status": "connected"}],
-                          "slash_commands": commands}))
+                          "slash_commands": commands, "session_id": SESSION_ID}))
 
 # A well-formed event stream that reports an error. This is what the real CLI
 # emits when it cannot authenticate, and it is NOT an empty stream.
@@ -167,6 +190,12 @@ if "--json-schema" in argv:
 
 plan = json.load(open(os.environ["FAKE_PLAN"]))
 leg = plan["with_skill"] if "--plugin-dir" in argv else plan.get("without_skill", {})
+# A resumed turn replays the leg's turns[] entry for that turn; a turn the plan
+# does not script answers in prose and calls nothing, as a model with nothing
+# left to do would.
+if TURN:
+    scripted = leg.get("turns", [])
+    leg = scripted[TURN - 1] if TURN <= len(scripted) else {"text": "Nothing left to do."}
 
 cfg = json.load(open(opt("--mcp-config")))["mcpServers"]["glassfrog-extended"]
 proc = subprocess.Popen([cfg["command"], *cfg["args"]],
@@ -257,7 +286,7 @@ if os.environ.get("FAKE_USAGE_MISMATCH"):
 if os.environ.get("FAKE_AUX_MODEL_FIRST"):
     model_usage = {"fake-auxiliary-model": {"inputTokens": 5}, **model_usage}
 
-print(json.dumps({"type": "result", "is_error": False,
+print(json.dumps({"type": "result", "is_error": False, "session_id": SESSION_ID,
                   "result": leg.get("final", "done"),
                   "modelUsage": model_usage,
                   "total_cost_usd": 0.01,
@@ -492,6 +521,22 @@ pass
 _reject '{"evals":[{"eval_id":0,"eval_name":"n","fixture":"'"$FIXTURE"'",
   "assertions":[{"text":"t","discriminating":true}]}]}' \
   "missing required field 'prompt'" "missing prompt"
+pass
+
+# follow_up_turns (#497): a non-empty list of non-empty strings, nothing else.
+_reject '{"evals":[{"eval_id":0,"eval_name":"n","prompt":"p","fixture":"'"$FIXTURE"'",
+  "follow_up_turns":"w","assertions":[{"text":"t","discriminating":true}]}]}' \
+  "follow_up_turns" "follow_up_turns as a bare string"
+pass
+
+_reject '{"evals":[{"eval_id":0,"eval_name":"n","prompt":"p","fixture":"'"$FIXTURE"'",
+  "follow_up_turns":["w",""],"assertions":[{"text":"t","discriminating":true}]}]}' \
+  "follow_up_turns" "follow_up_turns with an empty turn"
+pass
+
+_reject '{"evals":[{"eval_id":0,"eval_name":"n","prompt":"p","fixture":"'"$FIXTURE"'",
+  "follow_up_turns":[],"assertions":[{"text":"t","discriminating":true}]}]}' \
+  "follow_up_turns" "follow_up_turns empty"
 pass
 
 # ---------------------------------------------------------------------------
@@ -2355,6 +2400,181 @@ OUT="$(PLAN_RUNNER="$PLAN_MUT_ROOT/scripts/run-behavioural-eval.py" \
   || { cat "$TMP/plan.err"; fail "the --plan-only mutant did not run"; }
 [ "$(plan_field "$OUT" fresh_legs)" = "0" ] \
   || fail "mutation case is vacuous: ignoring the usability rule did not change 16e's count ($OUT)"
+pass
+
+# ---------------------------------------------------------------------------
+# 17. SCRIPTED FOLLOW-UP TURNS (#497).
+# ---------------------------------------------------------------------------
+# A walk that writes only on a confirmation typed after the draft cannot be
+# measured in one `claude -p` turn: both legs stop at the picker and the write
+# log is empty (#433). A case's follow_up_turns are sent, in order, to the same
+# session with --resume. The fake keeps its session in CLAUDE_CONFIG_DIR, as
+# the real CLI does, so a runner that dropped the sandbox between turns, or
+# resumed another id, fails here.
+FU_CASE="$TMP/case-followup/evals.json"
+mkdir -p "$(dirname "$FU_CASE")"
+cat > "$FU_CASE" <<EOF
+{
+  "skill": "self-org", "surface": "/self-org:tension-triage", "status": "fixture",
+  "evals": [
+    { "eval_id": 0, "eval_name": "follow-up-turns", "fixture": "$FIXTURE",
+      "prompt": "fixture prompt", "ground_truth": "fixture",
+      "follow_up_turns": ["w", "w"],
+      "assertions": [
+        { "text": "a successor exists", "discriminating": true,
+          "check": { "kind": "write_present",
+                     "match": { "tool": "glassfrog_create_tension" } } },
+        { "text": "successor before archive", "discriminating": true,
+          "check": { "kind": "write_ordering",
+                     "first": { "tool": "glassfrog_create_tension",
+                                "args_contain": { "role_id": "$SEC_ROLE" } },
+                     "then":  { "tool": "glassfrog_update_tension",
+                                "args_contain": { "status": "archived" } } } }
+      ] } ] }
+EOF
+# Turn 0 reads and stops at the picker. The writes come only in turns 1 and 2,
+# so they exist only if the runner sent the turns. The same plan on both legs.
+FU_LEG='{ "text": "Draft shown. Type w to write.",
+    "calls": [ { "tool": "glassfrog_get_me" } ],
+    "turns": [
+      { "text": "Writing the successor.",
+        "calls": [ { "tool": "glassfrog_create_tension",
+                     "args": { "role_id": "'"$SEC_ROLE"'", "body": "Successor to the archived originals." } } ] },
+      { "text": "Archiving the original.",
+        "calls": [ { "tool": "glassfrog_update_tension",
+                     "args": { "tension_id": "'"$TEN_VENDOR"'", "status": "archived" } } ] } ] }'
+printf '{ "with_skill": %s, "without_skill": %s }\n' "$FU_LEG" "$FU_LEG" > "$TMP/plan-followup.json"
+
+fu_run() {  # $1 = runner, $2 = out dir, rest = env assignments
+  local runner="$1" out="$2"; shift 2
+  rm -rf "$out" "$TMP/fu-invoke.log"
+  env "$@" FAKE_PLAN="$TMP/plan-followup.json" CACHE_INVOKE_LOG="$TMP/fu-invoke.log" \
+    BEHAVIOURAL_EVAL_CLAUDE_BIN="$TMP/fake-claude-logged" \
+    python3 "$runner" --case "$FU_CASE" --out "$out" \
+      --configs with_skill,without_skill --no-grade >/dev/null 2>&1
+}
+fu_field() {  # $1 = out dir, $2 = config, $3 = python expression over g (grading)
+  python3 -c "
+import json
+g=json.load(open('$1/eval-case-followup-0/$2/run-1/grading.json'))
+print($3)"
+}
+
+# 17a. Both legs get every turn, and the writes the turns made are graded.
+fu_run "$RUNNER" "$TMP/out-fu"
+for config in with_skill without_skill; do
+  [ "$(fu_field "$TMP/out-fu" $config "g['execution_error']")" = "None" ] \
+    || fail "17a: $config errored: $(fu_field "$TMP/out-fu" $config "g['execution_error']")"
+  [ "$(fu_field "$TMP/out-fu" $config "[e['passed'] for e in g['expectations']]")" = "[True, True]" ] \
+    || fail "17a: $config did not see the writes made in the follow-up turns"
+done
+[ "$(grep -c -- '--resume' "$TMP/fu-invoke.log")" = "4" ] \
+  || { cat "$TMP/fu-invoke.log"; fail "17a: expected two resumed turns per leg"; }
+pass
+
+# 17b. The resumed turns continue the session the first turn opened: one
+#      session id per leg, carried on every result event.
+python3 - "$TMP/out-fu/eval-case-followup-0/with_skill/run-1/outputs/events.jsonl" <<'PY' \
+  || fail "17b: the turns did not share one session"
+import json, sys
+events = [json.loads(l) for l in open(sys.argv[1]) if l.strip()]
+results = [e for e in events if e.get("type") == "result"]
+assert len(results) == 3, results
+assert len({r["session_id"] for r in results}) == 1, results
+PY
+pass
+
+# 17c. The write log numbers the turns' writes in one sequence, and a turn's
+#      stub sees what an earlier turn wrote (the stub replays the log).
+python3 -c "
+import json
+rows=[json.loads(l) for l in open('$TMP/out-fu/eval-case-followup-0/with_skill/run-1/outputs/writes.jsonl')]
+assert [r['seq'] for r in rows]==[1,2], rows
+" || fail "17c: the write sequence restarted in a follow-up turn"
+python3 - "$REPO/evals/stub/glassfrog_stub.py" "$FIXTURE" "$TMP/fu-replay.jsonl" "$TEN_VENDOR" <<'PY' \
+  || fail "17c: a new stub did not replay the earlier turn's writes"
+import json, os, subprocess, sys
+stub, fixture, log, tension = sys.argv[1:]
+open(log, "w").write(json.dumps({"seq": 1, "tool": "glassfrog_update_tension",
+                                 "args": {"tension_id": tension, "status": "archived"}}) + "\n")
+env = {**os.environ, "GLASSFROG_STUB_FIXTURE": fixture, "GLASSFROG_STUB_WRITE_LOG": log}
+calls = [{"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+          "params": {"name": "glassfrog_get_tension", "arguments": {"tension_id": tension}}},
+         {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+          "params": {"name": "glassfrog_create_tension",
+                     "arguments": {"role_id": "r", "body": "b"}}}]
+out = subprocess.run([sys.executable, stub], input="\n".join(json.dumps(c) for c in calls) + "\n",
+                     capture_output=True, text=True, env=env).stdout.splitlines()
+got = json.loads(json.loads(out[0])["result"]["content"][0]["text"])
+assert got["data"]["status"] == "archived", got
+rows = [json.loads(l) for l in open(log)]
+assert [r["seq"] for r in rows] == [1, 2], rows
+PY
+pass
+
+# 17d. The transcript the grader reads shows what the user said in each turn.
+grep -q "Follow-up turn 2 — user" "$TMP/out-fu/eval-case-followup-0/with_skill/run-1/outputs/transcript.md" \
+  || fail "17d: the transcript does not show the follow-up turns"
+pass
+
+# 17e. Cost counts every turn, not only the last. The fake bills 700 tokens and
+#      0.01 USD per turn.
+[ "$(fu_field "$TMP/out-fu" with_skill "g['timing']['total_tokens']")" = "2100" ] \
+  || fail "17e: total_tokens did not sum the three turns"
+python3 -c "
+import json
+c=json.load(open('$TMP/out-fu/eval-case-followup-0/with_skill/run-1/cost.json'))['passes']['executor']
+assert c['turns']==3, c
+assert round(c['total_cost_usd'],6)==0.03, c
+assert c['usage']['input_tokens']==300, c
+assert c['model_usage']['fake-executor-model']['inputTokens']==300, c
+" || fail "17e: the executor cost record did not sum the three turns"
+pass
+
+# 17f. A case without follow_up_turns makes one call per leg and keeps the
+#      single-turn cost record exactly as before (no 'turns' key).
+rm -f "$TMP/fu-invoke.log"
+FAKE_PLAN="$TMP/plan-clean.json" CACHE_INVOKE_LOG="$TMP/fu-invoke.log" \
+  BEHAVIOURAL_EVAL_CLAUDE_BIN="$TMP/fake-claude-logged" \
+  python3 "$RUNNER" --case "$TMP/case/evals.json" --out "$TMP/out-fu-none" \
+    --configs with_skill --no-grade >/dev/null 2>&1
+if grep -q -- '--resume' "$TMP/fu-invoke.log"; then
+  fail "17f: a single-turn case resumed a session"
+fi
+python3 -c "
+import json
+c=json.load(open('$TMP/out-fu-none/eval-case-0/with_skill/run-1/cost.json'))['passes']['executor']
+assert 'turns' not in c and c['total_cost_usd']==0.01, c
+" || fail "17f: the single-turn cost record changed shape"
+pass
+
+# 17g. A turn that cannot resume fails the run loudly. Its writes never
+#      happened, so the checks must not pass on the empty log, and the runner
+#      sends no further turn.
+fu_run "$RUNNER" "$TMP/out-fu-fail" FAKE_RESUME_FAIL=1
+fu_field "$TMP/out-fu-fail" with_skill "g['execution_error']" | grep -q "follow-up turn 1" \
+  || fail "17g: a failed resume did not fail the run: $(fu_field "$TMP/out-fu-fail" with_skill "g['execution_error']")"
+[ "$(grep -c -- '--resume' "$TMP/fu-invoke.log")" = "2" ] \
+  || fail "17g: the runner kept sending turns after one failed"
+pass
+
+# 17h. MUTATION: a runner that ignores the case's turns must fail 17a. Without
+#      this, 17a could pass on a fake that wrote everything in turn 0.
+FU_MUT="$(make_mutant followup \
+  '    follow_ups = tuple(case.get("follow_up_turns", ()))' \
+  '    follow_ups = ()')" || fail "could not build the follow-up mutant"
+fu_run "$FU_MUT" "$TMP/out-fu-mut"
+[ "$(fu_field "$TMP/out-fu-mut" with_skill "[e['passed'] for e in g['expectations']]")" = "[False, False]" ] \
+  || fail "17h: mutation case is vacuous: dropping the turns did not change 17a"
+pass
+
+# 17i. MUTATION: a runner that resumes some other session must fail, not pass.
+FU_MUT2="$(make_mutant followup-resume \
+  'cmd += ["--resume", session_id]' \
+  'cmd += ["--resume", "not-the-session"]')" || fail "could not build the resume mutant"
+fu_run "$FU_MUT2" "$TMP/out-fu-mut2"
+fu_field "$TMP/out-fu-mut2" with_skill "g['execution_error']" | grep -q "follow-up turn 1" \
+  || fail "17i: mutation case is vacuous: resuming the wrong session still passed"
 pass
 
 echo "run-behavioural-eval.test.sh: $CASES cases passed"

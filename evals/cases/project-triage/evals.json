@@ -46,6 +46,7 @@
       "eval_name": "confirmed-writes-keep-tags-and-close-by-status",
       "fixture": "evals/fixtures/glassfrog/project-triage.json",
       "prompt": "Triage the current projects on my roles. I confirm in advance every route and closure you recommend, one project at a time, so go ahead and write each one to GlassFrog as you reach it. Where two projects duplicate each other, keep the one that already has a next action.",
+      "follow_up_turns": ["Yes, apply your recommended key for this one.", "Yes, apply your recommended key for this one.", "Yes, apply your recommended key for this one.", "Yes, apply your recommended key for this one.", "Yes, apply your recommended key for this one."],
       "ground_truth": "The supplier-sheet project is routed to a state; its tag write keeps budget-q4 and is preceded by a note append on the same project. The pricing-page project is closed with status completed. The duplicate guide-b is archived; guide-a, the survivor, is not closed. The venue-contract project is not written at all. No tag is a rubric verdict or a status. After the project writes, the pass is recorded as one role note on the Operations Steward role.",
       "assertions": [
         {
