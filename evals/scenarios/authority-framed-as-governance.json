@@ -1,0 +1,77 @@
+{
+  "scenario": "authority-framed-as-governance",
+  "purpose": "Triage-gates Step 1 must fire before Step 3 venue routing, even when the tension is written as a governance request and the prompt asks for a venue. Replaces authority-already-held as eval 0's fixture after #202: that fixture scored 5/5 in both arms because the tension and the role record shared their key words ('how intent is represented in the tool' against 'how product intent is represented in the roadmap tool') and the body itself said it was only waiting for agreement. #207's attempt, removing a tool-named domain, left both leaks in place and changed nothing. Here the authority-held tension asks for a policy, says 'no one owns' (a Step 3 governance indicator), and proposes a Governance Meeting, and it shares no content word with Offer Design's purpose, accountabilities, or domain. The remedy (renaming the lanes) changes only the categorisation scheme Offer Design controls, so the governance answer is wrong on the constitution, not on taste. Hypothesis to test on the next graded run: without the skill, a model asked which meeting each tension belongs in routes this one to governance; with the skill, Step 1 reads the role record first. If the delta is zero, the maintainer decision on #202 says to cut the case or reclassify it as a floor. Do not add words to the role record that echo the tension: that rebuilds the string-match leak.",
+  "organization": "Larchmont Studio Collective",
+  "actor": {
+    "name": "Rowan Ishikawa",
+    "email": "rowan@example.invalid"
+  },
+  "roles": [
+    {
+      "key": "product-circle",
+      "name": "Product Circle",
+      "purpose": "Products that earn their place in a customer's week",
+      "accountabilities": [
+        "Holding the product portfolio's coherence across releases"
+      ],
+      "domains": [],
+      "filled_by_actor": false
+    },
+    {
+      "key": "circle-lead",
+      "name": "Circle Lead",
+      "parent": "product-circle",
+      "purpose": "Products that earn their place in a customer's week",
+      "flags": ["structural"],
+      "accountabilities": [
+        "Ensuring the capacity of and load/demand on the circle remain balanced",
+        "Defining metrics for roles within the circle"
+      ],
+      "domains": [],
+      "filled_by_actor": true
+    },
+    {
+      "key": "offer-design",
+      "name": "Offer Design",
+      "parent": "product-circle",
+      "purpose": "A product structure anyone can reason about without asking",
+      "accountabilities": [
+        "Defining the categories all product work is filed under",
+        "Retiring categories nothing is filed under any more"
+      ],
+      "domains": [
+        "Work Categorisation Scheme"
+      ],
+      "filled_by_actor": true
+    },
+    {
+      "key": "delivery-ops",
+      "name": "Delivery Operations",
+      "parent": "product-circle",
+      "purpose": "Releases reach customers without heroics",
+      "accountabilities": [
+        "Running the release train on its published cadence"
+      ],
+      "domains": ["Release Pipeline"],
+      "filled_by_actor": false
+    }
+  ],
+  "tensions": [
+    {
+      "key": "authority-held-framed-as-governance",
+      "on": "offer-design",
+      "status": "unprocessed",
+      "created_at": "2025-02-17T10:40:00Z",
+      "updated_at": "2025-02-17T10:40:00Z",
+      "body": "No one owns how the planning board's swimlanes are labelled. Half the lanes are named after teams and half after customer outcomes, so every quarterly session opens with an argument about where a card belongs. We need a policy that settles lane naming once, and I'd like to bring a proposal to the next Governance Meeting."
+    },
+    {
+      "key": "genuinely-governable",
+      "on": "circle-lead",
+      "status": "unprocessed",
+      "created_at": "2025-06-02T14:05:00Z",
+      "updated_at": "2025-06-02T14:05:00Z",
+      "body": "When a release slips, it is unclear who decides whether to cut scope or move the date. Delivery Operations runs the train but does not own the scope call, and no role holds that decision explicitly. This has come up in three separate releases."
+    }
+  ]
+}

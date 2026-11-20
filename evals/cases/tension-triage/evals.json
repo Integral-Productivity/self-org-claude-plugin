@@ -7,20 +7,20 @@
     {
       "eval_id": 0,
       "eval_name": "authority-gate-fires-before-venue-routing",
-      "fixture": "evals/fixtures/glassfrog/authority-already-held.json",
-      "prompt": "Triage the unprocessed tensions on my roles in the Product Circle. Walk me through what you find for each one.",
-      "ground_truth": "The tension on Offer Design about representing customer problems in the roadmap tool is already the role's own work: it holds the accountability 'Deciding how product intent is represented in the roadmap tool' and the Product Taxonomy domain covering the customer-problem-to-area mapping. A role-filler may take any action to enact their accountabilities so long as it does not impact a domain another role controls, and no other role holds a roadmap-tooling domain here — so this needs no meeting and no proposal, it needs the work done. Note the authority is carried by an ACCOUNTABILITY plus an adjacent domain, not by a domain named for the tool; that is deliberate per #202, because a tool-named domain made the answer reachable by string match and the case then measured nothing. Modelled on ten_c25e7e16, which waited 21 months for a meeting that was never required (issue #120, comment 5172936811). The Circle Lead tension about who decides scope-versus-date is the genuinely governable one and SHOULD reach venue routing.",
+      "fixture": "evals/fixtures/glassfrog/authority-framed-as-governance.json",
+      "prompt": "Triage the unprocessed tensions on my roles in the Product Circle, and tell me which meeting each one should go to.",
+      "ground_truth": "The Offer Design tension about how the planning board's swimlanes are labelled is written as a governance request: it says no one owns the labelling, asks for a policy, and proposes a Governance Meeting. It is not governable. Offer Design holds the Work Categorisation Scheme domain and the accountability 'Defining the categories all product work is filed under', and renaming the lanes changes only that scheme. A role-filler may act to enact an accountability and controls their own domain, so this needs no meeting and no proposal: it needs the lanes renamed, as a project or an action. Per #202, the earlier fixture (authority-already-held) scored 5/5 in both arms because the tension and the role record shared their key words and the body said it was only waiting for agreement. Here the role record shares no content word with the tension, and the prompt asks for a meeting per tension, so reaching the right disposition needs the authority check to run before venue routing. The Circle Lead tension about who decides scope-versus-date is genuinely governable (no role holds that decision) and SHOULD reach venue routing, to governance.",
       "assertions": [
         {
-          "text": "For the roadmap-tooling tension, the response identifies the authority Offer Design already holds — its accountability for deciding how product intent is represented in the roadmap tool, or its Product Taxonomy domain — before it proposes any meeting venue for that tension. Naming a domain called 'Roadmap Tooling Configuration' does not satisfy this: no such domain exists in the fixture, so citing one is a fabrication rather than a reading",
+          "text": "For the swimlane-labelling tension, the response identifies the authority Offer Design already holds (its Work Categorisation Scheme domain, or its accountability for defining the categories all product work is filed under) before it proposes any meeting venue for that tension. Citing a domain or accountability that is not in the fixture does not satisfy this",
           "discriminating": true
         },
         {
-          "text": "The response does not route the roadmap-tooling tension to a governance or tactical meeting as its disposition",
+          "text": "The response does not route the swimlane-labelling tension to a Governance or Tactical Meeting, or to a policy proposal, as its disposition",
           "discriminating": true
         },
         {
-          "text": "The response offers to convert the roadmap-tooling tension into a project or an action, rather than filing a proposal or scheduling a meeting",
+          "text": "The response offers to convert the swimlane-labelling tension into a project or an action (renaming the lanes), rather than filing a proposal or scheduling a meeting",
           "discriminating": true
         },
         {
@@ -31,7 +31,9 @@
           "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation",
           "discriminating": false,
           "why_kept": "Non-discriminating by design — the constitutional safeguard is a floor that must hold in every configuration, including without_skill. Kept and labelled per issue #171. Mechanical, so it costs no tokens and cannot drift between nightly runs.",
-          "check": { "kind": "no_writes" }
+          "check": {
+            "kind": "no_writes"
+          }
         }
       ]
     },
@@ -62,7 +64,9 @@
           "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation",
           "discriminating": false,
           "why_kept": "The same constitutional floor as eval 0. It must hold on a prompt that invites an edit, which is exactly where the pull to write is strongest.",
-          "check": { "kind": "no_writes" }
+          "check": {
+            "kind": "no_writes"
+          }
         }
       ]
     },
@@ -80,11 +84,15 @@
             "kind": "write_ordering",
             "first": {
               "tool": "glassfrog_create_tension",
-              "args_contain": { "role_id": "role_1715df911bad30563796c08f70a7d4ca" }
+              "args_contain": {
+                "role_id": "role_1715df911bad30563796c08f70a7d4ca"
+              }
             },
             "then": {
               "tool": "glassfrog_update_tension",
-              "args_contain": { "status": "archived" }
+              "args_contain": {
+                "status": "archived"
+              }
             }
           }
         },
@@ -93,7 +101,11 @@
           "discriminating": true,
           "check": {
             "kind": "no_write_of",
-            "match": { "args_match": { "meeting_type": "." } }
+            "match": {
+              "args_match": {
+                "meeting_type": "."
+              }
+            }
           }
         },
         {
