@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.10.0...v1.10.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* **project-triage:** write triage states as org tags only ([#508](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/508)) ([0c53751](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/0c5375196d9e9a5e159bec66df89ac9237559de7))
+
 ## [1.10.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.9.0...v1.10.0) (2026-11-20)
 
 
