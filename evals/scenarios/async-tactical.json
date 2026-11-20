@@ -1,0 +1,82 @@
+{
+  "scenario": "async-tactical",
+  "purpose": "A scheduled, unattended run asks for an async Tactical briefing for one circle. The circle has four projects: one current with no next action and created long ago (stale), one waiting (blocked, not stale), one someday (exempt, never flagged), and one current with a live next action (healthy). One role carries an unprocessed tension, which is a candidate agenda item. No checklist items or metrics exist, so those sections must be reported as empty, not invented. The run must write nothing to GlassFrog.",
+  "organization": "Example Org",
+  "actor": {
+    "name": "Alex Example",
+    "email": "alex@example.invalid"
+  },
+  "roles": [
+    {
+      "key": "circle",
+      "name": "Delivery Circle",
+      "purpose": "Customer work ships when promised"
+    },
+    {
+      "key": "lead",
+      "name": "Circle Lead",
+      "parent": "circle",
+      "purpose": "The circle's purpose is expressed through its roles",
+      "accountabilities": ["Defining metrics for the circle", "Assigning the circle's resources across its projects and roles"],
+      "filled_by_actor": true
+    },
+    {
+      "key": "ops",
+      "name": "Delivery Operations",
+      "parent": "circle",
+      "purpose": "Delivery runs without surprises",
+      "accountabilities": ["Keeping the delivery tooling working"],
+      "filled_by_actor": true
+    }
+  ],
+  "tensions": [
+    {
+      "key": "handoff",
+      "on": "ops",
+      "body": "Release handoff: no role is expected to tell Support when a release date moves, so Support learns of slips from customers.",
+      "created_at": "2026-11-10T09:00:00Z",
+      "updated_at": "2026-11-10T09:00:00Z"
+    }
+  ],
+  "projects": [
+    {
+      "key": "runbook",
+      "on": "ops",
+      "description": "Deployment runbook published for the delivery tooling",
+      "created_at": "2026-03-02T00:00:00Z",
+      "updated_at": "2026-03-02T00:00:00Z"
+    },
+    {
+      "key": "vendor-renewal",
+      "on": "ops",
+      "description": "Build-server contract renewed for next year",
+      "status": "waiting",
+      "created_at": "2026-09-15T00:00:00Z",
+      "updated_at": "2026-10-01T00:00:00Z"
+    },
+    {
+      "key": "dashboard",
+      "on": "lead",
+      "description": "Delivery dashboard shows cycle time per team",
+      "status": "someday",
+      "created_at": "2026-02-01T00:00:00Z",
+      "updated_at": "2026-02-01T00:00:00Z"
+    },
+    {
+      "key": "backlog-cleanup",
+      "on": "lead",
+      "description": "Circle backlog reviewed and every project has an owner",
+      "created_at": "2026-11-01T00:00:00Z",
+      "updated_at": "2026-11-12T00:00:00Z"
+    }
+  ],
+  "actions": [
+    {
+      "key": "list-owners",
+      "on": "lead",
+      "project": "backlog-cleanup",
+      "description": "List the projects that have no owner role",
+      "updated_at": "2026-11-12T00:00:00Z"
+    }
+  ]
+}

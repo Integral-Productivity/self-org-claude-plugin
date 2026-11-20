@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## What this repo is
 
-A public (MIT, public-repo) Claude Code plugin, named `self-org`, for engaging with [Holacracy](https://www.holacracy.org/) from inside Claude. It ships through two channels, both tracking `stable`: the private `integral-productivity-labs` marketplace (canonical, for Integral Productivity) and this repo's own one-plugin catalog, `.claude-plugin/marketplace.json` (for everyone else). The core `Integral-Productivity/marketplace` does not list it, by design. See [ADR-0016](docs/adr/0016-labs-is-the-canonical-channel-and-this-repo-self-hosts-the-public-one.md). The plugin bundles six skills (four Core Role co-pilots, a governance-aware operating frame, and a checklist & metric portfolio audit) and wires up the GlassFrog MCP as a connector.
+A public (MIT, public-repo) Claude Code plugin, named `self-org`, for engaging with [Holacracy](https://www.holacracy.org/) from inside Claude. It ships through two channels, both tracking `stable`: the private `integral-productivity-labs` marketplace (canonical, for Integral Productivity) and this repo's own one-plugin catalog, `.claude-plugin/marketplace.json` (for everyone else). The core `Integral-Productivity/marketplace` does not list it, by design. See [ADR-0016](docs/adr/0016-labs-is-the-canonical-channel-and-this-repo-self-hosts-the-public-one.md). The plugin bundles seven skills (four Core Role co-pilots, a governance-aware operating frame, a checklist & metric portfolio audit, and a read-only async Tactical briefing) and wires up the GlassFrog MCP as a connector.
 
 ## Layout
 
@@ -23,6 +23,7 @@ self-org-claude-plugin/
     ├── self-org-rep-link/
     ├── self-org-ai-governance/
     ├── checklist-metric-audit/
+    ├── async-tactical/
     └── shared/
         └── authority-boundaries.md
 ```
@@ -67,7 +68,7 @@ The plugin separates **tension readiness** (`/self-org:tension-triage` — is th
 
 `skills/checklist-metric-audit/` audits a circle's checklist items and metrics against its purpose, accountabilities, and domains, then remediates directly through the GlassFrog MCP. It leans on the constitutional distinction that checklist items and metrics are **operational, not governance** (Art. 3.2), so — unlike governance edits — it applies changes without a proposal. Its companion command is `/self-org:portfolio-audit`. When an audit finding actually needs a new accountability or domain, it dispatches the `tension-capture` subagent rather than papering over the gap.
 
-**Commands that write to GlassFrog are user-only.** Each carries `disable-model-invocation: true`, so only the user's `/name` starts it; the model never does ([#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)). The per-item confirmation stays the first guard; this is the second. Two walks are exempt on purpose, `tension-triage` and `project-triage`, because the behavioural evals start them from plain language. A hand-off into a user-only command therefore names the command for the user to type, or dispatches the matching subagent (`tension-capture`, `project-capture`); it never starts the command. `skills-lint.sh` check 17 fails a command that names a GlassFrog write tool and lacks the flag.
+**Commands that write to GlassFrog are user-only.** A scheduled run therefore cannot start `/self-org:tactical`; it starts the read-only `async-tactical` skill instead, which drafts a briefing and never writes ([#504](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/504)). Each carries `disable-model-invocation: true`, so only the user's `/name` starts it; the model never does ([#464](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/464)). The per-item confirmation stays the first guard; this is the second. Two walks are exempt on purpose, `tension-triage` and `project-triage`, because the behavioural evals start them from plain language. A hand-off into a user-only command therefore names the command for the user to type, or dispatches the matching subagent (`tension-capture`, `project-capture`); it never starts the command. `skills-lint.sh` check 17 fails a command that names a GlassFrog write tool and lacks the flag.
 
 ## GlassFrog MCP
 

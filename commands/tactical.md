@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # /self-org:tactical
 
+For an unattended or scheduled run, this command is the wrong surface: it is user-only and it writes. Use the read-only `async-tactical` skill, which produces a briefing and writes nothing (#504).
+
 Open this session in **in-meeting Tactical capture** mode as Secretary of a specific circle. The command primes context; the underlying `self-org-secretary` skill carries the meeting flow.
 
 ## What this command does
