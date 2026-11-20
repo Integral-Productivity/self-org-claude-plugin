@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.9.0...v1.10.0) (2026-11-20)
+
+
+### Features
+
+* add read-only async-tactical skill for scheduled runs ([#506](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/506)) ([f01a1c3](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/f01a1c3b1b0d39975f9ff47d9d4bb2ea1df6093f))
+
 ## [1.9.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.8.2...v1.9.0) (2026-11-20)
 
 
