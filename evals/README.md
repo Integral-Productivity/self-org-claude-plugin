@@ -125,6 +125,8 @@ known-correct disposition that a human reached and recorded on
 
 A case can add tools to the session with an `extra_tools` list. Only `AskUserQuestion` is allowed, so a case can check a walk's picker path; the runner refuses any other tool, because a shell or a file writer would undo the hermetic tool set.
 
+A case can answer the walk's questions with a `follow_up_turns` list: user messages the runner sends, in order, after each turn ends ([#497](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/497)). A walk that writes only on a confirmation typed after the draft (#464) cannot be measured in one turn, because both legs stop at the confirmation and the write log stays empty (#433). Each turn resumes the same session with `claude -p <turn> --resume <session_id>`, with the first turn's flags and sandbox, so it cannot gain a tool or lose the plugin. Both legs get the same turns, or the delta would measure the turn and not the plugin. The turns are sent whatever the model said; a turn the walk did not need costs one short reply. A failed turn stops the session and fails the run. The stub replays the write log when a turn starts it again, so a later turn sees the earlier turns' writes and the write numbering continues. Token and cost figures sum every turn, and the cost record carries `turns`. Each turn can take up to `--timeout`.
+
 A case is only worth keeping if it can fail. Assertions that pass with the skill
 disabled are non-discriminating and should be cut — the aggregation step reports
 the with-skill/without-skill delta precisely so that shows up.

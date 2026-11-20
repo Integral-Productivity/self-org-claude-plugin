@@ -32,7 +32,9 @@ WRITES ARE RECORDED AND SUCCEED
 Two golden cases assert write ORDERING -- "write the successor before archiving
 the original", "no write without an explicit confirmation" -- and ordering can
 only be checked against a log. So writes append `{seq, tool, args}` to the write
-log and return a plausible success with a synthetic id.
+log and return a plausible success with a synthetic id. A stub that starts on a
+log that already holds writes (a scripted follow-up turn, #497) replays them
+first, so the org and the numbering carry over from the earlier turn.
 
 One write is deliberately NOT accommodating: `update_tension` rejects
 `meeting_type` with 422, exactly as the live API does (verified 2026-08-04, see
@@ -112,10 +114,13 @@ WRITE_TOOLS = {
 }
 
 
+_replaying = False
+
+
 def record_write(tool, args):
     global _seq
     _seq += 1
-    if WRITE_LOG:
+    if WRITE_LOG and not _replaying:
         with open(WRITE_LOG, "a") as fh:
             fh.write(json.dumps({"seq": _seq, "tool": tool, "args": args}) + "\n")
     return _seq
@@ -332,7 +337,35 @@ def tool_list():
     return out
 
 
+def replay_write_log():
+    """Rebuild the org from the writes an earlier session already made.
+
+    A scripted follow-up turn (#497) is a new CLI process, so it starts a new
+    stub. The live org keeps a turn's writes for the next turn, so the stub
+    replays the log through the same handlers before serving. Replaying in
+    order also restores `_seq`, so the next write continues the numbering and
+    an ordering check across turns stays sound. Replayed writes are not logged
+    again.
+    """
+    global _replaying
+    if not WRITE_LOG or not os.path.exists(WRITE_LOG):
+        return
+    rows = []
+    for line in Path(WRITE_LOG).read_text().splitlines():
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    _replaying = True
+    try:
+        for row in sorted(rows, key=lambda r: r.get("seq", 0)):
+            handle_tool(row.get("tool"), row.get("args") or {})
+    finally:
+        _replaying = False
+
+
 def main():
+    replay_write_log()
     for line in sys.stdin:
         line = line.strip()
         if not line:

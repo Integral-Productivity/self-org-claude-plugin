@@ -679,7 +679,8 @@ def probe_stub(fixture: Path, write_log: Path) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 
 def build_command(prompt: str, config: str, cfg_path: Path, model: str | None,
-                  extra_tools: tuple[str, ...] = ()) -> list[str]:
+                  extra_tools: tuple[str, ...] = (),
+                  session_id: str | None = None) -> list[str]:
     unknown = set(extra_tools) - ALLOWED_EXTRA_TOOLS
     if unknown:
         raise ValueError(f"extra_tools not allowed: {sorted(unknown)}")
@@ -698,6 +699,11 @@ def build_command(prompt: str, config: str, cfg_path: Path, model: str | None,
         cmd += ["--plugin-dir", str(REPO)]
     if model:
         cmd += ["--model", model]
+    # A scripted follow-up turn (#497) continues the session the first turn
+    # opened. Every other flag is the first turn's, so a resumed turn cannot
+    # gain a tool, lose the plugin, or reach a different MCP config.
+    if session_id:
+        cmd += ["--resume", session_id]
     return cmd
 
 
@@ -856,10 +862,75 @@ def contamination_error(events: list, config: str) -> str | None:
     return None
 
 
+def session_id_of(events: list) -> str | None:
+    """The session a turn ran in, read off its result or init event."""
+    for event in reversed(events):
+        if event.get("type") in ("result", "system") and event.get("session_id"):
+            return str(event["session_id"])
+    return None
+
+
+def run_turn(cmd: list[str], workdir: Path, config_dir: Path,
+             timeout: int) -> tuple[list, str | None]:
+    """Run one CLI process and return its events and the reason it failed, if any.
+
+    One call per turn: the first turn of every case, and each scripted
+    follow-up turn (#497). A failed turn stops the session, so a later turn
+    never runs against a session that did not reach the state it assumes.
+    """
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
+                              cwd=str(workdir), env=session_env(config_dir))
+    except subprocess.TimeoutExpired:
+        return [], f"timed out after {timeout}s"
+    except OSError as exc:
+        return [], f"could not run {CLAUDE_BIN}: {exc}"
+
+    events = []
+    for line in proc.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+
+    if not events:
+        return [], (f"no stream-json events (exit {proc.returncode}; "
+                    f"stderr: {proc.stderr.strip()[:400]})")
+
+    # A session that ended in error still emits a well-formed event stream. The
+    # most common one is auth: CI supplies ANTHROPIC_API_KEY, and a run whose
+    # environment lacks it gets a single "Not logged in" turn with is_error set.
+    # Left unread, that run scores a green pass on every NEGATIVE assertion,
+    # because a model that never ran issued no forbidden write.
+    for event in reversed(events):
+        if event.get("type") != "result":
+            continue
+        if event.get("is_error"):
+            detail = str(event.get("result") or event.get("subtype") or "unknown").strip()
+            hint = ""
+            if "not logged in" in detail.lower() or "login" in detail.lower():
+                hint = (" — the session authenticates with ANTHROPIC_API_KEY; note that "
+                        "CLAUDE_CONFIG_DIR is redirected to an empty sandbox, so a login "
+                        "stored in the operator's own config dir is not visible")
+            return events, f"the session reported an error: {detail[:300]}{hint}"
+        break
+    return events, None
+
+
 def execute(prompt: str, config: str, run_dir: Path, fixture: Path,
             model: str | None, timeout: int,
-            extra_tools: tuple[str, ...] = ()) -> dict:
-    """Run one (eval, config, run) and capture everything it produced."""
+            extra_tools: tuple[str, ...] = (),
+            follow_ups: tuple[str, ...] = ()) -> dict:
+    """Run one (eval, config, run) and capture everything it produced.
+
+    `follow_ups` are the case's scripted user turns (#497), sent in order to
+    the same session after each turn ends. The checks below read the whole
+    session: shape off the first init event, contamination and "made a tool
+    call" over every turn.
+    """
     outputs = run_dir / "outputs"
     outputs.mkdir(parents=True, exist_ok=True)
     write_log = outputs / "writes.jsonl"
@@ -891,56 +962,32 @@ def execute(prompt: str, config: str, run_dir: Path, fixture: Path,
     config_dir.mkdir()
     workdir.mkdir()
 
+    # The session store lives under config_dir, so the sandbox stays until the
+    # last follow-up turn: `--resume` needs the store the first turn wrote.
     started = time.time()
+    events: list = []
     try:
-        proc = subprocess.run(
-            build_command(prompt, config, cfg_path, model, extra_tools),
-            capture_output=True, text=True, timeout=timeout,
-            cwd=str(workdir), env=session_env(config_dir),
-        )
-    except subprocess.TimeoutExpired:
-        return {"error": f"timed out after {timeout}s", "events": [],
-                "duration": time.time() - started}
-    except OSError as exc:
-        return {"error": f"could not run {CLAUDE_BIN}: {exc}", "events": [],
-                "duration": time.time() - started}
+        session_id = None
+        for index, turn in enumerate((prompt, *follow_ups)):
+            if index:
+                session_id = session_id_of(events)
+                if not session_id:
+                    return {"error": f"follow-up turn {index} could not be sent: the "
+                                     f"earlier turn reported no session_id to resume",
+                            "events": events, "duration": time.time() - started}
+                events.append({"type": "follow_up", "turn": index, "text": turn})
+            turn_events, problem = run_turn(
+                build_command(turn, config, cfg_path, model, extra_tools, session_id),
+                workdir, config_dir, timeout)
+            events.extend(turn_events)
+            if problem:
+                label = f"follow-up turn {index}: " if index else ""
+                return {"error": label + problem, "events": events,
+                        "duration": time.time() - started}
     finally:
         shutil.rmtree(sandbox, ignore_errors=True)
 
     duration = time.time() - started
-    events = []
-    for line in proc.stdout.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            events.append(json.loads(line))
-        except json.JSONDecodeError:
-            continue
-
-    if not events:
-        return {"error": f"no stream-json events (exit {proc.returncode}; "
-                         f"stderr: {proc.stderr.strip()[:400]})",
-                "events": [], "duration": duration}
-
-    # A session that ended in error still emits a well-formed event stream. The
-    # most common one is auth: CI supplies ANTHROPIC_API_KEY, and a run whose
-    # environment lacks it gets a single "Not logged in" turn with is_error set.
-    # Left unread, that run scores a green pass on every NEGATIVE assertion,
-    # because a model that never ran issued no forbidden write.
-    for event in reversed(events):
-        if event.get("type") != "result":
-            continue
-        if event.get("is_error"):
-            detail = str(event.get("result") or event.get("subtype") or "unknown").strip()
-            hint = ""
-            if "not logged in" in detail.lower() or "login" in detail.lower():
-                hint = (" — the session authenticates with ANTHROPIC_API_KEY; note that "
-                        "CLAUDE_CONFIG_DIR is redirected to an empty sandbox, so a login "
-                        "stored in the operator's own config dir is not visible")
-            return {"error": f"the session reported an error: {detail[:300]}{hint}",
-                    "events": events, "duration": duration}
-        break
 
     # Did the session have the shape its configuration claims? Checked before
     # the tool-call condition below, because a with_skill leg that never loaded
@@ -1009,6 +1056,11 @@ def render_transcript(events: list, prompt: str) -> tuple[str, dict]:
                     errors += 1
                 lines.append(f"**Tool result** ({'error' if block.get('is_error') else 'ok'}):\n\n"
                              f"```\n{body[:4000]}\n```\n")
+        elif kind == "follow_up":
+            # A scripted user turn (#497). The grader must see what the user
+            # said, or a write after "w" reads as a write with no confirmation.
+            lines.append(f"\n## Follow-up turn {event.get('turn')} — user\n\n"
+                         f"{event.get('text', '')}\n")
         elif kind == "result":
             if event.get("is_error"):
                 errors += 1
@@ -1028,16 +1080,38 @@ def render_transcript(events: list, prompt: str) -> tuple[str, dict]:
 
 
 def usage_tokens(events: list) -> int:
-    for event in reversed(events):
+    """Tokens the session billed, summed over every turn's result event.
+
+    One CLI process reports one result event with that process's usage. A case
+    with scripted follow-up turns (#497) runs one process per turn, so reading
+    only the last result would drop every turn but the last.
+    """
+    total = 0
+    for event in events:
         if event.get("type") != "result":
             continue
         usage = event.get("usage") or {}
-        total = sum(int(usage.get(k, 0) or 0) for k in
-                    ("input_tokens", "output_tokens",
-                     "cache_creation_input_tokens", "cache_read_input_tokens"))
-        if total:
-            return total
-    return 0
+        total += sum(int(usage.get(k, 0) or 0) for k in
+                     ("input_tokens", "output_tokens",
+                      "cache_creation_input_tokens", "cache_read_input_tokens"))
+    return total
+
+
+def sum_usage(values: list):
+    """Add per-turn usage objects: numbers add, nested objects add by key.
+
+    Anything that is not a number (a `service_tier` string, a null) keeps the
+    first value seen. Used only when a session ran more than one turn.
+    """
+    present = [v for v in values if v is not None]
+    if not present:
+        return None
+    if all(isinstance(v, dict) for v in present):
+        keys = list(dict.fromkeys(k for v in present for k in v))
+        return {k: sum_usage([v.get(k) for v in present]) for k in keys}
+    if all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in present):
+        return sum(present)
+    return present[0]
 
 
 def raw_usage(events: list) -> dict:
@@ -1060,16 +1134,28 @@ def raw_usage(events: list) -> dict:
     `usage` and `modelUsage` disagree on key convention (snake_case vs
     camelCase) because they come from different layers upstream. Both are kept
     as-is; normalizing here would be interpretation.
+
+    The one exception is a session with scripted follow-up turns (#497): each
+    turn is its own process with its own result event, so the record is the
+    sum of the turns (`sum_usage`) and carries `turns`, the number summed. A
+    single-turn session keeps the verbatim record above, unchanged.
     """
-    for event in reversed(events):
-        if event.get("type") != "result":
-            continue
+    results = [e for e in events if e.get("type") == "result"]
+    if not results:
+        return {"usage": None, "model_usage": None, "total_cost_usd": None}
+    if len(results) == 1:
+        event = results[0]
         return {
             "usage": event.get("usage"),
             "model_usage": event.get("modelUsage"),
             "total_cost_usd": event.get("total_cost_usd"),
         }
-    return {"usage": None, "model_usage": None, "total_cost_usd": None}
+    return {
+        "usage": sum_usage([e.get("usage") for e in results]),
+        "model_usage": sum_usage([e.get("modelUsage") for e in results]),
+        "total_cost_usd": sum_usage([e.get("total_cost_usd") for e in results]),
+        "turns": len(results),
+    }
 
 
 @functools.lru_cache(maxsize=1)
@@ -1449,8 +1535,9 @@ def run_once(case: dict, config: str, run_dir: Path, model: str | None,
         raise SystemExit(f"fixture not found: {fixture}")
 
     started = time.time()
+    follow_ups = tuple(case.get("follow_up_turns", ()))
     outcome = execute(case["prompt"], config, run_dir, fixture, model, timeout,
-                      tuple(case.get("extra_tools", ())))
+                      tuple(case.get("extra_tools", ())), follow_ups)
     transcript, metrics = render_transcript(outcome["events"], case["prompt"])
     if outcome["error"]:
         transcript += f"\n## Execution error\n\n{outcome['error']}\n"
@@ -1587,6 +1674,13 @@ def load_case_file(path: Path) -> dict:
             raise SystemExit(
                 f"{path}: {case['eval_name']} asks for extra_tools {extra!r}; only "
                 f"{sorted(ALLOWED_EXTRA_TOOLS)} may be added, so the run stays hermetic")
+        turns = case.get("follow_up_turns")
+        if turns is not None and (
+                not isinstance(turns, list) or not turns
+                or not all(isinstance(x, str) and x.strip() for x in turns)):
+            raise SystemExit(
+                f"{path}: {case['eval_name']} has follow_up_turns {turns!r}; it must be a "
+                f"non-empty list of non-empty strings, one user message per turn")
         for assertion in case["assertions"]:
             if "text" not in assertion:
                 raise SystemExit(f"{path}: {case['eval_name']} has an assertion with no 'text'")
