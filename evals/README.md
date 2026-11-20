@@ -209,7 +209,20 @@ the eval exercises the real MCP path rather than a simulation of it.
 
 `benchmark.json` reports pass-rate, time, and tokens per configuration with mean
 ± stddev and the delta. High-variance cases are flaky, not hard — treat a wide
-stddev as a defect in the case, not a finding about the skill.
+run-to-run spread as a defect in the case, not a finding about the skill.
+
+Two different spreads hide in that file, and only one of them means flaky
+(#224). The per-configuration stddev in `run_summary` pools every run of every
+eval, so it mostly measures how different the evals are from one another. That
+is a description of the suite, not a fault. The flakiness signal is the
+**run-to-run spread**: the stddev of one eval's pass rate across its own
+repeats. `scripts/eval-report.py` groups `runs[]` by the case-qualified
+`eval_id` and configuration, computes that spread per eval, and warns only when
+the worst eval exceeds 0.20, naming the eval. With `runs=1` no eval has repeats,
+so the report says "not measured: one run per eval" instead of warning or
+showing a zero. Rows that repeat a run number inside one group (an unqualified
+`eval_id` shared by two cases, #244's shape) are reported as not measured, not
+merged into a fake flaky eval.
 
 ## Cadence and budget
 

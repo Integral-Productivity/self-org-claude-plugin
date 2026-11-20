@@ -73,6 +73,7 @@ Usage:
 import argparse
 import json
 import pathlib
+import statistics
 import sys
 
 # aggregate_benchmark.py stores this key INSIDE run_summary, as a sibling of
@@ -82,8 +83,11 @@ import sys
 # lands on a str and the whole step dies. That is exactly what #199 was.
 DELTA_KEY = "delta"
 
-# Per evals/README.md, a case whose stddev is this wide is a defect in the
-# case, not a finding about the skill.
+# Per evals/README.md, an eval whose pass rate moves this much ACROSS ITS OWN
+# REPEATS is a defect in the case, not a finding about the skill. This is a
+# run-to-run figure (#224): it is compared against the spread of one eval's
+# repeats, never against the stddev the aggregator pools across every eval of
+# a config, which mostly measures how much the evals differ from one another.
 WIDE_STDDEV = 0.2
 
 # Marks a cost summary that could not be parsed, so the failure travels as DATA
@@ -110,6 +114,77 @@ def stats_of(entry):
     dict whose values are all null.
     """
     return (entry or {}).get("pass_rate") or {}
+
+
+def per_eval_spread(runs):
+    """Run-to-run spread of the pass rate for each (eval, config) group.
+
+    Returns (spreads, ambiguous). `spreads` maps (eval_id, config) to the
+    sample stddev of that eval's pass rate across its repeats, or None when it
+    ran once (one value has no spread; reporting 0.0 would read as "stable").
+    `ambiguous` lists the groups whose rows repeat a run number: two evals
+    that share an unqualified eval_id (#244's shape) and so cannot be told
+    apart. Merging them would invent a flaky eval, so they are left out.
+
+    The runner qualifies eval_id by its case (`<suite>-<id>`, #244), so the
+    eval_id alone separates evals from different cases with the same local
+    id. Rows that are not dicts, or carry no numeric pass rate, are skipped:
+    runs[] belongs to an external schema and the report must still render.
+    """
+    groups = {}
+    for row in runs if isinstance(runs, list) else []:
+        if not isinstance(row, dict):
+            continue
+        rate = (row.get("result") or {}).get("pass_rate")
+        if isinstance(rate, bool) or not isinstance(rate, (int, float)):
+            continue
+        key = (str(row.get("eval_id")), str(row.get("configuration")))
+        groups.setdefault(key, []).append((row.get("run_number"), rate))
+    spreads, ambiguous = {}, []
+    for key, items in groups.items():
+        numbers = [n for n, _ in items]
+        if len(set(numbers)) != len(numbers):
+            ambiguous.append(key)
+            continue
+        rates = [r for _, r in items]
+        spreads[key] = statistics.stdev(rates) if len(rates) >= 2 else None
+    return spreads, sorted(ambiguous)
+
+
+def render_spread(runs):
+    """The wide-variance lines: worst eval's run-to-run spread, or why none."""
+    spreads, ambiguous = per_eval_spread(runs)
+    measured = {k: v for k, v in spreads.items() if v is not None}
+    lines = []
+    if not spreads and not ambiguous:
+        lines.append("\nRun-to-run spread: not measured: this benchmark has no "
+                     "per-run rows.")
+    elif not measured:
+        lines.append("\nRun-to-run spread: not measured: one run per eval. "
+                     "The stddev column above is spread across evals, not "
+                     "flakiness.")
+    else:
+        (eval_id, config), worst = max(measured.items(), key=lambda kv: (kv[1], kv[0]))
+        if worst > WIDE_STDDEV:
+            others = sum(1 for v in measured.values() if v > WIDE_STDDEV) - 1
+            more = f" ({others} more eval(s) above {WIDE_STDDEV:.2f})" if others else ""
+            lines.append(
+                f"\n> **Wide variance.** The worst run-to-run spread (stddev of "
+                f"one eval's pass rate across its repeats) is {worst:.2f} for "
+                f"`{eval_id}` (`{config}`){more}. Per `evals/README.md`, a "
+                "flaky case is a defect in the case, not a finding about the skill.")
+        else:
+            lines.append(
+                f"\nRun-to-run spread: worst eval `{eval_id}` (`{config}`) "
+                f"{worst:.2f}, within {WIDE_STDDEV:.2f}. The stddev column above "
+                "is spread across evals, not flakiness.")
+    if ambiguous:
+        lines.append(
+            f"\nRun-to-run spread: not measured for {len(ambiguous)} group(s) "
+            "whose rows repeat a run number, so their evals cannot be told "
+            "apart (unqualified eval_id, #244): "
+            + ", ".join(f"`{e}` (`{c}`)" for e, c in ambiguous))
+    return lines
 
 
 def render(cur, base, cost=None, base_cost=None):
@@ -139,12 +214,9 @@ def render(cur, base, cost=None, base_cost=None):
     if headline:
         lines.append(f"\nwith_skill − without_skill pass rate: **{headline}**")
 
-    wide = [(c, stats_of(e).get("stddev") or 0) for c, e in cur_summary.items()
-            if (stats_of(e).get("stddev") or 0) > WIDE_STDDEV]
-    if wide:
-        lines.append("\n> **Wide variance.** Per `evals/README.md`, a high-stddev "
-                     "case is a defect in the case, not a finding about the skill: "
-                     + ", ".join(f"`{c}` ({s:.2f})" for c, s in sorted(wide)))
+    # The warning reads run-to-run spread per eval, not the pooled stddev in
+    # the table: pooling mixes flakiness with how different the evals are (#224).
+    lines.extend(render_spread(cur.get("runs")))
 
     # Appended last and behind its own boundary, so everything above is already
     # built by the time the newest and least-proven code runs.
