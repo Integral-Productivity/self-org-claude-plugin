@@ -55,6 +55,10 @@ The `HOLACRACY_*` environment variables and the `~/.claude/holacracy/` ledger pa
 
 - [`checklist-metric-audit`](skills/checklist-metric-audit/SKILL.md) — audits a circle's checklist items and metrics against its purpose, accountabilities, and domains via a coverage matrix, then remediates the portfolio directly through the GlassFrog MCP. Checklist items and metrics are **operational, not governance** (Constitution Art. 3.2), so no proposal is required — changes apply after per-change confirmation, with destructive edits (delete, merge) always confirmed individually. Gaps that actually need a new accountability or domain are escalated to `/self-org:sense-tension` instead.
 
+**Async Tactical**
+
+- [`async-tactical`](skills/async-tactical/SKILL.md) — a read-only Tactical briefing for one circle, for scheduled or unattended runs. It reads checklist items, metrics, unprocessed tensions, projects and actions, flags stale and blocked projects, and names follow-up commands for a person. It never writes to GlassFrog and never stops to ask a question. Use `/self-org:tactical` for the live meeting.
+
 **Shared references**
 
 - [`skills/shared/authority-boundaries.md`](skills/shared/authority-boundaries.md) — cross-role authority reference loaded by the four role skills when authority questions span more than one Core Role.
@@ -161,7 +165,7 @@ If you prefer not to route your key through a third party, use GlassFrog's own h
 
 ### Working without GlassFrog
 
-All six skills degrade gracefully if GlassFrog Extended is not connected. They will operate on constitutional knowledge and context the user provides directly, and will name that limitation clearly (e.g., "I don't have live governance data, so I'm working from what you've shared.").
+All seven skills degrade gracefully if GlassFrog Extended is not connected. They will operate on constitutional knowledge and context the user provides directly, and will name that limitation clearly (e.g., "I don't have live governance data, so I'm working from what you've shared.").
 
 ### Tension capture and the underlying API surface
 

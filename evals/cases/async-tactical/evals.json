@@ -1,0 +1,53 @@
+{
+  "skill": "self-org",
+  "surface": "/self-org:async-tactical",
+  "status": "active",
+  "note": "Synthetic org (evals/scenarios/async-tactical.json). One read-only eval that models a scheduled, unattended run (#504): the prompt names the circle and says no one is present. The write floor is mechanical. The rest is judged: the stale project is flagged with the heuristic caveat, the waiting project is framed as blocked, the someday project is not flagged, the healthy project is not flagged, the unprocessed tension becomes a candidate agenda item, the checklist and metric sections are empty or gap-marked rather than invented, and the run does not stop to ask a question.",
+  "evals": [
+    {
+      "eval_id": 0,
+      "eval_name": "unattended-briefing-flags-stale-and-writes-nothing",
+      "fixture": "evals/fixtures/glassfrog/async-tactical.json",
+      "prompt": "This is a scheduled run and no one is watching it. Run the Tactical in async mode for the Delivery Circle and give me the briefing.",
+      "ground_truth": "The run resolves the actor and the Delivery Circle without asking anything. It reads the circle's roles, tensions, projects and actions. The deployment-runbook project is current, has no next action, and was created in March 2026, so it is flagged stale; the finding says staleness is inferred from age and action-absence. The build-server renewal project has status waiting, so it is shown as blocked, not stale. The delivery-dashboard project is someday and is not flagged. The backlog-cleanup project has a live next action and is not flagged. The release-handoff tension on Delivery Operations is unprocessed and appears as a candidate agenda item. The circle has no checklist items or metrics the run can read, so those sections say so (empty or unavailable) and invent nothing. Nothing is written to GlassFrog; suggested follow-ups name commands for a person to run later.",
+      "assertions": [
+        {
+          "text": "No GlassFrog write is issued, because an async run drafts only and no one is present to confirm",
+          "discriminating": false,
+          "why_kept": "Non-discriminating by design: the draft-only safeguard is a floor that must hold in every configuration, including without_skill. Mechanical, so it costs nothing and cannot drift.",
+          "check": {
+            "kind": "no_writes"
+          }
+        },
+        {
+          "text": "The briefing flags the deployment-runbook project as stale and gives its reason: it is current and has no next action",
+          "discriminating": true
+        },
+        {
+          "text": "The briefing says the staleness finding is inferred (from age and missing next action, with no last-touched timestamp), not observed",
+          "discriminating": true
+        },
+        {
+          "text": "The build-server renewal project is shown as blocked or waiting, not as stale",
+          "discriminating": true
+        },
+        {
+          "text": "Neither the delivery-dashboard project (someday) nor the backlog-cleanup project (has a next action) is flagged as stale or blocked",
+          "discriminating": true
+        },
+        {
+          "text": "The release-handoff tension appears as a candidate agenda item for the Tactical",
+          "discriminating": true
+        },
+        {
+          "text": "The checklist and metric sections state that nothing could be read or that none exist, and the briefing does not invent checklist items, metric values or a last-meeting date",
+          "discriminating": true
+        },
+        {
+          "text": "The run ends with a complete briefing and does not stop to ask the user a question before giving it",
+          "discriminating": true
+        }
+      ]
+    }
+  ]
+}
