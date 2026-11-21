@@ -479,7 +479,7 @@ if _truthy "${HOLACRACY_GROUNDING_DIRECTIVE:-on}"; then
 
 This hook found no authenticated GlassFrog connector in the local MCP OAuth store. That store cannot see a claude.ai connector (Cowork, claude.ai), so the hook cannot tell whether GlassFrog is connected. Your own tool list can. Check it, including deferred tools listed by name only:
 
-- If a tool whose name ends in `glassfrog_get_me` is available, from any server, this is the role-grounding directive. Before your first substantive action, resolve and announce the active Holacratic role/circle per `skills/shared/actor-and-role-resolution.md`, following its bounded Step 2 call shape: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. Announce the result in your opening lines (e.g. "Operating as **Role of Circle**"). Grounding has NOT yet been performed; this only requests it.
+- If a tool whose name ends in `glassfrog_get_me` is available, from any server, this is the role-grounding directive. Before your first substantive action, resolve and announce the active Holacratic role/circle per `skills/shared/actor-and-role-resolution.md`, following its bounded Step 2 call shape: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. Announce the result in your opening lines (e.g. "Operating as **Role of Circle**"). Grounding has NOT yet been performed; this only requests it. If the `glassfrog_get_me` call fails, or a step would need an answer nobody in this session can give: one line, no retry, no question. Write `Operating **unbound**:` and name the gap, then carry on with the work, per "Unattended Sessions and the Unbound State" in that file.
 - If no such tool is available, make no GlassFrog call and do not ask about a role. Proceed with the work.
 CONDITIONAL
 )
@@ -491,6 +491,8 @@ CONDITIONAL
 **self-org plugin: role-grounding directive**
 
 Before your first substantive action this session, resolve and announce the active Holacratic role/circle per the procedure in `skills/shared/actor-and-role-resolution.md` -- follow its Step 2 call shape, which is bounded: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. For a Partner who fills many roles both overflow the tool-result limit and cost you the turn. Then announce the result in your opening lines (e.g. "Operating as **Role of Circle**").
+
+If the `glassfrog_get_me` call fails, or a step would need an answer nobody in this session can give: one line, no retry, no question. Write `Operating **unbound**:` and name the gap, then carry on with the work, per "Unattended Sessions and the Unbound State" in that file.
 
 This grounding has NOT yet been performed -- this directive only requests it and does not assert it happened (the hook has no GlassFrog access at fire time). If work crosses into another role's remit, name the boundary and mark a chapter.
 DIRECTIVE

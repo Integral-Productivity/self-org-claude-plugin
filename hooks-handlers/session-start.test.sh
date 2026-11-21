@@ -685,4 +685,119 @@ case "$out" in
   *"$readout_marker"*) fail "the conditional directive must not carry the readout's firing marker" ;;
 esac
 
+# --- Unattended branch and the unbound state (issues #284, #334) ------------
+# A session that cannot finish grounding -- nobody present to answer, or a
+# glassfrog_get_me tool that is listed but whose call fails (an expired
+# claude.ai connector token, a server error) -- needs an instruction it can
+# carry out. Both directive forms must say what a failed call means (one line,
+# no retry, no question, carry on), and point at the unattended branch of the
+# shared reference, so "grounding unavailable" reads differently in a
+# transcript from "grounding skipped".
+assert_unattended_branch() {  # $1 = captured output, $2 = context
+  echo "$1" | grep -q "If the \`glassfrog_get_me\` call fails" \
+    || fail "$2: must say what a failed glassfrog_get_me call means (#334)"
+  echo "$1" | grep -q "no retry" \
+    || fail "$2: a failed call must not start a retry loop (#334)"
+  echo "$1" | grep -q "no question" \
+    || fail "$2: a failed call must not become a question (#334, ADR-0008 invariant 4)"
+  echo "$1" | grep -q "Operating \*\*unbound\*\*" \
+    || fail "$2: must name the stated unbound line (#284)"
+  echo "$1" | grep -q "Unattended Sessions and the Unbound State" \
+    || fail "$2: must point at the unattended branch of the shared reference (#284)"
+  echo "$1" | grep -q "?" \
+    && fail "$2: SessionStart output must never pose a question"
+}
+
+# G41. The unconditional directive carries the unattended branch.
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$AUTHED_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+echo "$out" | grep -q "role-grounding directive\*\*" \
+  || fail "G41 precondition: expected the unconditional directive, got: $out"
+assert_unattended_branch "$out" "unconditional directive"
+
+# G42. The conditional directive carries the same branch, and is still a
+#      well-formed conditional form (no question, no firing marker).
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$MISSING_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_conditional "$out" "conditional directive with the unattended branch"
+assert_unattended_branch "$out" "conditional directive"
+# The no-tool branch stays silent on purpose (ADR-0008 A8): no call, no
+# question and no unbound line. The hook's own conditional record is the
+# transcript evidence. The payload is one JSON line, so the bullet is cut at
+# its closing escaped newline.
+no_tool="$(echo "$out" | grep -o 'If no such tool is available[^\\]*')"
+[ -n "$no_tool" ] || fail "G42: the conditional directive lost its no-tool branch"
+echo "$no_tool" | grep -q "unbound" \
+  && fail "G42: the no-tool branch must stay silent; it must not ask for an unbound line (ADR-0008 A8)"
+
+# G43. The section both directives point at exists, defines `unbound`, and every
+#      step that used to end in a question has an unattended branch: Step 1
+#      (failed glassfrog_get_me), Step 3 (several matching circles) and the
+#      GlassFrog-unavailable section. The interactive asks stay beside them.
+REF="$(cd "$(dirname "$HOOK")/.." && pwd)/skills/shared/actor-and-role-resolution.md"
+[ -f "$REF" ] || fail "shared reference not found at $REF"
+grep -q "^## Unattended Sessions and the Unbound State" "$REF" \
+  || fail "the shared reference must define the unattended branch and the unbound state"
+grep -q "Operating \*\*unbound\*\*:" "$REF" \
+  || fail "the shared reference must give the one-line unbound statement"
+# The interactive ask is matched by its question text, not by the word "ask":
+# "ascertain-vs-ask" and the Unattended line itself both contain that word, so
+# a word match would still pass with the question deleted.
+section_body() {  # $1 = section heading; prints the section up to the next heading
+  awk -v h="$1" '$0==h{f=1; next} f && /^##/{exit} f' "$REF"
+}
+assert_section_branches() {  # $1 = section heading, $2 = its interactive question
+  body="$(section_body "$1")"
+  [ -n "$body" ] || fail "section '$1' not found in the shared reference"
+  echo "$body" | grep -q "Unattended:" \
+    || fail "section '$1' needs an unattended branch"
+  echo "$body" | grep -qF -- "$2" \
+    || fail "section '$1' must keep its interactive ask: $2"
+}
+assert_section_branches "### Step 1 -- Confirm actor identity" \
+  "Which actor should I treat as the basis for this session?"
+assert_section_branches "### Step 3 -- Resolve to a single role + circle" \
+  "Which one is this about?"
+assert_section_branches "## When GlassFrog Data Is Unavailable" \
+  "Whose role should I treat as primary?"
+# Step 1 has a second interactive ask, for a session with no GlassFrog at all.
+assert_section_branches "### Step 1 -- Confirm actor identity" \
+  "Whose role-context should I treat as primary?"
+# The unattended prose is pinned by its text too. Each line below was a
+# surviving mutant: deleting or weakening it left the checks above green (#284).
+assert_ref_text() {  # $1 = section heading, $2 = text it must contain, $3 = why
+  section_body "$1" | grep -qF -- "$2" || fail "section '$1' must say: $2 ($3)"
+}
+assert_ref_text "### Step 1 -- Confirm actor identity" \
+  "gets one line and nothing more: no retry loop and no question." \
+  "a failed get_me on the unattended path must not retry or ask"
+assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
+  'Operating **unbound**: <Role> is filled in <Circle A> and <Circle B>, and nothing in this session picks one.' \
+  "several matching circles end in an unbound line"
+assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
+  "Do not pick a circle silently; a guessed circle is a wrong attribution that looks clean." \
+  "an unattended session must not guess a circle"
+assert_ref_text "## When GlassFrog Data Is Unavailable" \
+  'Operating **unbound**: GlassFrog is not available in this session, so no role is resolved.' \
+  "an unattended session without GlassFrog ends in an unbound line"
+assert_ref_text "## When GlassFrog Data Is Unavailable" \
+  "The session-start conditional directive does not send a session here when no \`glassfrog_get_me\` tool is listed. That session makes no GlassFrog call and writes no unbound line." \
+  "the no-tool branch stays silent (ADR-0008 A8)"
+assert_ref_text "## Unattended Sessions and the Unbound State" \
+  "every ask becomes one line that names the gap, and the session proceeds **unbound**. No retry loop, and no question." \
+  "the unattended rule itself"
+assert_ref_text "## Unattended Sessions and the Unbound State" \
+  "**What unbound permits.** Work that needs no role's authority: reading, analysis, code, drafts, and read-only GlassFrog calls." \
+  "the definition of unbound says what it permits"
+# shellcheck disable=SC2016  # the backticks are literal Markdown, not expansions
+for forbidden in \
+  'Claiming a role. Do not write `Operating as ...`' \
+  'GlassFrog writes that act from a role:' \
+  'Picking a role or circle by guess'; do
+  assert_ref_text "## Unattended Sessions and the Unbound State" "$forbidden" \
+    "the definition of unbound says what it forbids"
+done
+
 echo "PASS: all session-start hook tests"
