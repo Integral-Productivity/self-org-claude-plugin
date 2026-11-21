@@ -759,5 +759,43 @@ assert_section_branches "### Step 3 -- Resolve to a single role + circle" \
   "Which one is this about?"
 assert_section_branches "## When GlassFrog Data Is Unavailable" \
   "Whose role should I treat as primary?"
+# Step 1 has a second interactive ask, for a session with no GlassFrog at all.
+assert_section_branches "### Step 1 -- Confirm actor identity" \
+  "Whose role-context should I treat as primary?"
+# The unattended prose is pinned by its text too. Each line below was a
+# surviving mutant: deleting or weakening it left the checks above green (#284).
+assert_ref_text() {  # $1 = section heading, $2 = text it must contain, $3 = why
+  body="$(awk -v h="$1" '$0==h{f=1; next} f && /^##/{exit} f' "$REF")"
+  echo "$body" | grep -qF -- "$2" || fail "section '$1' must say: $2 ($3)"
+}
+assert_ref_text "### Step 1 -- Confirm actor identity" \
+  "gets one line and nothing more: no retry loop and no question." \
+  "a failed get_me on the unattended path must not retry or ask"
+assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
+  'Operating **unbound**: <Role> is filled in <Circle A> and <Circle B>, and nothing in this session picks one.' \
+  "several matching circles end in an unbound line"
+assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
+  "Do not pick a circle silently; a guessed circle is a wrong attribution that looks clean." \
+  "an unattended session must not guess a circle"
+assert_ref_text "## When GlassFrog Data Is Unavailable" \
+  'Operating **unbound**: GlassFrog is not available in this session, so no role is resolved.' \
+  "an unattended session without GlassFrog ends in an unbound line"
+assert_ref_text "## When GlassFrog Data Is Unavailable" \
+  "The session-start conditional directive does not send a session here when no \`glassfrog_get_me\` tool is listed. That session makes no GlassFrog call and writes no unbound line." \
+  "the no-tool branch stays silent (ADR-0008 A8)"
+assert_ref_text "## Unattended Sessions and the Unbound State" \
+  "every ask becomes one line that names the gap, and the session proceeds **unbound**. No retry loop, and no question." \
+  "the unattended rule itself"
+assert_ref_text "## Unattended Sessions and the Unbound State" \
+  "**What unbound permits.** Work that needs no role's authority: reading, analysis, code, drafts, and read-only GlassFrog calls." \
+  "the definition of unbound says what it permits"
+# shellcheck disable=SC2016  # the backticks are literal Markdown, not expansions
+for forbidden in \
+  'Claiming a role. Do not write `Operating as ...`' \
+  'GlassFrog writes that act from a role:' \
+  'Picking a role or circle by guess'; do
+  assert_ref_text "## Unattended Sessions and the Unbound State" "$forbidden" \
+    "the definition of unbound says what it forbids"
+done
 
 echo "PASS: all session-start hook tests"

@@ -6,7 +6,7 @@ Date: 2026-07-20
 
 Accepted (experimental — the first PDCA experiment of the Continuous Organizational-Context Grounding effort; superseding/escalation is decided at that experiment's Act step)
 
-> **Amended 2026-08-04, 2026-09-03, 2026-10-02 and 2026-10-06** — see [Amendments](#amendments). The Decision and Consequences below are the record as accepted on 2026-07-20; several of their claims no longer describe the shipped system, including invariant 3's "on by default" (A5 makes emission conditional on an authenticated GlassFrog connector). Read the amendments before relying on this ADR.
+> **Amended 2026-08-04, 2026-09-03, 2026-10-02, 2026-10-06, 2026-10-08 and 2026-11-21** — see [Amendments](#amendments). The Decision and Consequences below are the record as accepted on 2026-07-20; several of their claims no longer describe the shipped system, including invariant 3's "on by default" (A5 makes emission conditional on an authenticated GlassFrog connector). Read the amendments before relying on this ADR.
 
 ## Context
 
@@ -210,7 +210,7 @@ A5 anticipated this class: "a deployment whose token lives somewhere this check 
 - **[#327](https://github.com/Integral-Productivity/holacracy-claude-plugin/issues/327) is unchanged on the passing path.** The gate still passes on any authenticated glassfrog entry. On the failing path the condition accepts the tool from any server on purpose, because a claude.ai connector is exactly the server the store cannot name.
 - **The tool-list condition is an instruction, not a mechanism.** Like the directive itself, it depends on the session reading its tools. That is no weaker than before: the unconditional directive already depended on the session complying.
 
-### A8 — 2026-11-20: a failed call and an unattended session end in a stated `unbound` line (issues [#284](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/284), [#334](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/334))
+### A8 — 2026-11-21: a failed call and an unattended session end in a stated `unbound` line (issues [#284](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/284), [#334](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/334))
 
 A5 and A7 made sure a session with no GlassFrog tool is never asked to ground. Two cases were still left without a satisfiable instruction. First, a `glassfrog_get_me` tool can be listed while the call fails: an expired claude.ai connector token, or a server error. Neither directive form said what to do then, so a session could improvise a question, which invariant 4 forbids. Second, the resolution procedure in `skills/shared/actor-and-role-resolution.md` ended every fallback (failed call, several matching circles, GlassFrog unavailable) in a question to the user. In an unattended session nobody answers, and proceeding without grounding looked the same in a transcript as forgetting to ground.
 
