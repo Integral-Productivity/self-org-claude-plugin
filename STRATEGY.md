@@ -59,4 +59,4 @@ _Why it serves the approach:_ It's how routines stop falling apart under stress 
 - Auto-acting on the org's behalf — the AI drafts for human review; it never auto-files proposals, auto-issues rulings, or auto-assigns roles.
 - Automated tension _processing_ — the plugin captures and triages tensions, but deciding and resolving them stays with the human.
 - Replacing the role-holder — even as AI agents begin to hold roles, the bet stays developmental, not substitutional.
-- Building our own governance record-keeping system — we connect to existing ones (GlassFrog today) through a connector seam, not replace them.
+- Running a hosted governance record-keeping service — the plugin connects to records the org already keeps, GlassFrog or a folder of plain files the user owns, through one connector seam ([ADR-0030](docs/adr/0030-a-file-record-is-a-second-backend.md)).

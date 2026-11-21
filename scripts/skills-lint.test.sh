@@ -791,7 +791,42 @@ SKILLS_LINT_ROOT="$TMP/c19b" bash "$LINT" >/dev/null 2>&1 \
   || { SKILLS_LINT_ROOT="$TMP/c19b" bash "$LINT"; fail "check 19 flagged a checklist that names only real checks"; }
 CASES=$((CASES + 1))
 
-# 20. The real repository is clean. Fixtures prove the checks work; this proves
+# 20. STRATEGY.md links an ADR that has been superseded (ADR-0030). A strategy
+#     line that rests on a replaced decision must change with it, so the link
+#     going stale is a failure. Repo Status lines open with "Accepted (...)" and
+#     add relationships after it, so supersession is found anywhere in the
+#     Status section, not only at its start. Missing link targets are check 1's.
+_c20_adr() {  # $1 = fixture dir, $2 = Status body
+  mkdir -p "$1/docs/adr"
+  printf '# 31. Demo decision\n\n## Status\n\n%s\n\n## Context\n\nBody.\n' "$2" > "$1/docs/adr/0031-demo.md"
+  printf '# Strategy\n\n## Not working on\n\n- A line that rests on [ADR-0031](docs/adr/0031-demo.md).\n' > "$1/STRATEGY.md"
+  git -C "$1" add -A && git -C "$1" commit -qm c20
+}
+_fixture "$TMP/c20"
+_c20_adr "$TMP/c20" "Accepted (2026-01-01, Demo). Superseded by ADR-0032."
+_assert_load_bearing 20 "$TMP/c20" "STRATEGY.md links an ADR superseded after acceptance"
+
+_fixture "$TMP/c20b"
+_c20_adr "$TMP/c20b" "Superseded by ADR-0032 (2026-02-01)."
+_assert_load_bearing 20 "$TMP/c20b" "STRATEGY.md links an ADR whose Status opens with Superseded"
+
+#     An amended ADR is still in force, "Superseded by" outside the Status
+#     section is not a status, and a STRATEGY.md with no ADR links has nothing
+#     to check. All three pass.
+_fixture "$TMP/c20c"
+_c20_adr "$TMP/c20c" "Accepted (2026-01-01, Demo). Amended by ADR-0032."
+printf '\n## Alternatives\n\nSuperseded by nothing; this line is prose.\n' >> "$TMP/c20c/docs/adr/0031-demo.md"
+git -C "$TMP/c20c" add -A && git -C "$TMP/c20c" commit -qm c20c
+SKILLS_LINT_ROOT="$TMP/c20c" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c20c" bash "$LINT"; fail "check 20 flagged an amended ADR or prose outside Status"; }
+_fixture "$TMP/c20d"
+printf '# Strategy\n\nNo decisions linked.\n' > "$TMP/c20d/STRATEGY.md"
+git -C "$TMP/c20d" add -A && git -C "$TMP/c20d" commit -qm c20d
+SKILLS_LINT_ROOT="$TMP/c20d" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c20d" bash "$LINT"; fail "check 20 flagged a STRATEGY.md with no ADR links"; }
+CASES=$((CASES + 1))
+
+# 21. The real repository is clean. Fixtures prove the checks work; this proves
 #    they are actually pointed at the plugin.
 bash "$LINT" >/dev/null 2>&1 || { bash "$LINT"; fail "the live repository does not pass its own lint"; }
 CASES=$((CASES + 1))

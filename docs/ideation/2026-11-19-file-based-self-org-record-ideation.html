@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ideation: a file-based org record for self-org</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1f2328;--muted:#57606a;--line:#d8dee4;--card:#ffffff;--tint:#eef3f8;--tint-fg:#1b4f7a;--warn:#fff4e5;--warn-fg:#7a4a00;--ok:#eaf6ec;--ok-fg:#1d5e2b}
+@media (prefers-color-scheme:dark){:root{--bg:#15181c;--fg:#e6e8eb;--muted:#a3abb5;--line:#30363d;--card:#1c2026;--tint:#1d2a38;--tint-fg:#9cc7ef;--warn:#33281a;--warn-fg:#f0c27a;--ok:#1b2e20;--ok-fg:#8fd19e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+main{max-width:46rem;margin:0 auto;padding:2rem 1rem 3rem}
+h1{font-size:1.9rem;line-height:1.25;margin:.2rem 0 .4rem}
+h2{font-size:1.35rem;margin:2.4rem 0 .8rem;padding-bottom:.3rem;border-bottom:1px solid var(--line)}
+h3{font-size:1.1rem;margin:0 0 .5rem}
+p,li,dd{max-width:72ch}
+.eyebrow{color:var(--muted);font-size:.9rem;margin:0}
+details.meta{margin:.8rem 0 1.5rem;color:var(--muted);font-size:.9rem}
+details.meta dl{display:grid;grid-template-columns:max-content 1fr;gap:.2rem 1rem}
+dt{font-weight:600}
+dd{margin:0}
+article.idea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.1rem 1.2rem;margin:1.2rem 0}
+article.idea dl{display:grid;grid-template-columns:8.5rem 1fr;gap:.45rem 1rem;margin:.6rem 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.2rem 0 .4rem}
+.chip{background:var(--tint);color:var(--tint-fg);border-radius:999px;padding:.05rem .65rem;font-size:.82rem}
+.callout{background:var(--warn);color:var(--warn-fg);border-radius:8px;padding:.7rem .9rem;margin:1rem 0}
+.good{background:var(--ok);color:var(--ok-fg);border-radius:8px;padding:.7rem .9rem;margin:1rem 0}
+code{font-size:.88em;background:var(--tint);color:var(--fg);padding:.05rem .3rem;border-radius:4px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{border-bottom:1px solid var(--line);text-align:left;padding:.45rem .5rem;vertical-align:top}
+figure{margin:1rem 0}
+figcaption{color:var(--muted);font-size:.85rem}
+svg text{font:13px -apple-system,Segoe UI,Helvetica,Arial,sans-serif;fill:var(--fg)}
+svg .box{fill:var(--card);stroke:var(--muted)}
+svg .hl{fill:var(--tint);stroke:var(--tint-fg)}
+svg .ln{stroke:var(--muted);fill:none;stroke-width:1.4}
+nav.jump ol{padding-left:1.3rem}
+footer.composition-signal{margin-top:3rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:.8rem}
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="eyebrow">Ideation · <time datetime="2026-11-19">2026-11-19</time></p>
+<h1>Ideation: a file-based org record for self-org</h1>
+<p><strong>Focus:</strong> Make the plugin also work for people who do not want GlassFrog as their core self-organization system and prefer a file-based record. GlassFrog support keeps working.</p>
+</header>
+<details class="meta"><summary>Document metadata</summary>
+<dl><dt>date</dt><dd>2026-11-19</dd><dt>topic</dt><dd>file-based-self-org-record</dd><dt>mode</dt><dd>repo-grounded</dd></dl>
+</details>
+
+<div class="good"><strong>Top pick, as a sequence:</strong> decide the strategy line first (idea 1), then make the seam real as a small verb contract (idea 2), then build a typed file server behind it (idea 3), with governance changed only through merged proposals (idea 4). Ideas 5 to 7 make the result adoptable and keep two backends honest.</div>
+
+<section id="grounding-context">
+<h2>Grounding Context</h2>
+<h3>Codebase Context</h3>
+<ul>
+<li>Plugin v1.7.2 (main <code>ffc39ff</code>): 6 skills, 14 commands, 4 agents, 1 SessionStart hook. GlassFrog is reached only through the bundled MCP key <code>glassfrog-extended</code>.</li>
+<li><strong>Coupling:</strong> 50 files in skills, commands, agents and hooks cite <code>glassfrog_*</code> tool names directly. Most cited: <code>create_tension</code> (32), <code>list_roles</code> (31), <code>get_role</code> (29), <code>get_me</code> (25).</li>
+<li><strong>ADR-0005</strong> names GlassFrog "the first connector behind a governance-data seam" but does not prescribe the interface. Its revisit trigger is "a second backend". It warns the seam erodes if tool calls leak into practice logic. The 50-file count shows that this erosion has happened.</li>
+<li><strong>STRATEGY.md</strong> "Not working on": "Building our own governance record-keeping system — we connect to existing ones (GlassFrog today) through a connector seam, not replace them." A file record needs a decision against this line.</li>
+<li>Without GlassFrog, skills degrade to "working from what you've shared": no persistence. The ai-governance skill refuses governance-aware patterns outright.</li>
+<li><code>evals/stub/glassfrog_stub.py</code> is a 368-line stdio MCP server that computes reads from a synthetic org graph and logs writes. It reproduces live API defects on purpose.</li>
+<li>Issue #340 brings a second tool vocabulary (GlassFrog's official MCP, camelCase, no tension reads).</li>
+<li>ADR-0017: no live-org data in this public repo. ADR-0025: the plugin drafts and circulates proposals but never originates or objects.</li>
+</ul>
+<h3>External context</h3>
+<ul>
+<li>No documented git-and-markdown Holacracy record setup was found, and no open data standard for roles and circles. This is open ground. (Web search at snippet level; not verified against primary pages.)</li>
+<li>Validation precedent: an Obsidian MCP server validates frontmatter against per-vault JSON Schema. Most vault MCP servers are generic file CRUD with no shape enforcement.</li>
+<li>Analogies with structural fit: law kept in git (the DC Code accepted a pull request), plain-text accounting (beancount rejects books that do not balance).</li>
+<li>Risks named: same-clause merge conflicts, format drift, and legitimacy (the Constitution allows governance change only through the governance process).</li>
+</ul>
+</section>
+
+<section id="topic-axes">
+<h2>Topic Axes</h2>
+<ol>
+<li><strong>Record shape</strong>: what the record looks like on disk.</li>
+<li><strong>Access path</strong>: how skills and commands reach the record.</li>
+<li><strong>Legitimacy and write safety</strong>: who may change what, and how.</li>
+<li><strong>Adoption and coexistence</strong>: first run, migration, and running beside GlassFrog.</li>
+<li><strong>Verification</strong>: keeping two backends honest.</li>
+</ol>
+</section>
+
+<section id="ranked-ideas">
+<h2>Ranked Ideas</h2>
+<nav class="jump" aria-label="Ranked ideas"><ol>
+<li><a href="#idea-1">Decide that the file record is an open, user-owned format</a></li>
+<li><a href="#idea-2">Make the seam real: a small governance-data verb contract</a></li>
+<li><a href="#idea-3">A typed, schema-validating file server built from the eval stub's design</a></li>
+<li><a href="#idea-4">Legitimacy stack: merge is adoption, checked by a governance validator</a></li>
+<li><a href="#idea-5">GlassFrog-to-files export with a provenance crosswalk</a></li>
+<li><a href="#idea-6">One conformance suite for every backend</a></li>
+<li><a href="#idea-7">Ground file-mode sessions: the SessionStart hook detects a record</a></li>
+</ol></nav>
+
+<article class="idea" id="idea-1">
+<h3>1. Decide that the file record is an open, user-owned format</h3>
+<div class="chips"><span class="chip">Adoption and coexistence</span><span class="chip">Confidence 85%</span><span class="chip">Complexity Low</span></div>
+<dl>
+<dt>Description</dt><dd>Write an ADR that amends ADR-0005 and STRATEGY.md. It says the file record is an open, published format that the user owns in their own folder or repository, and the plugin connects to it the way it connects to GlassFrog. The plugin does not host, sync, or own the record. Publish the format as a small spec with JSON Schema, so other tools (a Holaspirit exporter, a hand-kept repo) can target it, the way genealogy apps share the GEDCOM format.</dd>
+<dt>Axis</dt><dd>Adoption and coexistence</dd>
+<dt>Basis</dt><dd><code>direct:</code> "Building our own governance record-keeping system — we connect to existing ones (GlassFrog today) through a connector seam, not replace them." (STRATEGY.md "Not working on"). <code>external:</code> no open roles-and-circles data standard was found in web research.</dd>
+<dt>Rationale</dt><dd>Every other idea here contradicts a standing strategy line until this decision exists. The reframe keeps the line's intent (do not compete with record systems) while opening a file option. It is a prerequisite, and it is cheap.</dd>
+<dt>Downsides</dt><dd>A published format creates a compatibility promise. A spec written before a working backend may need revision; mark it version 0 until idea 3 runs against it.</dd>
+<dt>Confidence</dt><dd>85%</dd>
+<dt>Complexity</dt><dd>Low</dd>
+</dl>
+</article>
+
+<article class="idea" id="idea-2">
+<h3>2. Make the seam real: a small governance-data verb contract</h3>
+<div class="chips"><span class="chip">Access path</span><span class="chip">Confidence 75%</span><span class="chip">Complexity High</span></div>
+<dl>
+<dt>Description</dt><dd>Define a closed list of about 15 verbs that every backend must answer, such as <code>resolve_actor</code>, <code>list_roles</code>, <code>get_role_context</code>, <code>list_tensions</code> and <code>create_tension</code>. Each backend declares which verbs it supports, like a language server declares its capabilities. Skills cite verbs, and degrade per missing capability ("this backend has no tension reads") instead of per vendor ("GlassFrog is not connected"). A lint check holds each backend profile to the verb list.</dd>
+<dt>Axis</dt><dd>Access path</dd>
+<dt>Basis</dt><dd><code>direct:</code> ADR-0005 does "not prescribe the connector interface's exact signatures" and warns that "GlassFrog-specific calls must be kept behind the governance-data boundary ... or the seam erodes." 50 files now cite tool names. <code>direct:</code> #340 brings a second, camelCase vocabulary. <code>external:</code> Language Server Protocol capability negotiation.</dd>
+<dt>Rationale</dt><dd>One change pays three times: the file backend, the official GlassFrog MCP (#340), and any later backend each become a profile instead of a 50-file edit.</dd>
+<dt>Downsides</dt><dd>The largest edit in the set: 50 prompt files change, and evals must re-baseline. Designing the verbs without a second working backend risks a GlassFrog-shaped contract. Mitigation: design the verbs and build idea 3 together, and treat the first version as provisional.</dd>
+<dt>Confidence</dt><dd>75%</dd>
+<dt>Complexity</dt><dd>High</dd>
+</dl>
+<figure>
+<div class="scroll">
+<svg viewBox="0 0 620 210" width="620" height="210" role="img" aria-labelledby="seam-t">
+<title id="seam-t">Skills call a verb contract; three backend profiles answer it</title>
+<rect class="box" x="210" y="10" width="200" height="40" rx="6"/><text x="310" y="35" text-anchor="middle">Skills and commands</text>
+<line class="ln" x1="310" y1="50" x2="310" y2="80"/>
+<rect class="hl" x="160" y="80" width="300" height="40" rx="6"/><text x="310" y="105" text-anchor="middle">Verb contract + capabilities</text>
+<line class="ln" x1="230" y1="120" x2="110" y2="160"/><line class="ln" x1="310" y1="120" x2="310" y2="160"/><line class="ln" x1="390" y1="120" x2="510" y2="160"/>
+<rect class="box" x="20" y="160" width="180" height="40" rx="6"/><text x="110" y="185" text-anchor="middle">GlassFrog Extended</text>
+<rect class="box" x="220" y="160" width="180" height="40" rx="6"/><text x="310" y="185" text-anchor="middle">GlassFrog official (#340)</text>
+<rect class="box" x="420" y="160" width="180" height="40" rx="6"/><text x="510" y="185" text-anchor="middle">File record</text>
+</svg>
+</div>
+<figcaption>Illustrative. Skills depend on the contract; each backend is one profile behind it.</figcaption>
+</figure>
+</article>
+
+<article class="idea" id="idea-3">
+<h3>3. A typed, schema-validating file server built from the eval stub's design</h3>
+<div class="chips"><span class="chip">Record shape</span><span class="chip">Confidence 65%</span><span class="chip">Complexity Medium</span></div>
+<dl>
+<dt>Description</dt><dd>Ship a small stdio MCP server, under its own key (for example <code>self-org-files</code>), that reads and writes a folder of markdown files with YAML frontmatter: one file per circle and role, and folders for tensions, projects and actions. It exposes typed tools (not raw file CRUD) and validates every write against JSON Schema files kept in the record's own <code>.self-org/</code> folder. Reuse the eval stub's architecture (computed reads, a write log), but not its deliberate GlassFrog defects.</dd>
+<dt>Axis</dt><dd>Record shape</dd>
+<dt>Basis</dt><dd><code>direct:</code> the stub is "A stdio MCP server that serves one synthetic GlassFrog fixture" and "Every response is derived from the fixture's org graph at call time" (evals/stub/glassfrog_stub.py). <code>external:</code> an Obsidian MCP server validates frontmatter against per-vault schemas; most vault servers do not enforce shape.</dd>
+<dt>Rationale</dt><dd>Typed tools keep file layout out of 14 commands, and schema validation replaces the checks GlassFrog does server-side. A working second backend also gives idea 2 real evidence to design against.</dd>
+<dt>Downsides</dt><dd>The stub is not a drop-in: it does not persist, it mints synthetic IDs, and it ships defects on purpose. Persistence is new work. A second server key also touches the tool inventory (<code>evals/glassfrog-tools.tsv</code>), the coach agent's server-prefix list, and <code>MCP_SERVER_NAME</code> in the eval runner. Serving files under <code>glassfrog_*</code> names to skip idea 2 was considered and cut (see the Rejection Summary).</dd>
+<dt>Confidence</dt><dd>65%</dd>
+<dt>Complexity</dt><dd>Medium</dd>
+</dl>
+</article>
+
+<article class="idea" id="idea-4">
+<h3>4. Legitimacy stack: merge is adoption, checked by a governance validator</h3>
+<div class="chips"><span class="chip">Legitimacy and write safety</span><span class="chip">Confidence 70%</span><span class="chip">Complexity Medium</span></div>
+<dl>
+<dt>Description</dt><dd>Split the record into governance (circles, roles, accountabilities, domains, policies) and operations (tensions, projects, actions, checklists, metrics). Operational writes go straight to files after the usual per-item confirmation. The plugin cannot write governance files through its tools, the same limit GlassFrog's API has. Governance changes arrive only as a proposal file or branch; a human (the Secretary) merges it, and the merge is the adoption act. A validator, like <code>fsck</code> for the org or beancount's balance check, rejects invalid states before the merge: a role with no purpose, a domain held by two roles, a policy outside a controlled domain. It exits with an error on an unreadable record, never "clean".</dd>
+<dt>Axis</dt><dd>Legitimacy and write safety</dd>
+<dt>Basis</dt><dd><code>direct:</code> "The plugin never originates a proposal." (docs/adr/0025). <code>direct:</code> "Read-only governance: Roles, circles, accountabilities, domains, and policies cannot be created, modified, or deleted via API." (skills/self-org-ai-governance/SKILL.md). <code>reasoned:</code> a freely writable governance file bypasses the governance process; making merge the adoption act puts a named human act back in. <code>external:</code> the DC Code accepted a public pull request; beancount rejects unbalanced books.</dd>
+<dt>Rationale</dt><dd>It makes legitimacy a property of the storage design, not a rule each command must remember, and it gives file users something GlassFrog's API does not: a diffable governance history.</dd>
+<dt>Downsides</dt><dd>Git cannot stop a person who edits files by hand; the validator and CI catch shape errors, not illegitimate intent. The validator's invariants must cite Constitution sections (lint check 14) and avoid contested readings. It assumes the record is a git repository; a plain folder gets the validator but not the merge gate.</dd>
+<dt>Confidence</dt><dd>70%</dd>
+<dt>Complexity</dt><dd>Medium</dd>
+</dl>
+<figure>
+<div class="scroll">
+<svg viewBox="0 0 640 150" width="640" height="150" role="img" aria-labelledby="leg-t">
+<title id="leg-t">Two write paths: operations go direct after confirmation; governance goes through a proposal, validator and merge</title>
+<rect class="box" x="10" y="15" width="140" height="40" rx="6"/><text x="80" y="40" text-anchor="middle">Operational write</text>
+<line class="ln" x1="150" y1="35" x2="200" y2="35"/>
+<rect class="box" x="200" y="15" width="150" height="40" rx="6"/><text x="275" y="40" text-anchor="middle">Confirm each item</text>
+<line class="ln" x1="350" y1="35" x2="480" y2="35"/>
+<rect class="box" x="480" y="15" width="150" height="40" rx="6"/><text x="555" y="40" text-anchor="middle">Record updated</text>
+<rect class="box" x="10" y="95" width="140" height="40" rx="6"/><text x="80" y="120" text-anchor="middle">Proposal file</text>
+<line class="ln" x1="150" y1="115" x2="200" y2="115"/>
+<rect class="hl" x="200" y="95" width="120" height="40" rx="6"/><text x="260" y="120" text-anchor="middle">Validator</text>
+<line class="ln" x1="320" y1="115" x2="350" y2="115"/>
+<rect class="hl" x="350" y="95" width="120" height="40" rx="6"/><text x="410" y="120" text-anchor="middle">Secretary merge</text>
+<line class="ln" x1="470" y1="115" x2="480" y2="115"/>
+<rect class="box" x="480" y="95" width="150" height="40" rx="6"/><text x="555" y="120" text-anchor="middle">Governance adopted</text>
+</svg>
+</div>
+<figcaption>Illustrative. Top row: operations. Bottom row: governance.</figcaption>
+</figure>
+</article>
+
+<article class="idea" id="idea-5">
+<h3>5. GlassFrog-to-files export with a provenance crosswalk</h3>
+<div class="chips"><span class="chip">Adoption and coexistence</span><span class="chip">Confidence 70%</span><span class="chip">Complexity Medium</span></div>
+<dl>
+<dt>Description</dt><dd>A command reads a live GlassFrog org and writes it into the file format, in a folder the user names. Each record carries <code>source: glassfrog</code>, <code>source_id</code> and <code>retrieved_at</code>, as library catalogs keep the source record's control number. Later runs show a per-item drift list and never overwrite in bulk. The command refuses to write inside this plugin's checkout or any public repository.</dd>
+<dt>Axis</dt><dd>Adoption and coexistence</dd>
+<dt>Basis</dt><dd><code>direct:</code> ADR-0005's revisit trigger is "a second backend (e.g., Holaspirit), HolacracyOne's official MCP". <code>direct:</code> ADR-0017 keeps org data out of this public repo. <code>reasoned:</code> the sibling glassfrog-config repo already refuses to sync over drift and stamps a <code>synced</code> field; the same pattern fits here.</dd>
+<dt>Rationale</dt><dd>It makes the choice reversible. A GlassFrog org can try file mode for a month and go back; a file-first org can move into GlassFrog later. It also gives GlassFrog users an offline, diffable snapshot.</dd>
+<dt>Downsides</dt><dd>It inherits API defects on read (for example, <code>list_subrole_tensions</code> returns direct children only), so the export must walk circle by circle. Writing back to GlassFrog is a separate, harder step and is out of scope at first.</dd>
+<dt>Confidence</dt><dd>70%</dd>
+<dt>Complexity</dt><dd>Medium</dd>
+</dl>
+</article>
+
+<article class="idea" id="idea-6">
+<h3>6. One conformance suite for every backend</h3>
+<div class="chips"><span class="chip">Verification</span><span class="chip">Confidence 60%</span><span class="chip">Complexity Medium</span></div>
+<dl>
+<dt>Description</dt><dd>Render each synthetic scenario in <code>evals/scenarios/</code> both as a GlassFrog fixture and as a file record, run the same eval cases against each backend, and require the same write log. Move known GlassFrog defects out of the stub's code into a per-backend expectations file, as the browser vendors do for Web Platform Tests, so the file backend does not inherit them by accident.</dd>
+<dt>Axis</dt><dd>Verification</dd>
+<dt>Basis</dt><dd><code>direct:</code> the stub runs from <code>GLASSFROG_STUB_FIXTURE</code> and <code>GLASSFROG_STUB_WRITE_LOG</code>, and "One write is deliberately NOT accommodating: <code>update_tension</code> rejects" <code>meeting_type</code> (evals/stub/glassfrog_stub.py). <code>external:</code> Web Platform Tests per-engine expectation files.</dd>
+<dt>Rationale</dt><dd>It turns "GlassFrog support keeps working" and "file support keeps working" into checked claims, and it bounds the maintenance cost of two backends.</dd>
+<dt>Downsides</dt><dd>It only pays once idea 3 exists. The identical-write-log assertion is untested and may need a per-backend normalizer for IDs.</dd>
+<dt>Confidence</dt><dd>60%</dd>
+<dt>Complexity</dt><dd>Medium</dd>
+</dl>
+</article>
+
+<article class="idea" id="idea-7">
+<h3>7. Ground file-mode sessions: the SessionStart hook detects a record</h3>
+<div class="chips"><span class="chip">Access path</span><span class="chip">Confidence 80%</span><span class="chip">Complexity Low</span></div>
+<dl>
+<dt>Description</dt><dd>Extend the SessionStart hook so it emits the role-grounding directive when it finds a file record (a <code>.self-org/</code> folder or a <code>SELF_ORG_RECORD</code> path), not only when an authenticated GlassFrog connector is detected.</dd>
+<dt>Axis</dt><dd>Access path</dd>
+<dt>Basis</dt><dd><code>direct:</code> the hook's description says the directive is "emitted ONLY when an authenticated GlassFrog connector is detected" (hooks/hooks.json).</dd>
+<dt>Rationale</dt><dd>Without it, file users silently lose the plugin's central measured behavior, and the grounding readout counts them as misses. It is small, and it is easy to forget.</dd>
+<dt>Downsides</dt><dd>Small on its own; it belongs inside the idea-3 work, not as a separate project. The readout scripts must learn the new trigger too.</dd>
+<dt>Confidence</dt><dd>80%</dd>
+<dt>Complexity</dt><dd>Low</dd>
+</dl>
+</article>
+</section>
+
+<section id="rejection-summary">
+<h2>Rejection Summary</h2>
+<p>About 38 raw ideas from five frames merged into 14 candidates and 2 combinations. A fresh-context verifier checked every quoted basis.</p>
+<div class="scroll"><table>
+<thead><tr><th>#</th><th>Idea</th><th>Reason rejected</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Ship the eval stub itself as the file backend under <code>glassfrog_*</code> tool names (zero skill edits)</td><td>Basis weakened by verification: the stub does not persist and reproduces defects on purpose, and same-named tools break the tool inventory, coach prefix list and eval runner. Its useful part is kept in idea 3.</td></tr>
+<tr><td>2</td><td>Two-step seam: extract the verb contract from the stub later</td><td>Would bake GlassFrog quirks into the contract. Idea 2 designs the verbs alongside idea 3 instead.</td></tr>
+<tr><td>3</td><td>Zero-server mode: skills read files with Read and Grep, no MCP</td><td>All 50 coupled files would need per-file branching; no validation on write. Weaker than idea 3.</td></tr>
+<tr><td>4</td><td>Governance validator as a standalone idea</td><td>Duplicates a stronger idea: merged into idea 4.</td></tr>
+<tr><td>5</td><td>Self-describing <code>.self-org/</code> manifest as a standalone idea</td><td>Duplicates a stronger idea: merged into idea 3 as its schema location.</td></tr>
+<tr><td>6</td><td>Governance read-only through tools in file mode</td><td>A constraint, not a direction: merged into idea 4.</td></tr>
+<tr><td>7</td><td>First-run interview (<code>init-record</code>) or "save this session as your record"</td><td>Depends on ideas 1 and 3 and, before idea 1, conflicts with STRATEGY.md. Worth revisiting once a record shape exists.</td></tr>
+<tr><td>8</td><td>Record as an append-only instrument log; current files generated from it (Torrens register)</td><td>Too expensive relative to likely value now: adds a build step users must trust; no evidence of demand for point-in-time queries.</td></tr>
+<tr><td>9</td><td>Every confirmed write is one git commit with trailers; metrics from <code>git log</code></td><td>Assumes a git record and trailers are easy to forge. A follow-on to idea 4, not a direction.</td></tr>
+</tbody>
+</table></div>
+<p>No axis ended with zero survivors.</p>
+</section>
+
+<footer class="composition-signal">Composed 2026-11-19 by ce-ideate from Kraig's request: "Make the plugin also compatible for users who don't want to use GlassFrog as their core self-org system and would prefer it to be file-based."</footer>
+</main>
+</body>
+</html>

@@ -4,7 +4,7 @@ Date: 2026-06-17
 
 ## Status
 
-Accepted
+Accepted. Amended by [ADR-0030](0030-a-file-record-is-a-second-backend.md): a file-based org record is a second backend behind this seam, beside GlassFrog.
 
 ## Context
 
