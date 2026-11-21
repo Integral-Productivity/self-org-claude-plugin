@@ -745,8 +745,11 @@ grep -q "Operating \*\*unbound\*\*:" "$REF" \
 # The interactive ask is matched by its question text, not by the word "ask":
 # "ascertain-vs-ask" and the Unattended line itself both contain that word, so
 # a word match would still pass with the question deleted.
+section_body() {  # $1 = section heading; prints the section up to the next heading
+  awk -v h="$1" '$0==h{f=1; next} f && /^##/{exit} f' "$REF"
+}
 assert_section_branches() {  # $1 = section heading, $2 = its interactive question
-  body="$(awk -v h="$1" '$0==h{f=1; next} f && /^##/{exit} f' "$REF")"
+  body="$(section_body "$1")"
   [ -n "$body" ] || fail "section '$1' not found in the shared reference"
   echo "$body" | grep -q "Unattended:" \
     || fail "section '$1' needs an unattended branch"
@@ -765,8 +768,7 @@ assert_section_branches "### Step 1 -- Confirm actor identity" \
 # The unattended prose is pinned by its text too. Each line below was a
 # surviving mutant: deleting or weakening it left the checks above green (#284).
 assert_ref_text() {  # $1 = section heading, $2 = text it must contain, $3 = why
-  body="$(awk -v h="$1" '$0==h{f=1; next} f && /^##/{exit} f' "$REF")"
-  echo "$body" | grep -qF -- "$2" || fail "section '$1' must say: $2 ($3)"
+  section_body "$1" | grep -qF -- "$2" || fail "section '$1' must say: $2 ($3)"
 }
 assert_ref_text "### Step 1 -- Confirm actor identity" \
   "gets one line and nothing more: no retry loop and no question." \
