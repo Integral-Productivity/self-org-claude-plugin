@@ -1016,6 +1016,31 @@ check_design_checklist() {
   done < <(grep -oiE 'checks? [0-9]+((, | and |, and )[0-9]+)*' "$ROOT/$doc" | grep -oE '[0-9]+' | sort -un)
 }
 
+# ---------------------------------------------------------------------------
+# Check 20 -- STRATEGY.md links no superseded ADR (ADR-0030).
+#
+# STRATEGY.md's lines rest on decisions, and links the ADR each one rests on.
+# When that ADR is superseded the line must change with it: ADR-0030 says that
+# if its leading test fails, it is superseded and STRATEGY.md returns to its
+# earlier line. Without this check the revert is a promise; with it, a stale
+# link fails CI. Status lines here open with "Accepted (...)" and add any
+# relationship after it, so "Superseded by" is searched for anywhere in the
+# Status section, which runs from "## Status" to the next "## " heading. A link
+# that does not resolve is check 1's finding, not this one's.
+# ---------------------------------------------------------------------------
+check_strategy_adrs() {
+  skipped 20 && return 0
+  local doc="STRATEGY.md" target
+  [ -f "$ROOT/$doc" ] || return 0
+  while IFS= read -r target; do
+    [ -f "$ROOT/$target" ] || continue
+    awk '/^## /{ins = ($0 ~ /^## Status[[:space:]]*$/); next} ins' "$ROOT/$target" \
+      | grep -q 'Superseded by' \
+      && finding 20 "$doc" "links $target, which is superseded: change the line to follow the new decision"
+  done < <(grep -oE '\]\(docs/adr/[^)#]+\.md' "$ROOT/$doc" | sed 's/^](//' | sort -u)
+  return 0
+}
+
 check_links
 check_step_citations
 check_frontmatter
@@ -1035,5 +1060,6 @@ check_picker_path
 check_user_only_writers
 check_command_names
 check_design_checklist
+check_strategy_adrs
 
 check_common_summarize "skills-lint"
