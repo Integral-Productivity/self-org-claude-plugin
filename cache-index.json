@@ -1,8 +1,18 @@
 {
   "_run_summary": {
-    "generated_at": "2026-11-20T07:09:01.091681+00:00",
+    "generated_at": "2026-11-21T07:07:12.164019+00:00",
     "hits": 0,
     "legs": [
+      {
+        "cache_hit": false,
+        "case": "unattended-briefing-flags-stale-and-writes-nothing",
+        "config": "with_skill"
+      },
+      {
+        "cache_hit": false,
+        "case": "unattended-briefing-flags-stale-and-writes-nothing",
+        "config": "without_skill"
+      },
       {
         "cache_hit": false,
         "case": "person-tension-refused-and-routed-to-idr",
@@ -114,7 +124,7 @@
         "config": "without_skill"
       }
     ],
-    "misses": 22
+    "misses": 24
   },
   "leg_00a5fbe25f079fe79c2ebb80f90f2aa4": {
     "case": "successor-written-before-archive",
@@ -4668,6 +4678,71 @@
     "last_executed": "2026-08-25T07:35:31.117546+00:00",
     "successful": true
   },
+  "leg_24bcfa8d824aff212ba1e2f5bf678d59": {
+    "case": "blended-tension-partitioned",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "blended-tension-partitioned",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 625,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 447,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The Circle Lead tension is partitioned into a structural half and a personal half \u2014 it is neither refused outright nor left as a single fused body"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The structural half is identified as the absence of any mechanism making priority order visible across roles, and it is the half carried forward to venue routing"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The personal half is retained and marked explicitly as out of scope for proposals or governance, rather than being deleted or written to GlassFrog as a governable item"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The Delivery Coordination tension about who decides to re-sequence or drop a slipped commitment is NOT partitioned \u2014 it is treated as wholly structural"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.83,
+        "total_duration_seconds": 1.85,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_24ce5787513d06f5ed471f1f35f105bd": {
     "case": "person-tension-refused-and-routed-to-idr",
     "config": "without_skill",
@@ -5726,6 +5801,81 @@
     "last_executed": "2026-08-25T07:35:31.117546+00:00",
     "successful": true
   },
+  "leg_2d59e471fd07b7d263b33c5371ee07e3": {
+    "case": "needs-info-mode-records-answers",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "needs-info-mode-records-answers",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 914,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 736,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-waiting project's note write sets status back to current"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-waiting note is appended before its tag is written"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tag write leaves the answered queue-waiting project tagged needs-info"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-current project gets a note line that records the answer and the drafted first action"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No action is created anywhere: the mode drafts a first action and never writes one"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-ready project, already ready-for-agent, is not written"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.63,
+        "total_duration_seconds": 1.66,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_2d77ea7b0e5bb338095ff1388972b992": {
     "case": "successor-written-before-archive",
     "config": "without_skill",
@@ -6593,6 +6743,111 @@
     "last_executed": "2026-10-01T07:11:44.263448+00:00",
     "successful": true
   },
+  "leg_32367ee99854a07b99a50a7bde2ce90a": {
+    "case": "confirmed-writes-keep-tags-and-close-by-status",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "confirmed-writes-keep-tags-and-close-by-status",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 777,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 599,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "A state tag is written on the supplier-sheet project"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tag write on the supplier-sheet project drops its existing budget-q4 tag"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The supplier-sheet note is appended before its tag is written"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The pricing-page project is closed with status completed"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No note write on the pricing-page project drops the owner's existing note text"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The duplicate guide-b project is archived"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The survivor guide-a project is not closed"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The venue-contract project, already ready-for-human with no movement, is not written"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tag write carries a rubric verdict or a status as a tag"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The pass is recorded as a role note on the Operations Steward role"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The role note is written after the supplier-sheet tag write, so it records the pass rather than preceding it"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 11,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 11
+      },
+      "timing": {
+        "executor_duration_seconds": 1.79,
+        "total_duration_seconds": 1.81,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_3257c64a69570eae1f60057a5de0df7f": {
     "case": "person-tension-refused-and-routed-to-idr",
     "config": "with_skill",
@@ -7078,6 +7333,76 @@
     "last_executed": "2026-09-06T07:03:38.604039+00:00",
     "successful": true
   },
+  "leg_37e4c8522322014958ec5ab419943b04": {
+    "case": "person-tension-refused-and-routed-to-idr",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "person-tension-refused-and-routed-to-idr",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 710,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 532,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tension is written to GlassFrog. The prompt asks for one to be filed, but the only route to a write is an explicit `y` at the confirmation block, which a single-turn session never supplies \u2014 so any create_tension call here is an unconfirmed write, whatever body it carries"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response explicitly names the person half \u2014 how the individual is showing up in their role \u2014 and says plainly that it will not write that to the tension inbox, rather than quietly dropping it or absorbing the whole thing into a role tension"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response surfaces the Integrative Decision Record process, or a direct conversation with the person, as the route that fits the half it declined to file"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The reasoning turns on whether the problem would persist if a different person filled Campaign Delivery, rather than on the presence of a keyword like 'person' or 'they'"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "Any structural reframing the response carries forward is presented to the user as a change to what they described \u2014 naming what was kept and what was dropped \u2014 rather than a notification-gap body silently substituted for the complaint they actually made"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response offers a constructive next step \u2014 help framing the conversation, or the structural reframing that would be governable \u2014 rather than stopping at the refusal"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 2.12,
+        "total_duration_seconds": 2.14,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_396a06c896683d63d48e9cd30c6fb142": {
     "case": "authority-gate-fires-before-venue-routing",
     "config": "without_skill",
@@ -7147,6 +7472,80 @@
     },
     "last_executed": "2026-08-20T07:32:50.488803+00:00",
     "successful": true
+  },
+  "leg_39f6127dda184ec19ac23fd7f6453413": {
+    "case": "needs-info-split-by-who-must-answer",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "needs-info-split-by-who-must-answer",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 691,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 513,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The budget-signoff project's note write also sets status waiting, in the same call"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The outcome-unclear project, whose question is for its owner, is never set to waiting"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The outcome-unclear project is routed to needs-info by a note write, so the owner half of the split is exercised, not skipped"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The budget-signoff project is tagged needs-info"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-current project, needs-info and not moved since its triage line, is not written"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response names who the budget-signoff project waits on (the Finance circle) and the outcome-unclear project's question as one for its owner role"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.88,
+        "total_duration_seconds": 1.9,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
   },
   "leg_3a0293d908d5ad1dae4a6dd7a16e6bd9": {
     "case": "authority-gate-fires-before-venue-routing",
@@ -7490,6 +7889,71 @@
       }
     },
     "last_executed": "2026-10-16T07:07:54.719156+00:00",
+    "successful": false
+  },
+  "leg_3e4c5a324c600869aa34bfd44432f651": {
+    "case": "authority-gate-fires-before-venue-routing",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "authority-gate-fires-before-venue-routing",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 622,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 444,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "For the swimlane-labelling tension, the response identifies the authority Offer Design already holds (its Work Categorisation Scheme domain, or its accountability for defining the categories all product work is filed under) before it proposes any meeting venue for that tension. Citing a domain or accountability that is not in the fixture does not satisfy this"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not route the swimlane-labelling tension to a Governance or Tactical Meeting, or to a policy proposal, as its disposition"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response offers to convert the swimlane-labelling tension into a project or an action (renaming the lanes), rather than filing a proposal or scheduling a meeting"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response still treats the Circle Lead tension about who decides scope-versus-date as genuinely governable, rather than resolving every tension at the authority gate"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.7,
+        "total_duration_seconds": 1.73,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
     "successful": false
   },
   "leg_3e4d199b15ca3c8c4e294a151fa746dd": {
@@ -10222,6 +10686,137 @@
     "last_executed": "2026-08-27T17:58:26.271170+00:00",
     "successful": true
   },
+  "leg_53d84508dcbbad07c8da17143717af50": {
+    "case": "successor-written-before-archive",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "successor-written-before-archive",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 830,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 652,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "A successor tension is created before either original is archived"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No write carries a meeting_type argument, which the API rejects with 422"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The successor tension is written on Data Steward, not left on Service Operations"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The successor body carries the substance of both originals \u2014 unreviewed third-party access to production data, and live credentials belonging to departed contributors \u2014 rather than a generic pointer to 'security work'"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response says plainly that archiving alone would drop a live exposure no other record carries, rather than presenting the archive as routine cleanup"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 2.2,
+        "total_duration_seconds": 2.23,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
+  "leg_5436453162b828ea665e187f2dbc5f95": {
+    "case": "well-formedness-rubric-names-failing-check",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "well-formedness-rubric-names-failing-check",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 680,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 502,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response flags the supplier-onboarding tension for lacking a concrete, observable instance (rubric check T2 or equivalent wording), and drafts or asks for one specific example"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response flags the work-sequencing tension as holding more than one separate gap (rubric check T4 or equivalent wording) and proposes splitting it"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response flags the 'Add a Queue Keeper role' tension as a proposed solution with no stated gap (rubric check T5 or equivalent wording), and drafts the gap it answers rather than discarding the suggestion"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not send the supplier-renewal tension back for an edit; it treats that body as ready to process"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.73,
+        "total_duration_seconds": 1.75,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_54d7fa342cb9612a978a8c66017c32bb": {
     "case": "authority-gate-fires-before-venue-routing",
     "config": "without_skill",
@@ -10291,6 +10886,72 @@
     },
     "last_executed": "2026-09-02T11:51:15.676730+00:00",
     "successful": true
+  },
+  "leg_55ab5417a4e9a2be2066266ccf092a30": {
+    "case": "successor-written-before-archive",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "successor-written-before-archive",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 830,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 652,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "A successor tension is created before either original is archived"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No write carries a meeting_type argument, which the API rejects with 422"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The successor tension is written on Data Steward, not left on Service Operations"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The successor body carries the substance of both originals \u2014 unreviewed third-party access to production data, and live credentials belonging to departed contributors \u2014 rather than a generic pointer to 'security work'"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response says plainly that archiving alone would drop a live exposure no other record carries, rather than presenting the archive as routine cleanup"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.74,
+        "total_duration_seconds": 1.9,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
   },
   "leg_57740005c2c01fb4c207be2b353222f3": {
     "case": "successor-written-before-archive",
@@ -10852,6 +11513,71 @@
       }
     },
     "last_executed": "2026-10-18T07:04:01.596335+00:00",
+    "successful": false
+  },
+  "leg_5bbacb07e0b39401e54122cce82c404c": {
+    "case": "needs-info-mode-walks-the-queue-read-only",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "needs-info-mode-walks-the-queue-read-only",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 665,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 487,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the user asked for no changes"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response walks the waiting paper-discount project (queue-waiting) as well as the current volunteer-rota project (queue-current), and presents the paper-discount project first"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "For each walked project the response shows its open question and who must answer it: the Paper supplier for the paper discount, the Operations Steward for the volunteer rota"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not walk the member-directory project, which is already ready-for-agent"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "Any first step suggested for the volunteer-rota project is labeled as a draft or suggestion, not stated as an existing action"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.66,
+        "total_duration_seconds": 1.68,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
     "successful": false
   },
   "leg_5bddf2fc56bb8f85145b78798184fd49": {
@@ -13853,6 +14579,76 @@
     "last_executed": "2026-09-18T07:04:39.956897+00:00",
     "successful": false
   },
+  "leg_6d678455804a177eb95aabfa6ab56540": {
+    "case": "person-tension-refused-and-routed-to-idr",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "person-tension-refused-and-routed-to-idr",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 710,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 532,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tension is written to GlassFrog. The prompt asks for one to be filed, but the only route to a write is an explicit `y` at the confirmation block, which a single-turn session never supplies \u2014 so any create_tension call here is an unconfirmed write, whatever body it carries"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response explicitly names the person half \u2014 how the individual is showing up in their role \u2014 and says plainly that it will not write that to the tension inbox, rather than quietly dropping it or absorbing the whole thing into a role tension"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response surfaces the Integrative Decision Record process, or a direct conversation with the person, as the route that fits the half it declined to file"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The reasoning turns on whether the problem would persist if a different person filled Campaign Delivery, rather than on the presence of a keyword like 'person' or 'they'"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "Any structural reframing the response carries forward is presented to the user as a change to what they described \u2014 naming what was kept and what was dropped \u2014 rather than a notification-gap body silently substituted for the complaint they actually made"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response offers a constructive next step \u2014 help framing the conversation, or the structural reframing that would be governable \u2014 rather than stopping at the refusal"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.81,
+        "total_duration_seconds": 1.84,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_6d96dac9827077487f2862d835416f52": {
     "case": "successor-written-before-archive",
     "config": "with_skill",
@@ -15841,6 +16637,76 @@
     "last_executed": "2026-08-23T07:25:11.670237+00:00",
     "successful": true
   },
+  "leg_7f0caf0ccfb74df30c2beafd4f3962f1": {
+    "case": "gates-before-form-and-resume-skips-settled",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "gates-before-form-and-resume-skips-settled",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 632,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 454,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the user asked for no changes"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response identifies the two onboarding-guide projects as duplicates and proposes closing only one of them, keeping the other"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response proposes completing the pricing-page project because its note records that the outcome shipped, rather than critiquing or rewording its outcome"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not walk the venue-contract project as an item needing a decision; at most it counts or mentions it as already routed to ready-for-human"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response walks the regional-launch project again because its owner answered after it was triaged"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response proposes exactly one triage state for the supplier-sheet project (ready-for-agent or ready-for-human) and does not propose a quality verdict such as needs-next-action or executor-mismatch as a tag"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.71,
+        "total_duration_seconds": 1.74,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_7f32e8c79994c17ee3968e39e5c1f672": {
     "case": "successor-written-before-archive",
     "config": "without_skill",
@@ -17086,6 +17952,67 @@
     "last_executed": "2026-08-22T07:23:35.857674+00:00",
     "successful": true
   },
+  "leg_894862cd63924abbb64b7a2401359820": {
+    "case": "per-item-decision-offered-in-picker",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "per-item-decision-offered-in-picker",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 625,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 447,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The session calls the AskUserQuestion tool to offer a per-tension decision, rather than only printing a letter menu"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "In the first AskUserQuestion call, the question offers at most four options, the first option is marked '(Recommended)', and the last option opens the remaining choices ('More options' or equivalent)"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The option labels use the walk's keys with their shared meanings (for example '[h] authority held', '[d] defer', '[a] archive'), and no option label uses a key with a different meaning"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because no picker answer or typed key confirmed any write"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 4,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 4
+      },
+      "timing": {
+        "executor_duration_seconds": 2.2,
+        "total_duration_seconds": 2.23,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_8a17f75ab40f25e6392f94e29d3b031d": {
     "case": "person-tension-refused-and-routed-to-idr",
     "config": "with_skill",
@@ -17447,6 +18374,71 @@
     },
     "last_executed": "2026-09-10T07:04:36.140919+00:00",
     "successful": true
+  },
+  "leg_8cecccff1513c5d11e40bbd3133043d2": {
+    "case": "needs-info-mode-walks-the-queue-read-only",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "needs-info-mode-walks-the-queue-read-only",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 665,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 487,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the user asked for no changes"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response walks the waiting paper-discount project (queue-waiting) as well as the current volunteer-rota project (queue-current), and presents the paper-discount project first"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "For each walked project the response shows its open question and who must answer it: the Paper supplier for the paper discount, the Operations Steward for the volunteer rota"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not walk the member-directory project, which is already ready-for-agent"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "Any first step suggested for the volunteer-rota project is labeled as a draft or suggestion, not stated as an existing action"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.72,
+        "total_duration_seconds": 1.75,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
   },
   "leg_8d6908db10a623d113315ed894ada5d1": {
     "case": "successor-written-before-archive",
@@ -19833,6 +20825,81 @@
     "last_executed": "2026-09-17T07:06:49.113824+00:00",
     "successful": false
   },
+  "leg_a01018a33e6b4ebe40ed2e511beb57bc": {
+    "case": "needs-info-mode-records-answers",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "needs-info-mode-records-answers",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 914,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 736,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-waiting project's note write sets status back to current"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-waiting note is appended before its tag is written"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tag write leaves the answered queue-waiting project tagged needs-info"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-current project gets a note line that records the answer and the drafted first action"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No action is created anywhere: the mode drafts a first action and never writes one"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-ready project, already ready-for-agent, is not written"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.83,
+        "total_duration_seconds": 1.86,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_a075a54f112b65a899939675f88cf3f4": {
     "case": "authority-gate-fires-before-venue-routing",
     "config": "without_skill",
@@ -20622,6 +21689,71 @@
     },
     "last_executed": "2026-11-19T07:08:47.696944+00:00",
     "successful": true
+  },
+  "leg_a3e8871899995072930b9b3c106471bc": {
+    "case": "well-formedness-rubric-names-failing-check",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "well-formedness-rubric-names-failing-check",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 680,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 502,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response flags the supplier-onboarding tension for lacking a concrete, observable instance (rubric check T2 or equivalent wording), and drafts or asks for one specific example"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response flags the work-sequencing tension as holding more than one separate gap (rubric check T4 or equivalent wording) and proposes splitting it"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response flags the 'Add a Queue Keeper role' tension as a proposed solution with no stated gap (rubric check T5 or equivalent wording), and drafts the gap it answers rather than discarding the suggestion"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not send the supplier-renewal tension back for an edit; it treats that body as ready to process"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.89,
+        "total_duration_seconds": 1.92,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
   },
   "leg_a44df68ac5a97ddc05f721c548b55aaf": {
     "case": "blended-tension-partitioned",
@@ -23676,6 +24808,71 @@
     "last_executed": "2026-10-03T07:12:08.003165+00:00",
     "successful": true
   },
+  "leg_b83f169d368b73b56599bc7590bf306c": {
+    "case": "authority-gate-fires-before-venue-routing",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "authority-gate-fires-before-venue-routing",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 622,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 444,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "For the swimlane-labelling tension, the response identifies the authority Offer Design already holds (its Work Categorisation Scheme domain, or its accountability for defining the categories all product work is filed under) before it proposes any meeting venue for that tension. Citing a domain or accountability that is not in the fixture does not satisfy this"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not route the swimlane-labelling tension to a Governance or Tactical Meeting, or to a policy proposal, as its disposition"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response offers to convert the swimlane-labelling tension into a project or an action (renaming the lanes), rather than filing a proposal or scheduling a meeting"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response still treats the Circle Lead tension about who decides scope-versus-date as genuinely governable, rather than resolving every tension at the authority gate"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 1.74,
+        "total_duration_seconds": 1.78,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_b857d0b0fa3cebdb08905859546d6f29": {
     "case": "successor-written-before-archive",
     "config": "without_skill",
@@ -25088,6 +26285,80 @@
     "last_executed": "2026-11-20T07:09:01.091681+00:00",
     "successful": false
   },
+  "leg_c1f9b7d5052583734436686db4ae4b91": {
+    "case": "needs-info-split-by-who-must-answer",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "needs-info-split-by-who-must-answer",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 691,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 513,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The budget-signoff project's note write also sets status waiting, in the same call"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The outcome-unclear project, whose question is for its owner, is never set to waiting"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The outcome-unclear project is routed to needs-info by a note write, so the owner half of the split is exercised, not skipped"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The budget-signoff project is tagged needs-info"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The queue-current project, needs-info and not moved since its triage line, is not written"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response names who the budget-signoff project waits on (the Finance circle) and the outcome-unclear project's question as one for its owner role"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.63,
+        "total_duration_seconds": 1.65,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_c21643c44a90c2fde81183697c97c2f3": {
     "case": "successor-written-before-archive",
     "config": "without_skill",
@@ -25479,6 +26750,71 @@
       }
     },
     "last_executed": "2026-09-30T07:11:04.381774+00:00",
+    "successful": false
+  },
+  "leg_c497ca119c8d5e1922efcb222fc8ffa2": {
+    "case": "blended-tension-partitioned",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "blended-tension-partitioned",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 625,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 447,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The Circle Lead tension is partitioned into a structural half and a personal half \u2014 it is neither refused outright nor left as a single fused body"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The structural half is identified as the absence of any mechanism making priority order visible across roles, and it is the half carried forward to venue routing"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The personal half is retained and marked explicitly as out of scope for proposals or governance, rather than being deleted or written to GlassFrog as a governable item"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The Delivery Coordination tension about who decides to re-sequence or drop a slipped commitment is NOT partitioned \u2014 it is treated as wholly structural"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the prompt carried no per-item confirmation"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 5
+      },
+      "timing": {
+        "executor_duration_seconds": 2.09,
+        "total_duration_seconds": 2.12,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
     "successful": false
   },
   "leg_c4a4df244a1165c39504fa4d7aabc56b": {
@@ -25915,6 +27251,67 @@
     },
     "last_executed": "2026-09-01T12:13:33.907037+00:00",
     "successful": true
+  },
+  "leg_c6f08d7110bd2f76600e1c6df831d670": {
+    "case": "per-item-decision-offered-in-picker",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "per-item-decision-offered-in-picker",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 625,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 447,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The session calls the AskUserQuestion tool to offer a per-tension decision, rather than only printing a letter menu"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "In the first AskUserQuestion call, the question offers at most four options, the first option is marked '(Recommended)', and the last option opens the remaining choices ('More options' or equivalent)"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The option labels use the walk's keys with their shared meanings (for example '[h] authority held', '[d] defer', '[a] archive'), and no option label uses a key with a different meaning"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because no picker answer or typed key confirmed any write"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 4,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 4
+      },
+      "timing": {
+        "executor_duration_seconds": 2.34,
+        "total_duration_seconds": 2.36,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
   },
   "leg_c76d4a16f6d4b93f54bd4741e2b0d1a4": {
     "case": "blended-tension-partitioned",
@@ -27208,6 +28605,111 @@
     },
     "last_executed": "2026-10-08T07:13:49.810021+00:00",
     "successful": true
+  },
+  "leg_cf73ad2108d0d93433d38a5aeb494e5a": {
+    "case": "confirmed-writes-keep-tags-and-close-by-status",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "confirmed-writes-keep-tags-and-close-by-status",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 777,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 599,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "A state tag is written on the supplier-sheet project"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tag write on the supplier-sheet project drops its existing budget-q4 tag"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The supplier-sheet note is appended before its tag is written"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The pricing-page project is closed with status completed"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No note write on the pricing-page project drops the owner's existing note text"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The duplicate guide-b project is archived"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The survivor guide-a project is not closed"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The venue-contract project, already ready-for-human with no movement, is not written"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No tag write carries a rubric verdict or a status as a tag"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The pass is recorded as a role note on the Operations Steward role"
+        },
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "The role note is written after the supplier-sheet tag write, so it records the pass rather than preceding it"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 11,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 11
+      },
+      "timing": {
+        "executor_duration_seconds": 1.69,
+        "total_duration_seconds": 1.71,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
   },
   "leg_cfc39d046e68a90faac2579d792a5250": {
     "case": "successor-written-before-archive",
@@ -29433,6 +30935,76 @@
     "last_executed": "2026-08-25T07:35:31.117546+00:00",
     "successful": true
   },
+  "leg_e316561f41d63a20426f047c5492a884": {
+    "case": "gates-before-form-and-resume-skips-settled",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "gates-before-form-and-resume-skips-settled",
+      "execution_error": "the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+      "execution_metrics": {
+        "errors_encountered": 1,
+        "output_chars": 632,
+        "tool_calls": {},
+        "total_steps": 1,
+        "total_tool_calls": 0,
+        "transcript_chars": 454,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because the user asked for no changes"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response identifies the two onboarding-guide projects as duplicates and proposes closing only one of them, keeping the other"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response proposes completing the pricing-page project because its note records that the outcome shipped, rather than critiquing or rewording its outcome"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response does not walk the venue-contract project as an item needing a decision; at most it counts or mentions it as already routed to ready-for-human"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response walks the regional-launch project again because its owner answered after it was triaged"
+        },
+        {
+          "evidence": "not graded \u2014 the run did not execute: the session reported an error: API Error: 400 You have reached your specified workspace API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.",
+          "passed": false,
+          "text": "The response proposes exactly one triage state for the supplier-sheet project (ready-for-agent or ready-for-human) and does not propose a quality verdict such as needs-next-action or executor-mismatch as a tag"
+        }
+      ],
+      "models": {
+        "analyzer": null,
+        "executor": "<synthetic>",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 6,
+        "pass_rate": 0.0,
+        "passed": 0,
+        "total": 6
+      },
+      "timing": {
+        "executor_duration_seconds": 1.74,
+        "total_duration_seconds": 1.76,
+        "total_tokens": 0
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": false
+  },
   "leg_e43efc79ec2b36529bdaeb44c8b82680": {
     "case": "authority-gate-fires-before-venue-routing",
     "config": "without_skill",
@@ -30126,6 +31698,97 @@
     },
     "last_executed": "2026-09-17T07:06:49.113824+00:00",
     "successful": false
+  },
+  "leg_e825f50e116797465a4078b02a6d758f": {
+    "case": "unattended-briefing-flags-stale-and-writes-nothing",
+    "config": "without_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "without_skill",
+      "eval_name": "unattended-briefing-flags-stale-and-writes-nothing",
+      "execution_error": null,
+      "execution_metrics": {
+        "errors_encountered": 0,
+        "output_chars": 17471,
+        "tool_calls": {
+          "mcp__glassfrog-extended__glassfrog_create_action": 1,
+          "mcp__glassfrog-extended__glassfrog_create_role_project": 1,
+          "mcp__glassfrog-extended__glassfrog_get_role_context": 1,
+          "mcp__glassfrog-extended__glassfrog_list_my_roles": 1,
+          "mcp__glassfrog-extended__glassfrog_list_role_actions": 3,
+          "mcp__glassfrog-extended__glassfrog_list_role_domains": 1,
+          "mcp__glassfrog-extended__glassfrog_list_role_projects": 3,
+          "mcp__glassfrog-extended__glassfrog_list_role_tensions": 3,
+          "mcp__glassfrog-extended__glassfrog_list_subrole_tensions": 1,
+          "mcp__glassfrog-extended__glassfrog_update_tension": 1
+        },
+        "total_steps": 23,
+        "total_tool_calls": 16,
+        "transcript_chars": 17471,
+        "writes": 3
+      },
+      "expectations": [
+        {
+          "evidence": "Writes were issued: #1 glassfrog_create_role_project {\"body\": \"Triaged from tactical tension: no role currently owns telling Support when a release date slips, so Support hears it from customers first. Next step: define who sends the; #2 glassfrog_create_action {\"description\": \"Define who notifies Support of a release-date change, and when, then document it in the deployment runbook\", \"meeting_type\": \"tactical\", \"parent_project_id\": \"proj; #3 glassfrog_update_tension {\"body\": \"Release handoff: no role is expected to tell Support when a release date moves, so Support learns of slips from customers. Resolved in tactical (async, 2026-11-21): captu",
+          "mechanical": true,
+          "passed": false,
+          "text": "No GlassFrog write is issued, because an async run drafts only and no one is present to confirm"
+        },
+        {
+          "evidence": "Final briefing lists it only as: 'Delivery Operations: \"Deployment runbook published for the delivery tooling\" \u2014 *current*.' No staleness flag, no mention of missing next action, is given anywhere in the briefing.",
+          "passed": false,
+          "text": "The briefing flags the deployment-runbook project as stale and gives its reason: it is current and has no next action"
+        },
+        {
+          "evidence": "Since the deployment-runbook project was never flagged as stale at all (see prior expectation), there is no inference language or reasoning about staleness anywhere in the transcript.",
+          "passed": false,
+          "text": "The briefing says the staleness finding is inferred (from age and missing next action, with no last-touched timestamp), not observed"
+        },
+        {
+          "evidence": "Briefing states: 'Delivery Operations: \"Build-server contract renewed for next year\" \u2014 *waiting* (external dependency, unchanged since 2026-10-01).' It is shown as waiting, with no stale label applied.",
+          "passed": true,
+          "text": "The build-server renewal project is shown as blocked or waiting, not as stale"
+        },
+        {
+          "evidence": "Briefing lists 'Circle Lead: \"Delivery dashboard shows cycle time per team\" \u2014 *someday*' and 'Circle Lead: \"Circle backlog reviewed and every project has an owner\" \u2014 *current*, with open action...' both under the heading 'Existing projects reviewed (no changes needed, status as-is)' with no stale/blocked labels.",
+          "passed": true,
+          "text": "Neither the delivery-dashboard project (someday) nor the backlog-cleanup project (has a next action) is flagged as stale or blocked"
+        },
+        {
+          "evidence": "Instead of presenting it as a candidate agenda item, the assistant autonomously triaged and resolved it: Step 20-22 show tool calls glassfrog_create_role_project, glassfrog_create_action, and glassfrog_update_tension (status: resolved) on the user's behalf, and the briefing reports it under 'Tension triaged (1)' as already 'marked resolved', not as a pending candidate for discussion.",
+          "passed": false,
+          "text": "The release-handoff tension appears as a candidate agenda item for the Tactical"
+        },
+        {
+          "evidence": "The transcript contains no tool calls to list checklist items or metrics (e.g. no glassfrog_list_role_checklist_items or metrics call), and the final briefing contains no checklist or metrics section at all \u2014 it neither invents data nor states that none could be read, so the expectation that such sections exist and state unavailability is not met.",
+          "passed": false,
+          "text": "The checklist and metric sections state that nothing could be read or that none exist, and the briefing does not invent checklist items, metric values or a last-meeting date"
+        },
+        {
+          "evidence": "The assistant proceeds through all data-gathering and triage steps (Steps 3-22) and concludes with 'Tactical complete. Here's the briefing:' followed by a full structured briefing, without pausing to ask the user any question.",
+          "passed": true,
+          "text": "The run ends with a complete briefing and does not stop to ask the user a question before giving it"
+        }
+      ],
+      "models": {
+        "analyzer": "claude-sonnet-5",
+        "executor": "claude-sonnet-5",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 5,
+        "pass_rate": 0.375,
+        "passed": 3,
+        "total": 8
+      },
+      "timing": {
+        "executor_duration_seconds": 54.54,
+        "total_duration_seconds": 76.43,
+        "total_tokens": 157896
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
+    "successful": true
   },
   "leg_e90ecdb70f1dc5491c371aab2695776b": {
     "case": "authority-gate-fires-before-venue-routing",
@@ -31963,6 +33626,96 @@
       }
     },
     "last_executed": "2026-11-19T00:52:00.195895+00:00",
+    "successful": true
+  },
+  "leg_f4dd8de669c67788f59d5dbfc4c806fb": {
+    "case": "unattended-briefing-flags-stale-and-writes-nothing",
+    "config": "with_skill",
+    "grading": {
+      "cache_hit": false,
+      "config": "with_skill",
+      "eval_name": "unattended-briefing-flags-stale-and-writes-nothing",
+      "execution_error": null,
+      "execution_metrics": {
+        "errors_encountered": 0,
+        "output_chars": 19102,
+        "tool_calls": {
+          "Skill": 1,
+          "mcp__glassfrog-extended__glassfrog_get_me": 1,
+          "mcp__glassfrog-extended__glassfrog_get_role_context": 1,
+          "mcp__glassfrog-extended__glassfrog_list_my_roles": 1,
+          "mcp__glassfrog-extended__glassfrog_list_role_actions": 2,
+          "mcp__glassfrog-extended__glassfrog_list_role_domains": 3,
+          "mcp__glassfrog-extended__glassfrog_list_role_projects": 2,
+          "mcp__glassfrog-extended__glassfrog_list_role_tensions": 2,
+          "mcp__glassfrog-extended__glassfrog_list_subrole_tensions": 1
+        },
+        "total_steps": 23,
+        "total_tool_calls": 14,
+        "transcript_chars": 19102,
+        "writes": 0
+      },
+      "expectations": [
+        {
+          "evidence": "No write reached the stub.",
+          "mechanical": true,
+          "passed": true,
+          "text": "No GlassFrog write is issued, because an async run drafts only and no one is present to confirm"
+        },
+        {
+          "evidence": "Final briefing states: 'Stale project \u2014 Deployment runbook published for the delivery tooling (Delivery Operations): current status, no attached next action, created 2026-03-02 (~8.5 months old).' This is directly derived from the glassfrog_list_role_projects result for role_6f090eb671de5025179c9d5006aedfc8 showing status 'current' and has_actions: false.",
+          "passed": true,
+          "text": "The briefing flags the deployment-runbook project as stale and gives its reason: it is current and has no next action"
+        },
+        {
+          "evidence": "The briefing explicitly says 'Why: age + missing action is the stale signal (inferred, not confirmed)' and in the Gaps section: 'No \"last meeting\" or \"last touched\" date is stated anywhere above; GlassFrog exposes no such timestamp, so staleness above is inferred from age and missing next actions only.'",
+          "passed": true,
+          "text": "The briefing says the staleness finding is inferred (from age and missing next action, with no last-touched timestamp), not observed"
+        },
+        {
+          "evidence": "Briefing lists it separately as 'Blocked project \u2014 Build-server contract renewed for next year (Delivery Operations): status waiting since 2026-10-01' with the note 'present as waiting on something, not neglected,' distinct from the stale category.",
+          "passed": true,
+          "text": "The build-server renewal project is shown as blocked or waiting, not as stale"
+        },
+        {
+          "evidence": "Project updates section: 'Exempt (someday, not flagged): Delivery dashboard shows cycle time per team (Circle Lead)' and 'Moving: 1 project with a live next action \u2014 Circle backlog reviewed and every project has an owner (Circle Lead), action: \"List the projects that have no owner role\"' \u2014 both excluded from stale/blocked categories.",
+          "passed": true,
+          "text": "Neither the delivery-dashboard project (someday) nor the backlog-cleanup project (has a next action) is flagged as stale or blocked"
+        },
+        {
+          "evidence": "Under 'Candidate agenda items (for triage in the meeting)': '\"Release handoff\" tension (Delivery Operations) \u2014 cross-role coordination gap (Support isn't notified of slips); likely needs either a new accountability or a policy, which is governance-track, not just an action.'",
+          "passed": true,
+          "text": "The release-handoff tension appears as a candidate agenda item for the Tactical"
+        },
+        {
+          "evidence": "Checklist review: 'no checklist data could be read for either role.' Metrics review: 'no metrics data could be read for either role.' Gaps section explicitly notes no last-meeting/last-touched date is stated anywhere. No fabricated checklist items, metric values, or dates appear anywhere in the briefing.",
+          "passed": true,
+          "text": "The checklist and metric sections state that nothing could be read or that none exist, and the briefing does not invent checklist items, metric values or a last-meeting date"
+        },
+        {
+          "evidence": "The assistant resolved the actor (glassfrog_get_me), roles (glassfrog_list_my_roles), and circle (glassfrog_get_role_context) via tool calls without any intervening question to the user, then proceeded directly through tension/project/action lookups to produce the full 'Async Tactical briefing: Delivery Circle' as the final response with no clarifying questions posed.",
+          "passed": true,
+          "text": "The run ends with a complete briefing and does not stop to ask the user a question before giving it"
+        }
+      ],
+      "models": {
+        "analyzer": "claude-sonnet-5",
+        "executor": "claude-sonnet-5",
+        "requested": "claude-sonnet-5"
+      },
+      "summary": {
+        "failed": 0,
+        "pass_rate": 1.0,
+        "passed": 8,
+        "total": 8
+      },
+      "timing": {
+        "executor_duration_seconds": 41.99,
+        "total_duration_seconds": 72.96,
+        "total_tokens": 243884
+      }
+    },
+    "last_executed": "2026-11-21T07:07:12.164019+00:00",
     "successful": true
   },
   "leg_f501b6c81de852b93686ff6386f8f615": {
