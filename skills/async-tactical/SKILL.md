@@ -15,7 +15,7 @@ The Tactical Meeting's job is to sync on recurring work (checklists, metrics), s
 
 1. **Draft only.** Do not call any GlassFrog write tool: no tension, project, action, note, tag, metric or checklist write. A sensed tension is written into the briefing as a candidate, not filed. This is the constitutional safeguard in `../shared/actor-and-role-resolution.md` (section "Scheduled Routines: Context Encoding at Creation Time") and ADR-0003.
 2. **Never wait for an answer.** No one is present. Two cases, and they take different rules:
-   - **Who is acting (actor and role).** Follow the unattended branch of `../shared/actor-and-role-resolution.md`: when the actor or role cannot be resolved, write one `Operating **unbound**: <the gap>.` line and continue. Do not pick a role to act as. An unbound briefing still reads and drafts; rule 1 already forbids every write.
+   - **Who is acting (actor and role).** Follow the unattended branch of `../shared/actor-and-role-resolution.md`: when the actor or role cannot be resolved, write one `Operating **unbound**: <the gap>.` line and continue. A routine whose prompt declares a role uses the declared-role line from that file's section "A routine's declared role". Do not pick a role to act as. An unbound briefing still reads and drafts; rule 1 already forbids every write.
    - **What the evidence says (inside the briefing).** Where an interactive skill would ask how to read a record, choose the reading the evidence supports, state the choice in one line in the briefing, and continue.
 
    If the circle cannot be resolved at all, return a short briefing that says what was tried and what the caller must supply next time. Do not end the run with a question.

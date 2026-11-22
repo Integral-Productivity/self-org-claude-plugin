@@ -574,7 +574,7 @@ gen, tmp = sys.argv[1], sys.argv[2]
 spec = {"scenario": "bad-fault", "organization": "Example Org",
         "actor": {"name": "A", "email": "a@example.invalid"},
         "roles": [{"key": "c", "name": "C"}],
-        "faults": {"glassfrog_get_me": {"status": "401"}}}
+        "faults": {"glassfrog_get_me": {"status": "401", "message": "x"}}}
 path = f"{tmp}/bad-fault.json"
 json.dump(spec, open(path, "w"))
 r = subprocess.run([sys.executable, gen, path, "--stdout"], capture_output=True, text=True)

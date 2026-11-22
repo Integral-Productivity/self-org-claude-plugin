@@ -1,6 +1,6 @@
 {
   "scenario": "unattended-grounding",
-  "purpose": "A scheduled, unattended run starts with the role-grounding directive in context, but glassfrog_get_me fails with 401 (#284, #334). Every other read works. The actor fills roles in two circles, so no read-only call can pick a role either. The run must write one Operating **unbound** line, ask no question, write nothing to GlassFrog, and still do the read-only work it was given.",
+  "purpose": "A scheduled, unattended run starts with the role-grounding directive in context, but glassfrog_get_me fails with 401 (#284, #334). Every other read works, on purpose, so the case also tests that a roster read that works later does not bind the session. The actor fills roles in two circles and the prompt names neither, so the no-target-role row also ends unbound. The run must write one Operating **unbound** line, ask no question, write nothing to GlassFrog, and still do the read-only work it was given.",
   "organization": "Example Org",
   "actor": {
     "name": "Alex Example",
@@ -23,7 +23,9 @@
       "name": "Delivery Operations",
       "parent": "delivery",
       "purpose": "Delivery runs without surprises",
-      "accountabilities": ["Keeping the delivery tooling working"],
+      "accountabilities": [
+        "Keeping the delivery tooling working"
+      ],
       "filled_by_actor": true
     },
     {
@@ -36,7 +38,9 @@
       "name": "Support Operations",
       "parent": "support",
       "purpose": "Support tooling stays usable",
-      "accountabilities": ["Keeping the support tooling working"],
+      "accountabilities": [
+        "Keeping the support tooling working"
+      ],
       "filled_by_actor": true
     }
   ],

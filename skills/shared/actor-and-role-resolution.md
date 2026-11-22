@@ -47,7 +47,7 @@ If actor identity has not yet been resolved this session:
 
 If GlassFrog is not connected at all, name the constraint: "I don't have live GlassFrog data, so I'm working from what you tell me. Whose role-context should I treat as primary?"
 
-**Unattended:** if the session is unattended, or the session-start role-grounding directive sent you here, a failed or empty `glassfrog_get_me` gets one line and nothing more: no retry loop and no question. Write `Operating **unbound**: glassfrog_get_me failed (<the error, in a few words>), so no role is resolved.` and carry on with the work. A role skill or routine that runs with no GlassFrog connector writes the Step 5 line instead. The session-start directive writes no line when no `glassfrog_get_me` tool is listed (ADR-0008 A8). See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
+**Unattended:** if the session is unattended, or the session-start role-grounding directive sent you here, a failed or empty `glassfrog_get_me` gets one line and nothing more: no retry loop and no question. Write `Operating **unbound**: glassfrog_get_me failed (<the error, in a few words>), so no role is resolved.` and carry on with the work. The session stays unbound: a roster call that works later is not a confirmed actor, so do not bind from it. A role skill or routine that runs with no GlassFrog connector writes the line in "When GlassFrog Data Is Unavailable" instead. The session-start directive writes no line when no `glassfrog_get_me` tool is listed (ADR-0008 A8). See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
 
 ### Step 2 -- Load the actor's role roster (bounded)
 
@@ -204,7 +204,7 @@ Write it once, in the opening lines, where the role announcement would have gone
 - GlassFrog writes that act from a role: tensions, projects, actions, proposals, notes, tags, checklist items, metrics, goal updates. Draft them as text instead, and say which role they would need.
 - Picking a role or circle by guess, so the record shows a binding that never happened.
 
-**Leaving unbound.** A session leaves the state when a person names the role, or when resolution later succeeds (for example, a reconnected connector). Announce the new context in the usual way (Step 4). Do not file anything retroactively under a role chosen after the fact without saying so.
+**Leaving unbound.** A session leaves the state when a person names the role, or when `glassfrog_get_me` later succeeds (for example, after a reconnected connector). Announce the new context in the usual way (Step 4). Do not file anything retroactively under a role chosen after the fact without saying so.
 
 ### A routine's declared role
 
