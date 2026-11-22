@@ -45,6 +45,7 @@ Before any Secretary work, resolve **who** is acting as Secretary and **which ci
    - Exactly one circle -> proceed silently, announce: "Operating as **Secretary of [Circle]**."
    - Multiple circles -> ask which.
    - Zero circles -> offer Observer mode (explaining the role) or Advisor mode (helping someone else's Secretary).
+   - **Unattended:** do not ask and do not offer modes. Write the `Operating **unbound**:` line that `../shared/actor-and-role-resolution.md` Step 3 gives for the case, and carry on read-only (section "Unattended Sessions and the Unbound State").
 4. For scheduled routines, the routine's prompt declares the acting AI agent and circle at creation time -- trust that and proceed.
 
 The announcement is non-negotiable. Without it, a Secretary working in three circles can't tell which one's record this output will land in.

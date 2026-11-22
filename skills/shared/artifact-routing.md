@@ -102,6 +102,7 @@ Per ADR-0007 §Decision.3, when GlassFrog is unavailable:
 - **Do not silently default to the engineering substrate.** Silent-default is exactly the drift this procedure exists to correct.
 - **Name the constraint and ask:** "GlassFrog isn't connected, so I can't resolve where this should land from live governance. Which system of record should this go to?"
 - This matches the plugin's existing graceful-degradation pattern (`actor-and-role-resolution.md`, "When GlassFrog Data Is Unavailable"): don't refuse to operate, name the limit, let the operator declare the target.
+- **Unattended:** nobody can declare the target. Do not ask and do not file: keep the artifact as a draft in the run's output, and name the system of record it would need (`actor-and-role-resolution.md` section "Unattended Sessions and the Unbound State").
 
 ---
 

@@ -3,7 +3,7 @@ name: self-org-ai-governance
 description: >
   Governance-aware AI operating skill for organizations using Holacracy and GlassFrog. Use this skill whenever the user mentions GlassFrog, Holacracy, circles, roles (in a Holacratic context), accountabilities, domains, governance meetings, tactical meetings, tensions, lead link, rep link, facilitator, secretary, or any organizational governance topic. Also trigger when the user asks for help with work and GlassFrog MCP tools are connected -- this skill teaches how to ground AI responses in actual governance structure rather than operating generically. Trigger even for adjacent requests like "help me think about my role," "what should I focus on," "draft a governance proposal," or "what tensions exist in my organization." This skill is essential for any AI interaction where organizational context from GlassFrog would improve the quality, authority-awareness, or developmental sophistication of the response.
 status: draft
-version: 2.0.2
+version: 2.0.3
 ---
 # Holacratic AI Governance
 
@@ -61,6 +61,8 @@ Before producing organizational work, resolve **who** is operating and **which r
 5. Re-validate if the conversation pivots significantly -- governance can change between turns.
 
 If GlassFrog is not connected, name the constraint and ask the user to declare the context explicitly. Do not silently assume the human is the actor.
+
+**Unattended:** every ask in this section becomes one `Operating **unbound**:` line and no question, as `../shared/actor-and-role-resolution.md` section "Unattended Sessions and the Unbound State" says. An unbound session drafts and writes nothing to GlassFrog.
 
 The mode (Observer / Advisor / Actor, defined below) is determined by the user's intent, not by the resolution -- but it should appear in the announcement so the user can catch a mis-framing before output builds on it.
 
