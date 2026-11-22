@@ -115,7 +115,7 @@ Before responding to any work request, establish *which role* the human is opera
 **Procedure:**
 1. Identify the person (use `list_people` if needed)
 2. Load their roles (`list_roles` filtered by their circles, or scan all roles for their person ID via `get_role`)
-3. Determine which role is relevant to the current request (ask if ambiguous)
+3. Determine which role is relevant to the current request (ask if ambiguous); unattended, write the `Operating **unbound**:` line instead of asking
 4. Fetch that role's full details: purpose, accountabilities, domains
 5. Fetch the parent circle: strategy, policies, sister roles
 6. Ground the response in this context -- reference specific accountabilities by name

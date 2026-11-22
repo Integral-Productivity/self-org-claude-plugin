@@ -46,6 +46,8 @@ Follow `skills/shared/project-capture-flow.md` Steps 2–8 in sequence:
 4. Within that circle, identify the role(s) the actor fills that the project's outcome most plausibly attaches to. Apply the silent-when-one + ask-when-multiple + name-the-constraint-when-zero policy from `actor-and-role-resolution.md`.
 5. Announce the resolved owner role + circle + role_id.
 
+**Unattended:** when no person can answer, steps 1, 3 and 4 do not ask. Write the `Operating **unbound**:` line from `skills/shared/actor-and-role-resolution.md` Step 3, file nothing, and return the drafted project to the dispatcher (section "Unattended Sessions and the Unbound State").
+
 ### Step 3 -- Elicit the project if thin
 
 If no project text was passed, ask: *"What outcome do you want this role to move toward?"* Preserve the user's own words. If text was passed, use it as the seed.

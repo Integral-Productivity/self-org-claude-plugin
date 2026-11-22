@@ -46,6 +46,8 @@ Follow `skills/shared/tension-capture-flow.md` Steps 2–8 in sequence:
 3. Narrow to the circle the tension's content implies. If the dispatcher passed a circle hint, validate it against the roster. If conversation context names a circle, use it. If neither, ask.
 4. Within that circle, identify the role(s) the actor fills that the tension content most plausibly attaches to. Apply the silent-when-one + ask-when-multiple + name-the-constraint-when-zero policy from `actor-and-role-resolution.md`.
 
+**Unattended:** when no person can answer, steps 1, 3 and 4 do not ask. Write the `Operating **unbound**:` line from `skills/shared/actor-and-role-resolution.md` Step 3, file nothing, and return the drafted tension to the dispatcher (section "Unattended Sessions and the Unbound State").
+
 **Special case: cross-link carrying.** If the dispatcher passed an attribution hint indicating the tension is being carried on behalf of someone else, the sensing role is the **Rep Link role** (or the role the carrier is acting through), not the original sensor's role. See `triage-gates.md` Step 5 "Cross-link carrying".
 
 ### Step 3 -- Apply gates Steps 1–2 (already-held authority; role vs. person)
