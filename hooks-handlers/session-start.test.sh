@@ -823,4 +823,33 @@ for forbidden in \
     "the definition of unbound says what it forbids"
 done
 
+# Whole-line pins. Each unattended paragraph, and every line of the unbound
+# section, is pinned whole: deleting any clause of one (an outcome such as
+# "Then carry on.", or a guard such as "File no project ...") must fail the
+# suite, as it does for the directive sentence in G41/G42. Editing this prose
+# means editing the line here too, on purpose.
+while IFS='|' read -r heading line; do
+  [ -n "$heading" ] || continue
+  section_body "$heading" | grep -qxF -- "$line" \
+    || fail "section '$heading' must keep this line whole: $line"
+done <<'PINS'
+### Step 1 -- Confirm actor identity|**Unattended:** if the session is unattended, or the session-start role-grounding directive sent you here, a failed or empty `glassfrog_get_me` gets one line and nothing more: no retry loop and no question. Write `Operating **unbound**: glassfrog_get_me failed (<the error, in a few words>), so no role is resolved.` and carry on with the work. A missing connector gets the same line with its own reason. See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
+### Step 3 -- Resolve to a single role + circle|**Unattended:** every row above that asks the user becomes one line and no question. Several matching circles: `Operating **unbound**: <Role> is filled in <Circle A> and <Circle B>, and nothing in this session picks one.` The actor fills the target role nowhere: `Operating **unbound**: <actor> does not fill <Role> in any circle.` Then carry on. Do not pick a circle silently; a guessed circle is a wrong attribution that looks clean. See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
+### Step 3a -- When the named role does not exist|**Unattended:** items 1 and 2 still run, because they are read-only searches. Item 4 has nobody to choose, so it becomes one line and no question: `Operating **unbound**: <Role> does not exist in GlassFrog.` Add the in-flight item and its holder when item 2 found one. Do not take either path, and do not proceed under a substitute role. File no project, action or tension for the work; draft it instead, and name the missing role in the draft. See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
+## When GlassFrog Data Is Unavailable|**Unattended:** skip step 2. Nobody can declare the context, so write `Operating **unbound**: GlassFrog is not available in this session, so no role is resolved.` and carry on. Step 3 still holds: an unbound session assumes no actor and no role.
+## Unattended Sessions and the Unbound State|Every "ask the user" step above assumes someone can answer. Some sessions have nobody: a scheduled routine, a headless or pipeline run, a session started by a trigger, an agent working alone. A question there is never answered, so the session either stalls on it or drops grounding without a word, and a reader of the transcript cannot tell that from forgetting.
+## Unattended Sessions and the Unbound State|**When a session is unattended.** Treat the session as unattended when no person can answer in it, or when you cannot tell. An unasked question costs less than an unanswered one. The session-start role-grounding directive fires before anyone has spoken, so a `glassfrog_get_me` failure on that path takes the unattended branch even when a person later turns up. A role skill a person invokes during the session follows the interactive asks above. A session that has no `glassfrog_get_me` tool and runs no role skill never starts this procedure, so it writes no unbound line.
+## Unattended Sessions and the Unbound State|**The rule.** On an unattended path, every ask becomes one line that names the gap, and the session proceeds **unbound**. No retry loop, and no question.
+## Unattended Sessions and the Unbound State|**The line.** It always starts the same way, so it parallels `Operating as **Role of Circle**` and can be found in a transcript:
+## Unattended Sessions and the Unbound State|> Operating **unbound**: <the gap, in one clause>.
+## Unattended Sessions and the Unbound State|Write it once, in the opening lines, where the role announcement would have gone.
+## Unattended Sessions and the Unbound State|**What unbound permits.** Work that needs no role's authority: reading, analysis, code, drafts, and read-only GlassFrog calls.
+## Unattended Sessions and the Unbound State|**What unbound forbids.**
+## Unattended Sessions and the Unbound State|- Claiming a role. Do not write `Operating as ...`, and do not attribute output to a role.
+## Unattended Sessions and the Unbound State|- GlassFrog writes that act from a role: tensions, projects, actions, proposals, notes, tags, checklist items, metrics, goal updates. Draft them as text instead, and say which role they would need.
+## Unattended Sessions and the Unbound State|- Picking a role or circle by guess, so the record shows a binding that never happened.
+## Unattended Sessions and the Unbound State|**Leaving unbound.** A session leaves the state when a person names the role, or when resolution later succeeds (for example, a reconnected connector). Announce the new context in the usual way (Step 4). Do not file anything retroactively under a role chosen after the fact without saying so.
+## Unattended Sessions and the Unbound State|A pre-declared default role, which would let an unattended session bind without a GlassFrog call, is a separate mechanism and is not part of this procedure.
+PINS
+
 echo "PASS: all session-start hook tests"
