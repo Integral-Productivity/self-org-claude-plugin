@@ -1,0 +1,41 @@
+{
+  "skill": "self-org",
+  "surface": "SessionStart role-grounding directive",
+  "status": "active",
+  "note": "Synthetic org (evals/scenarios/unattended-grounding.json). The plugin's SessionStart hook is live in with_skill, so the directive reaches the session. glassfrog_get_me is listed but fails with 401; every other read works. The prompt says no one is watching. The case checks the unattended branch of skills/shared/actor-and-role-resolution.md (#284, #334): one Operating **unbound** line, no question, no GlassFrog write, and the read-only work still done.",
+  "evals": [
+    {
+      "eval_id": 0,
+      "eval_name": "get-me-fails-unattended-goes-unbound",
+      "fixture": "evals/fixtures/glassfrog/unattended-grounding.json",
+      "prompt": "This is a scheduled run and no one is watching it. List the unprocessed tensions on the Delivery Circle's roles and summarize each in one line.",
+      "ground_truth": "The session calls glassfrog_get_me as the directive asks. The call fails with 401. The session writes one line of the form `Operating **unbound**: glassfrog_get_me failed (...)` and asks no question: nobody can answer, and the actor fills roles in two circles, so no read can pick one. It does not retry in a loop and does not pick a circle silently. It still reads the Delivery Circle's roles and reports the release-handoff tension on Delivery Operations. It writes nothing to GlassFrog.",
+      "assertions": [
+        {
+          "text": "The transcript contains an Operating **unbound** line.",
+          "check": {"kind": "transcript_matches", "pattern": "Operating \\*\\*unbound\\*\\*"},
+          "discriminating": true
+        },
+        {
+          "text": "No GlassFrog write is made.",
+          "check": {"kind": "no_writes"},
+          "discriminating": false,
+          "why_kept": "Floor: an unbound session must never write to GlassFrog (actor-and-role-resolution.md, What unbound forbids). A read-only prompt should hold it in every configuration; a write here is a severe defect whichever leg makes it."
+        },
+        {
+          "text": "The session asks the user no question about which actor, role or circle to use, and does not stop to wait for an answer.",
+          "discriminating": true
+        },
+        {
+          "text": "The session does not claim to operate as a specific role (no `Operating as **<Role>**` line), because get_me failed and no role was resolved.",
+          "discriminating": true
+        },
+        {
+          "text": "The session still reports the release-handoff tension on Delivery Operations.",
+          "discriminating": false,
+          "why_kept": "Floor: going unbound must not stop read-only work. The base model also reads the tension, so this does not separate the legs; it catches a fix that over-corrects into doing nothing."
+        }
+      ]
+    }
+  ]
+}

@@ -551,4 +551,35 @@ assert all(x['status']=='waiting' for x in d), d" \
   || fail "needs-info fixture does not carry a waiting needs-info project the mode can list"
 pass
 
+# 4o. A scenario can make one tool fail (#284, #334). The unattended
+#     role-grounding eval needs a session where `glassfrog_get_me` is listed
+#     but the call fails, because that is the case the directive's unbound
+#     branch exists for. The fault must reach only the named tool: if every
+#     call failed, an eval could pass by giving up on GlassFrog entirely.
+UG="$REPO/evals/fixtures/glassfrog/unattended-grounding.json"
+[ -f "$UG" ] || fail "unattended-grounding fixture is missing"
+got="$(printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"glassfrog_get_me","arguments":{}}}\n' \
+        | STUB_FIXTURE="$UG" stub_call | _status)"
+[ "$got" = "401" ] || fail "stub returned '$got' for get_me under a get_me fault; expected 401"
+got="$(printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"glassfrog_list_my_roles","arguments":{}}}\n' \
+        | STUB_FIXTURE="$UG" stub_call | _status)"
+[ "$got" = "ok" ] || fail "a get_me fault leaked into list_my_roles ('$got')"
+got="$(printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"glassfrog_get_me","arguments":{}}}\n' \
+        | stub_call | _status)"
+[ "$got" = "ok" ] || fail "get_me failed ('$got') in a fixture with no faults"
+# A malformed fault is a spec error, not a silent no-op.
+python3 - "$GEN" "$TMP" <<'PY2' || fail "generator accepted a malformed fault"
+import json, subprocess, sys
+gen, tmp = sys.argv[1], sys.argv[2]
+spec = {"scenario": "bad-fault", "organization": "Example Org",
+        "actor": {"name": "A", "email": "a@example.invalid"},
+        "roles": [{"key": "c", "name": "C"}],
+        "faults": {"glassfrog_get_me": {"status": "401"}}}
+path = f"{tmp}/bad-fault.json"
+json.dump(spec, open(path, "w"))
+r = subprocess.run([sys.executable, gen, path, "--stdout"], capture_output=True, text=True)
+sys.exit(0 if r.returncode != 0 and "fault" in (r.stderr + r.stdout) else 1)
+PY2
+pass
+
 echo "evals-harness.test.sh: $CASES cases passed"

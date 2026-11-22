@@ -82,7 +82,7 @@ def validate(obj: dict, expected: set, what: str, errors: list) -> None:
 # dropped and the author would be left wondering why the fixture lacks the field
 # they wrote. Unknown keys are an error, not a shrug.
 SPEC_KEYS = {"scenario", "purpose", "organization", "actor", "roles", "tensions",
-             "projects", "actions"}
+             "projects", "actions", "faults"}
 ROLE_SPEC_KEYS = {"key", "name", "purpose", "parent", "flags", "accountabilities",
                   "domains", "filled_by_actor", "original_role_id"}
 TENSION_SPEC_KEYS = {"key", "on", "status", "created_at", "updated_at", "body"}
@@ -127,6 +127,17 @@ def build(spec: dict) -> tuple:
     for spec_action in spec.get("actions", []):
         check_spec_keys(spec_action, ACTION_SPEC_KEYS,
                         f"action '{spec_action.get('key', '?')}'", errors)
+
+    # A fault makes one named tool answer with the live error envelope, so an
+    # eval can model a connector that is listed but fails (#284, #334).
+    faults = spec.get("faults", {})
+    if not isinstance(faults, dict):
+        errors.append("faults: must be an object keyed by tool name")
+        faults = {}
+    for tool, fault in faults.items():
+        if not (isinstance(fault, dict) and set(fault) == {"status", "message"}
+                and isinstance(fault["status"], int) and isinstance(fault["message"], str)):
+            errors.append(f"fault '{tool}': needs exactly an integer 'status' and a string 'message'")
 
     actor = {
         "id": synth_id("per", scenario, "actor"),
@@ -307,6 +318,7 @@ def build(spec: dict) -> tuple:
         "tensions": tensions,
         "projects": projects,
         "actions": actions,
+        **({"faults": faults} if faults else {}),
         "key_map": {
             **{f"role:{k}": v["id"] for k, v in by_key.items()},
             **{
