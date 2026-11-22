@@ -6,7 +6,7 @@ Date: 2026-07-20
 
 Accepted (experimental — the first PDCA experiment of the Continuous Organizational-Context Grounding effort; superseding/escalation is decided at that experiment's Act step)
 
-> **Amended 2026-08-04, 2026-09-03, 2026-10-02, 2026-10-06, 2026-10-08 and 2026-11-21** — see [Amendments](#amendments). The Decision and Consequences below are the record as accepted on 2026-07-20; several of their claims no longer describe the shipped system, including invariant 3's "on by default" (A5 makes emission conditional on an authenticated GlassFrog connector). Read the amendments before relying on this ADR.
+> **Amended 2026-08-04, 2026-09-03, 2026-10-02, 2026-10-06, 2026-10-08, 2026-11-21 and 2026-11-22** — see [Amendments](#amendments). The Decision and Consequences below are the record as accepted on 2026-07-20; several of their claims no longer describe the shipped system, including invariant 3's "on by default" (A5 makes emission conditional on an authenticated GlassFrog connector). Read the amendments before relying on this ADR.
 
 ## Context
 

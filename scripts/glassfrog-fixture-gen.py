@@ -136,7 +136,7 @@ def build(spec: dict) -> tuple:
         faults = {}
     for tool, fault in faults.items():
         if not (isinstance(fault, dict) and set(fault) == {"status", "message"}
-                and isinstance(fault["status"], int) and isinstance(fault["message"], str)):
+                and type(fault["status"]) is int and isinstance(fault["message"], str)):
             errors.append(f"fault '{tool}': needs exactly an integer 'status' and a string 'message'")
 
     actor = {

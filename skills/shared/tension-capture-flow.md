@@ -50,7 +50,7 @@ Follow the procedure in `./actor-and-role-resolution.md`, **but with the target 
 6. If multiple -> ask: *"This could be filed on [Role A] or [Role B] -- which feels closer to the gap you're sensing?"*
 7. If zero (the actor fills no role in that circle) -> name the constraint per `./triage-gates.md` Step 5.
 
-**Unattended:** steps 3 and 6 do not ask. When the circle or the sensing role is not clear, write the `Operating **unbound**:` line from `./actor-and-role-resolution.md` Step 3, and draft the tension in the run's output instead of filing it (section "Unattended Sessions and the Unbound State").
+**Unattended:** steps 3 and 6 do not ask, and an unattended run never files. It drafts the tension in the run's output instead, for a person to file later. When the circle or the sensing role is not clear, it also writes the `Operating **unbound**:` line from `./actor-and-role-resolution.md` Step 3 (section "Unattended Sessions and the Unbound State").
 
 ### Step 3 -- Run the gates (Steps 1–2 of `./triage-gates.md`)
 

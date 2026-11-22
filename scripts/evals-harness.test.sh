@@ -573,7 +573,7 @@ import json, subprocess, sys
 gen, tmp = sys.argv[1], sys.argv[2]
 # One spec per rule: a string status, a missing message, a non-string
 # message, an extra key, a list in place of an object.
-bad = [{"status": "401", "message": "x"}, {"status": 401},
+bad = [{"status": "401", "message": "x"}, {"status": True, "message": "x"}, {"status": 401},
        {"status": 401, "message": 5}, {"status": 401, "message": "x", "retry": True},
        ["status", "message"]]
 for i, fault in enumerate(bad):
