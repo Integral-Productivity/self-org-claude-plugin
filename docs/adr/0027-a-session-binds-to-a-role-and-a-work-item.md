@@ -6,7 +6,7 @@ Date: 2026-11-15
 
 Proposed (2026-11-15). Kraig Parkinson asked for this ADR on 2026-11-15 and decided where the record lives on the same day (section 6). The ADR is accepted when this PR merges.
 
-Extends [ADR-0008](0008-session-injected-honest-grounding-directive.md). ADR-0008 makes the session *request* a role at start. This ADR defines what a session is bound to, how the binding is recorded, and how it is kept after start. It does not change ADR-0008's invariants. Amendment A8 of ADR-0008 stays reserved for #340.
+Extends [ADR-0008](0008-session-injected-honest-grounding-directive.md). ADR-0008 makes the session *request* a role at start. This ADR defines what a session is bound to, how the binding is recorded, and how it is kept after start. It does not change ADR-0008's invariants. Amendment A9 of ADR-0008 is reserved for #340; A8 went to the unattended-grounding fix (#284, #334).
 
 ## Context
 
