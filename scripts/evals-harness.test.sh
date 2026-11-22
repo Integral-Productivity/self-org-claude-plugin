@@ -571,9 +571,11 @@ got="$(printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"g
 python3 - "$GEN" "$TMP" <<'PY2' || fail "generator accepted a malformed fault"
 import json, subprocess, sys
 gen, tmp = sys.argv[1], sys.argv[2]
-# One spec per rule: a string status, a missing message, an extra key.
+# One spec per rule: a string status, a missing message, a non-string
+# message, an extra key, a list in place of an object.
 bad = [{"status": "401", "message": "x"}, {"status": 401},
-       {"status": 401, "message": "x", "retry": True}]
+       {"status": 401, "message": 5}, {"status": 401, "message": "x", "retry": True},
+       ["status", "message"]]
 for i, fault in enumerate(bad):
     spec = {"scenario": f"bad-fault-{i}", "organization": "Example Org",
             "actor": {"name": "A", "email": "a@example.invalid"},
@@ -582,8 +584,18 @@ for i, fault in enumerate(bad):
     path = f"{tmp}/bad-fault-{i}.json"
     json.dump(spec, open(path, "w"))
     r = subprocess.run([sys.executable, gen, path, "--stdout"], capture_output=True, text=True)
-    if r.returncode == 0 or "fault" not in (r.stderr + r.stdout):
+    said = r.stderr + r.stdout
+    if r.returncode == 0 or "fault 'glassfrog_get_me': needs exactly" not in said or "Traceback" in said:
         sys.exit(f"generator accepted malformed fault {fault!r}")
+# The faults block itself must be an object keyed by tool name.
+spec = {"scenario": "bad-faults", "organization": "Example Org",
+        "actor": {"name": "A", "email": "a@example.invalid"},
+        "roles": [{"key": "c", "name": "C"}], "faults": ["glassfrog_get_me"]}
+path = f"{tmp}/bad-faults.json"
+json.dump(spec, open(path, "w"))
+r = subprocess.run([sys.executable, gen, path, "--stdout"], capture_output=True, text=True)
+if r.returncode == 0 or "faults: must be an object" not in (r.stderr + r.stdout):
+    sys.exit("generator accepted a faults block that is not an object")
 PY2
 pass
 
