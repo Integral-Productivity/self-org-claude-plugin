@@ -106,6 +106,8 @@ The Step 3 table's "does not fill the target role anywhere" row assumes the role
 4. **Offer the two real paths, in order of cost.** (a) Proceed now under the nearest existing role whose Purpose and Accountabilities actually cover the work, naming the compromise. (b) File the governance proposal first, then attach the work to the new role. Let the user choose; do not pick silently.
 5. **If the user proceeds under a substitute role, say so in the record.** Whatever the skill files -- project, action, tension -- carries a line naming the intended role, the substitute used, and why. Otherwise the record shows a clean attribution that was never clean, and the next reader cannot tell a deliberate compromise from a mistake.
 
+**Unattended:** items 1 and 2 still run, because they are read-only searches. Item 4 has nobody to choose, so it becomes one line and no question: `Operating **unbound**: <Role> does not exist in GlassFrog.` Add the in-flight item and its holder when item 2 found one. Do not take either path, and do not proceed under a substitute role. File no project, action or tension for the work; draft it instead, and name the missing role in the draft. See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
+
 **Why this earns its place.** The failure is silent and it corrupts the governance record rather than the conversation. A skill that files a project under a plausible-looking role because the named one was missing produces an artifact that looks correct in GlassFrog forever. Catching it costs one search call at resolution time.
 
 ### Step 4 -- Announce the resolved context (always)

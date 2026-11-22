@@ -704,9 +704,17 @@ assert_unattended_branch() {  # $1 = captured output, $2 = context
     || fail "$2: must name the stated unbound line (#284)"
   echo "$1" | grep -q "Unattended Sessions and the Unbound State" \
     || fail "$2: must point at the unattended branch of the shared reference (#284)"
+  # The whole sentence is pinned too: the fragment checks above still pass
+  # when its condition ("a step would need an answer nobody ... can give") or
+  # its "carry on with the work" outcome is deleted.
+  echo "$1" | grep -qF -- "$UNATTENDED_SENTENCE" \
+    || fail "$2: must carry the whole unattended sentence: $UNATTENDED_SENTENCE"
   echo "$1" | grep -q "?" \
     && fail "$2: SessionStart output must never pose a question"
 }
+# shellcheck disable=SC2016  # the backticks are literal Markdown, not expansions
+UNATTENDED_SENTENCE='If the `glassfrog_get_me` call fails, or a step would need an answer nobody in this session can give: one line, no retry, no question. Write `Operating **unbound**:` and name the gap, then carry on with the work, per '
+
 
 # G41. The unconditional directive carries the unattended branch.
 out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
@@ -779,6 +787,21 @@ assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
 assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
   "Do not pick a circle silently; a guessed circle is a wrong attribution that looks clean." \
   "an unattended session must not guess a circle"
+assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
+  "every row above that asks the user becomes one line and no question." \
+  "the Step 3 unattended rule covers every asking row"
+assert_ref_text "### Step 3 -- Resolve to a single role + circle" \
+  'Operating **unbound**: <actor> does not fill <Role> in any circle.' \
+  "an actor who fills the role nowhere ends in an unbound line"
+# Step 3a ends in a choice between two paths (#284): it needs the same branch.
+assert_section_branches "### Step 3a -- When the named role does not exist" \
+  "Let the user choose; do not pick silently."
+assert_ref_text "### Step 3a -- When the named role does not exist" \
+  'Operating **unbound**: <Role> does not exist in GlassFrog.' \
+  "a missing role in an unattended session ends in an unbound line"
+assert_ref_text "### Step 3a -- When the named role does not exist" \
+  "Do not take either path, and do not proceed under a substitute role." \
+  "an unattended session must not pick a path or a substitute role"
 assert_ref_text "## When GlassFrog Data Is Unavailable" \
   'Operating **unbound**: GlassFrog is not available in this session, so no role is resolved.' \
   "an unattended session without GlassFrog ends in an unbound line"

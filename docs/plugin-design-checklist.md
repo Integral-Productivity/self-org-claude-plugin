@@ -90,7 +90,7 @@ names and descriptions to decide what to load.
 | C1 | Every command has help, and there is one place to start that lists what the plugin does. | README and command list | none | Gap. The README lists skills and shared references but has no command list by job and no start-here section. Tracked in #478. |
 | C2 | Subcommands behave the same way: same keys, same picker, same naming. | Menus and names | **lint**, checks 15, 16, 18 | Met (#460 to #462) |
 | C3 | Confirm before a dangerous act, and scale the confirmation to the danger. | Manual | per-item confirmation; check 17 | Met. Destructive edits (delete, merge) are confirmed one at a time. |
-| C4 | Prompt only when a person is there to answer; a non-interactive session has a defined path. | Manual | none | Gap, tracked in #284 (grounding directive in a non-interactive session). |
+| C4 | Prompt only when a person is there to answer; a non-interactive session has a defined path. | Manual | none | Met for role grounding: `skills/shared/actor-and-role-resolution.md` gives every ask an unattended branch that ends in one `Operating **unbound**:` line (#284, #334). |
 
 ## 4. Command naming in other hosts
 
