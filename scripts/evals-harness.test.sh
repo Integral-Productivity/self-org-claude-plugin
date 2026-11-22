@@ -571,14 +571,19 @@ got="$(printf '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"g
 python3 - "$GEN" "$TMP" <<'PY2' || fail "generator accepted a malformed fault"
 import json, subprocess, sys
 gen, tmp = sys.argv[1], sys.argv[2]
-spec = {"scenario": "bad-fault", "organization": "Example Org",
-        "actor": {"name": "A", "email": "a@example.invalid"},
-        "roles": [{"key": "c", "name": "C"}],
-        "faults": {"glassfrog_get_me": {"status": "401", "message": "x"}}}
-path = f"{tmp}/bad-fault.json"
-json.dump(spec, open(path, "w"))
-r = subprocess.run([sys.executable, gen, path, "--stdout"], capture_output=True, text=True)
-sys.exit(0 if r.returncode != 0 and "fault" in (r.stderr + r.stdout) else 1)
+# One spec per rule: a string status, a missing message, an extra key.
+bad = [{"status": "401", "message": "x"}, {"status": 401},
+       {"status": 401, "message": "x", "retry": True}]
+for i, fault in enumerate(bad):
+    spec = {"scenario": f"bad-fault-{i}", "organization": "Example Org",
+            "actor": {"name": "A", "email": "a@example.invalid"},
+            "roles": [{"key": "c", "name": "C"}],
+            "faults": {"glassfrog_get_me": fault}}
+    path = f"{tmp}/bad-fault-{i}.json"
+    json.dump(spec, open(path, "w"))
+    r = subprocess.run([sys.executable, gen, path, "--stdout"], capture_output=True, text=True)
+    if r.returncode == 0 or "fault" not in (r.stderr + r.stdout):
+        sys.exit(f"generator accepted malformed fault {fault!r}")
 PY2
 pass
 
