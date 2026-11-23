@@ -690,9 +690,10 @@ cat > "$U/none-read.jsonl" <<'JSONL'
 {"type":"assistant","isSidechain":true,"text":"Operating **unbound**: glassfrog_get_me failed (401), so no role is resolved."}
 {"type":"assistant","text":"The **Test plugin: role-grounding directive** says to write Operating **unbound**: glassfrog_get_me failed (401) when it fails."}
 JSONL
-# 15e2. A quoted template is not a stated gap.
+# 15e2. A quoted template is not a stated gap, and neither is an empty one.
 cat > "$U/none-template.jsonl" <<'JSONL'
 {"type":"assistant","text":"The reference uses Operating **unbound**: <the gap, in one clause>. as its line."}
+{"type":"assistant","text":"Operating **unbound**:   "}
 JSONL
 js="$(CLAUDE_PROJECTS_DIR="$U" bash "$SCRIPT" --hook "$CHOOK" --json)"
 echo "$js" | python3 -c '

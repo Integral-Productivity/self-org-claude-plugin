@@ -358,9 +358,6 @@ ANNOUNCE_RE = re.compile(r"operating as \*\*([^*\n]+?) of ([^*\n]+?)\*\*", re.I)
 REMIT_RE = re.compile(r"remit|crosses into|role boundary", re.I)
 CHAPTER_RE = re.compile(r"mark_chapter")
 
-# The line a session writes when it cannot ground (#519, ADR-0008 A8). Anchored
-# on the bold form and the colon, so prose such as "operating unbound" never
-# scores. The gap after the colon is captured for the placeholder guard.
 UNBOUND_RE = re.compile(r"operating \*\*unbound\*\*:([^\n]*)", re.I)
 
 # The version the hook stamps into every payload it emits -- both the directive
@@ -394,13 +391,17 @@ PLACEHOLDERS = {
 }
 
 
+def has_metavariable(text):
+    """<role>, [Circle Name], {circle} -- metavariable brackets of any kind."""
+    return any(ch in text for ch in "<>[]{}")
+
+
 def is_placeholder(role, circle):
     for part in (role, circle):
         p = part.strip()
         if not p:
             return True
-        # <role>, [Circle Name], {circle} -- metavariable brackets of any kind.
-        if any(ch in p for ch in "<>[]{}"):
+        if has_metavariable(p):
             return True
         if p.lower() in PLACEHOLDERS:
             return True
@@ -408,15 +409,9 @@ def is_placeholder(role, circle):
 
 
 def states_gap(text):
-    """True if the text carries an unbound line with a real gap.
-
-    A quoted template ("Operating **unbound**: <the gap, in one clause>.") is
-    not a stated gap, for the same reason a quoted announcement template is
-    not an announcement: metavariable brackets, or nothing after the colon.
-    """
     for gap in UNBOUND_RE.findall(text):
         g = gap.strip()
-        if g and not any(ch in g for ch in "<>[]{}"):
+        if g and not has_metavariable(g):
             return True
     return False
 
@@ -546,9 +541,6 @@ def scan(path):
                     remit = True
                 if not unbound and states_gap(text):
                     unbound = True
-            # The unbound flag is part of the stop condition: a session can
-            # announce first and state a gap later, and the unbound-line count
-            # must still see it.
             if (fired and announce and remit and chapter and unbound
                     and version is not None):
                 break
@@ -644,7 +636,6 @@ def read_list(path):
     return kept
 
 
-# How the directive reached a session; the grounding outcome is split by these.
 DELIVERY_PATHS = ("directive_fired", "directive_conditional",
                   "no_directive_record")
 
@@ -671,15 +662,12 @@ def tally(paths):
     """
     t = dict(total=len(paths), fired=0, announce=0, remit=0, chapter=0,
              f_announce=0, f_remit=0, f_chapter=0,
-             versions={}, no_version=0, conditional=0, unbound=0,
-             unbound_line=0,
-             outcomes={path: dict(sessions=0, grounded=0, unbound=0, silent=0)
-                       for path in DELIVERY_PATHS})
+             versions={}, no_version=0, conditional=0, unbound_line=0,
+             outcomes={d: dict(sessions=0, grounded=0, unbound=0, silent=0)
+                       for d in DELIVERY_PATHS})
     for p in paths:
         (fired, announce, remit, chapter, version, conditional,
          unbound) = scan(p)
-        # One outcome per session. An announcement wins over an earlier
-        # unbound line: the session left the unbound state and grounded.
         if announce:
             outcome = "grounded"
         elif unbound:
@@ -687,15 +675,14 @@ def tally(paths):
         else:
             outcome = "silent"
         if fired:
-            path = "directive_fired"
+            delivery = "directive_fired"
         elif conditional:
-            path = "directive_conditional"
+            delivery = "directive_conditional"
         else:
-            path = "no_directive_record"
-        t["outcomes"][path]["sessions"] += 1
-        t["outcomes"][path][outcome] += 1
+            delivery = "no_directive_record"
+        t["outcomes"][delivery]["sessions"] += 1
+        t["outcomes"][delivery][outcome] += 1
         t["unbound_line"] += unbound
-        t["unbound"] += outcome == "unbound"
         t["fired"] += fired
         t["conditional"] += conditional
         t["announce"] += announce
@@ -737,6 +724,7 @@ main = tally(paths)
 # clean while making the in-repo evidence visible instead of silently zero.
 self_paths = read_list(self_list_path)
 selfies = tally(self_paths)
+self_unbound = sum(o["unbound"] for o in selfies["outcomes"].values())
 
 # Narrow the reported exclusions to the window, like every other figure here.
 # They were counted while gathering files, BEFORE --since-start was applied, so
@@ -803,11 +791,8 @@ if want_json:
             "count_when_directive_fired": f_chapter,
             "rate_of_directive_fired": rate(f_chapter, n_fired),
         },
-        # Each session in exactly one outcome, split by delivery path (#520).
         "grounding_outcome": dict(main["outcomes"],
                                   unbound_means=UNBOUND_MEANS),
-        # Every session with an unbound line, whatever its outcome: a session
-        # that went unbound and later announced is grounded, but counted here.
         "unbound_line": {"count": main["unbound_line"],
                          "rate_of_sessions": rate(main["unbound_line"], total)},
         "limits": LIMITS,
@@ -821,7 +806,7 @@ if want_json:
             "remit_crossing": selfies["remit"],
             "chapter_mark": selfies["chapter"],
             "resolve_announce_when_directive_fired": selfies["f_announce"],
-            "unbound": selfies["unbound"],
+            "unbound": self_unbound,
             "unbound_line": selfies["unbound_line"],
             "plugin_versions_seen": selfies["versions"],
             "sessions_without_plugin_version": selfies["no_version"],
@@ -856,7 +841,6 @@ for label, n, f in (("resolve+announce", n_announce, f_announce),
     out.append("  %-22s %6d   %-13s %d / %d  %s"
                % (label, n, pct(n, total), f, n_fired, pct(f, n_fired)))
 
-# Grounding outcome: one outcome per session, by how the directive reached it.
 oc = main["outcomes"]
 out.append("")
 out.append("  %-22s %6s %12s %10s"
@@ -866,14 +850,11 @@ for label, key in (("grounded", "grounded"),
                    ("unbound (stated a gap)", "unbound"),
                    ("silent", "silent")):
     out.append("  %-22s %6d %12d %10d"
-               % (label, oc["directive_fired"][key],
-                  oc["directive_conditional"][key],
-                  oc["no_directive_record"][key]))
+               % ((label,) + tuple(oc[d][key] for d in DELIVERY_PATHS)))
 out.append("  unbound line seen in %d session(s), any outcome;"
            " the readout does not split a gap's causes" % main["unbound_line"])
-out.append("  limit: silent after a conditional record is 'no GlassFrog tool"
-           " listed' or 'listed and not followed';")
-out.append("         the transcript cannot separate them (ADR-0008 A8)")
+for limit in LIMITS:
+    out.append("  limit: %s" % limit)
 
 # In-repo cohort, reported but never folded into the figures above. Without
 # this line a window in which every treated session happened to be in this
@@ -886,7 +867,7 @@ if selfies["total"]:
     out.append("    resolve+announce %d  (%d of %d when directive fired)"
                % (selfies["announce"], selfies["f_announce"], selfies["fired"]))
     out.append("    remit-crossing %d   chapter-mark %d   unbound %d"
-               % (selfies["remit"], selfies["chapter"], selfies["unbound"]))
+               % (selfies["remit"], selfies["chapter"], self_unbound))
     out.append("    plugin versions seen: %s" % versions_line(selfies))
     out.append("    Read as corroboration, not as the experiment's result:"
                " these sessions work on the directive itself.")
