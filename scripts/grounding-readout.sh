@@ -22,6 +22,22 @@
 #                      "Operating as **<role> of <circle>**".
 #   remit-crossing   : the assistant itself named a cross-role remit boundary.
 #   chapter-mark     : the session made a mark_chapter tool call.
+#   unbound line     : the assistant ITSELF wrote "Operating **unbound**: <gap>",
+#                      the one line a session writes when it starts role
+#                      resolution and cannot finish it (ADR-0008 A8). It is
+#                      never an announcement.
+#
+# GROUNDING OUTCOME. Each session falls in exactly one outcome: grounded (a real
+# announcement), unbound (an unbound line and no announcement) or silent
+# (neither). A session that goes unbound and later announces a real role is
+# grounded; the unbound-line count still includes it. Outcomes are split by how
+# the directive reached the session: fired, conditional form, or no directive
+# record. Unbound says the session stated a gap; it does not say which gap (a
+# failed tool, several matching roles, a missing role, no connector). A silent
+# session after a conditional record is either "no GlassFrog tool was listed"
+# or "a tool was listed and the session did not comply", and the transcript
+# cannot separate the two (ADR-0008 A8); the readout says so instead of
+# guessing.
 #
 # Announce / remit are counted only from assistant-emitted text. Transcript
 # content the session merely *read* (file reads, tool results, the injected
@@ -100,7 +116,7 @@ REPO_ROOT="$(cd "$HERE/.." && pwd)"
 
 PROJECTS_DIR="${CLAUDE_PROJECTS_DIR:-$HOME/.claude/projects}"
 HOOK_SOURCE="${HOLACRACY_HOOK_SOURCE:-$REPO_ROOT/hooks-handlers/session-start.sh}"
-BASELINE_NOTE="baseline: 0 of 40 pre-experiment sessions had 'Operating as ...'"
+BASELINE_NOTE="baseline: 0 of 40 pre-experiment sessions had 'Operating as ...' (taken on the old two-bucket measure: announced or not)"
 
 since=""
 since_start=""
@@ -342,6 +358,11 @@ ANNOUNCE_RE = re.compile(r"operating as \*\*([^*\n]+?) of ([^*\n]+?)\*\*", re.I)
 REMIT_RE = re.compile(r"remit|crosses into|role boundary", re.I)
 CHAPTER_RE = re.compile(r"mark_chapter")
 
+# The line a session writes when it cannot ground (#519, ADR-0008 A8). Anchored
+# on the bold form and the colon, so prose such as "operating unbound" never
+# scores. The gap after the colon is captured for the placeholder guard.
+UNBOUND_RE = re.compile(r"operating \*\*unbound\*\*:([^\n]*)", re.I)
+
 # The version the hook stamps into every payload it emits -- both the directive
 # ("_Directive emitted by self-org plugin vX.Y.Z._") and the quiet
 # marker. Counted ONLY from hook records, for the same reason every other
@@ -382,6 +403,20 @@ def is_placeholder(role, circle):
         if any(ch in p for ch in "<>[]{}"):
             return True
         if p.lower() in PLACEHOLDERS:
+            return True
+    return False
+
+
+def states_gap(text):
+    """True if the text carries an unbound line with a real gap.
+
+    A quoted template ("Operating **unbound**: <the gap, in one clause>.") is
+    not a stated gap, for the same reason a quoted announcement template is
+    not an announcement: metavariable brackets, or nothing after the colon.
+    """
+    for gap in UNBOUND_RE.findall(text):
+        g = gap.strip()
+        if g and not any(ch in g for ch in "<>[]{}"):
             return True
     return False
 
@@ -458,12 +493,12 @@ def emitted_by_assistant(rec):
 
 
 def scan(path):
-    fired = announce = remit = chapter = conditional = False
+    fired = announce = remit = chapter = conditional = unbound = False
     version = None
     try:
         fh = open(path, encoding="utf-8", errors="replace")
     except OSError:
-        return fired, announce, remit, chapter, version, conditional
+        return fired, announce, remit, chapter, version, conditional, unbound
     with fh:
         for line in fh:
             if not line.strip():
@@ -509,11 +544,18 @@ def scan(path):
                             break
                 if not remit and REMIT_RE.search(text):
                     remit = True
-            if fired and announce and remit and chapter and version is not None:
+                if not unbound and states_gap(text):
+                    unbound = True
+            # The unbound flag is part of the stop condition: a session can
+            # announce first and state a gap later, and the unbound-line count
+            # must still see it.
+            if (fired and announce and remit and chapter and unbound
+                    and version is not None):
                 break
     # A session that got the full directive is a firing, whatever else its
     # hook records say; it is never also counted as conditional.
-    return fired, announce, remit, chapter, version, conditional and not fired
+    return (fired, announce, remit, chapter, version,
+            conditional and not fired, unbound)
 
 
 # --- Run -------------------------------------------------------------------
@@ -602,6 +644,23 @@ def read_list(path):
     return kept
 
 
+# How the directive reached a session; the grounding outcome is split by these.
+DELIVERY_PATHS = ("directive_fired", "directive_conditional",
+                  "no_directive_record")
+
+UNBOUND_MEANS = ("the session stated a gap in its grounding: a failed tool, "
+                 "several matching roles with nothing picking one, a role "
+                 "that does not exist, or no connector. The readout does not "
+                 "split these causes.")
+
+LIMITS = [
+    "A silent session after a conditional record is either 'no GlassFrog "
+    "tool was listed' or 'a tool was listed and the session did not "
+    "comply'. The transcript cannot separate the two (ADR-0008 A8); a "
+    "structured session record (#71) would.",
+]
+
+
 def tally(paths):
     """Scan a set of transcripts and return the counts for one cohort.
 
@@ -612,9 +671,31 @@ def tally(paths):
     """
     t = dict(total=len(paths), fired=0, announce=0, remit=0, chapter=0,
              f_announce=0, f_remit=0, f_chapter=0,
-             versions={}, no_version=0, conditional=0)
+             versions={}, no_version=0, conditional=0, unbound=0,
+             unbound_line=0,
+             outcomes={path: dict(sessions=0, grounded=0, unbound=0, silent=0)
+                       for path in DELIVERY_PATHS})
     for p in paths:
-        fired, announce, remit, chapter, version, conditional = scan(p)
+        (fired, announce, remit, chapter, version, conditional,
+         unbound) = scan(p)
+        # One outcome per session. An announcement wins over an earlier
+        # unbound line: the session left the unbound state and grounded.
+        if announce:
+            outcome = "grounded"
+        elif unbound:
+            outcome = "unbound"
+        else:
+            outcome = "silent"
+        if fired:
+            path = "directive_fired"
+        elif conditional:
+            path = "directive_conditional"
+        else:
+            path = "no_directive_record"
+        t["outcomes"][path]["sessions"] += 1
+        t["outcomes"][path][outcome] += 1
+        t["unbound_line"] += unbound
+        t["unbound"] += outcome == "unbound"
         t["fired"] += fired
         t["conditional"] += conditional
         t["announce"] += announce
@@ -722,6 +803,14 @@ if want_json:
             "count_when_directive_fired": f_chapter,
             "rate_of_directive_fired": rate(f_chapter, n_fired),
         },
+        # Each session in exactly one outcome, split by delivery path (#520).
+        "grounding_outcome": dict(main["outcomes"],
+                                  unbound_means=UNBOUND_MEANS),
+        # Every session with an unbound line, whatever its outcome: a session
+        # that went unbound and later announced is grounded, but counted here.
+        "unbound_line": {"count": main["unbound_line"],
+                         "rate_of_sessions": rate(main["unbound_line"], total)},
+        "limits": LIMITS,
         # Held out of every figure above. Present so an in-repo-only window is
         # visible rather than reported as a bare zero (issue #149).
         "in_repo": {
@@ -732,6 +821,8 @@ if want_json:
             "remit_crossing": selfies["remit"],
             "chapter_mark": selfies["chapter"],
             "resolve_announce_when_directive_fired": selfies["f_announce"],
+            "unbound": selfies["unbound"],
+            "unbound_line": selfies["unbound_line"],
             "plugin_versions_seen": selfies["versions"],
             "sessions_without_plugin_version": selfies["no_version"],
         },
@@ -765,6 +856,25 @@ for label, n, f in (("resolve+announce", n_announce, f_announce),
     out.append("  %-22s %6d   %-13s %d / %d  %s"
                % (label, n, pct(n, total), f, n_fired, pct(f, n_fired)))
 
+# Grounding outcome: one outcome per session, by how the directive reached it.
+oc = main["outcomes"]
+out.append("")
+out.append("  %-22s %6s %12s %10s"
+           % ("grounding outcome", "fired", "conditional", "no record"))
+out.append("  %-22s %6s %12s %10s" % ("-" * 22, "-" * 5, "-" * 11, "-" * 9))
+for label, key in (("grounded", "grounded"),
+                   ("unbound (stated a gap)", "unbound"),
+                   ("silent", "silent")):
+    out.append("  %-22s %6d %12d %10d"
+               % (label, oc["directive_fired"][key],
+                  oc["directive_conditional"][key],
+                  oc["no_directive_record"][key]))
+out.append("  unbound line seen in %d session(s), any outcome;"
+           " the readout does not split a gap's causes" % main["unbound_line"])
+out.append("  limit: silent after a conditional record is 'no GlassFrog tool"
+           " listed' or 'listed and not followed';")
+out.append("         the transcript cannot separate them (ADR-0008 A8)")
+
 # In-repo cohort, reported but never folded into the figures above. Without
 # this line a window in which every treated session happened to be in this
 # repo reads as a flat zero -- which is what #149 was filed for.
@@ -775,8 +885,8 @@ if selfies["total"]:
                % (selfies["total"], selfies["fired"]))
     out.append("    resolve+announce %d  (%d of %d when directive fired)"
                % (selfies["announce"], selfies["f_announce"], selfies["fired"]))
-    out.append("    remit-crossing %d   chapter-mark %d"
-               % (selfies["remit"], selfies["chapter"]))
+    out.append("    remit-crossing %d   chapter-mark %d   unbound %d"
+               % (selfies["remit"], selfies["chapter"], selfies["unbound"]))
     out.append("    plugin versions seen: %s" % versions_line(selfies))
     out.append("    Read as corroboration, not as the experiment's result:"
                " these sessions work on the directive itself.")

@@ -646,4 +646,116 @@ assert m and "conditional" in m.lower(), d
 assert m != d["directive_marker"], d
 ' || fail "the real hook must yield a distinct conditional marker: $js"
 
+# 15. The unbound bucket (#520). Since #519 a session that starts role
+#     resolution and cannot finish it writes one `Operating **unbound**: <gap>`
+#     line. That is not a grounded session (ADR-0008 A8) and it is not a silent
+#     one either: the session said why it could not ground. Each session falls
+#     in exactly one outcome -- grounded, unbound or silent -- split by how the
+#     directive reached it. The fixtures reuse the conditional hook from 14.
+U="$TMP/unbound"; mkdir -p "$U"
+FIRED_REC='{"type":"attachment","stdout":"{\"additionalContext\":\"**Test plugin: role-grounding directive**\"}"}'
+COND_REC='{"type":"attachment","stdout":"{\"additionalContext\":\"**Test plugin: role-grounding check (conditional directive)**\"}"}'
+# 15a/15f. Fired, then one unbound line and no announcement.
+{ echo "$FIRED_REC"; cat <<'JSONL'
+{"type":"assistant","text":"Operating **unbound**: glassfrog_get_me failed (401), so no role is resolved."}
+JSONL
+} > "$U/fired-unbound.jsonl"
+# 15b. Conditional record, then an unbound line.
+{ echo "$COND_REC"; cat <<'JSONL'
+{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Operating **unbound**: Alex fills 3 roles, and nothing in this session picks one."}]}}
+JSONL
+} > "$U/cond-unbound.jsonl"
+# 15c. Conditional record, then nothing about grounding.
+{ echo "$COND_REC"; cat <<'JSONL'
+{"type":"assistant","text":"Here is the code you asked for."}
+JSONL
+} > "$U/cond-silent.jsonl"
+# 15d. Unbound first, then a real announcement once get_me worked.
+{ echo "$FIRED_REC"; cat <<'JSONL'
+{"type":"assistant","text":"Operating **unbound**: glassfrog_get_me failed (timeout), so no role is resolved."}
+{"type":"assistant","text":"Operating as **Secretary of Operations Circle**."}
+JSONL
+} > "$U/fired-both.jsonl"
+# 15d2. Announcement first, with every other signal the scan stops on, then an
+#       unbound line. The scan must still read far enough to see it.
+cat > "$U/fired-announce-then-unbound.jsonl" <<'JSONL'
+{"type":"attachment","stdout":"{\"additionalContext\":\"**Test plugin: role-grounding directive** _Directive emitted by self-org plugin v9.9.9._\"}"}
+{"type":"assistant","text":"Operating as **Secretary of Operations Circle**. This crosses into the Lead Link's remit."}
+{"type":"tool_use","name":"mcp__ccd_session__mark_chapter"}
+{"type":"assistant","text":"Operating **unbound**: Sam does not fill Secretary in any circle."}
+JSONL
+# 15e. Read, inlined from a subagent, or echoed with the directive: never scores.
+cat > "$U/none-read.jsonl" <<'JSONL'
+{"type":"attachment","attachment":{"type":"file_read","path":"skills/shared/actor-and-role-resolution.md"},"content":"Operating **unbound**: glassfrog_get_me failed (401), so no role is resolved."}
+{"type":"assistant","isSidechain":true,"text":"Operating **unbound**: glassfrog_get_me failed (401), so no role is resolved."}
+{"type":"assistant","text":"The **Test plugin: role-grounding directive** says to write Operating **unbound**: glassfrog_get_me failed (401) when it fails."}
+JSONL
+# 15e2. A quoted template is not a stated gap.
+cat > "$U/none-template.jsonl" <<'JSONL'
+{"type":"assistant","text":"The reference uses Operating **unbound**: <the gap, in one clause>. as its line."}
+JSONL
+js="$(CLAUDE_PROJECTS_DIR="$U" bash "$SCRIPT" --hook "$CHOOK" --json)"
+echo "$js" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+assert d["sessions"]==7, d
+# An unbound line is never an announcement (15f): only the two real
+# announcements score.
+assert d["resolve_announce"]["count"]==2, d["resolve_announce"]
+o=d["grounding_outcome"]
+assert o["directive_fired"]=={"sessions":3,"grounded":2,"unbound":1,"silent":0}, o
+assert o["directive_conditional"]=={"sessions":2,"grounded":0,"unbound":1,"silent":1}, o
+assert o["no_directive_record"]=={"sessions":2,"grounded":0,"unbound":0,"silent":2}, o
+# Every session with the line, whatever its outcome (15d, 15d2).
+assert d["unbound_line"]["count"]==4, d["unbound_line"]
+# Exclusivity (15i): each column sums to its sessions, the columns to the total.
+for k,col in o.items():
+    if not isinstance(col, dict): continue
+    assert col["grounded"]+col["unbound"]+col["silent"]==col["sessions"], (k,col)
+assert sum(c["sessions"] for c in o.values() if isinstance(c, dict))==d["sessions"], o
+# The A8 limit is stated, not inferred away (15c).
+lim=" ".join(d["limits"])
+assert "conditional" in lim and "ADR-0008" in lim, d["limits"]
+assert "unavailable" not in o["unbound_means"].lower(), o
+# Existing fields keep their names.
+for k in ("directive_fired","directive_conditional","resolve_announce","in_repo"):
+    assert k in d, k
+' || fail "unbound sessions must be their own exclusive bucket: $js"
+# Each fixture alone, so a wrong count names its offender.
+for f in "$U"/*.jsonl; do
+  one="$TMP/unbound-one"; rm -rf "$one"; mkdir -p "$one"; cp "$f" "$one/"
+  j="$(CLAUDE_PROJECTS_DIR="$one" bash "$SCRIPT" --hook "$CHOOK" --json)"
+  case "$(basename "$f")" in
+    none-*) want=0 ;; cond-silent.jsonl) want=0 ;; *) want=1 ;;
+  esac
+  got="$(echo "$j" | python3 -c 'import json,sys; print(json.load(sys.stdin)["unbound_line"]["count"])')"
+  [ "$got" = "$want" ] || fail "$(basename "$f"): unbound_line.count $got, want $want"
+done
+out="$(CLAUDE_PROJECTS_DIR="$U" bash "$SCRIPT" --hook "$CHOOK")"
+echo "$out" | grep -q 'grounding outcome' || fail "the table must show the grounding outcome block; got: $out"
+echo "$out" | grep -Eq 'unbound \(stated a gap\) +1 +1 +0' \
+  || fail "the table must show unbound per delivery path; got: $out"
+echo "$out" | grep -q 'cannot separate' || fail "the table must state the A8 limit; got: $out"
+
+# 15g. The baseline was taken on the old measure (announced or not), and says so.
+echo "$js" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+assert "two-bucket" in d["baseline_note"], d["baseline_note"]
+' || fail "the JSON baseline note must name the two-bucket measure: $js"
+echo "$out" | grep -q 'two-bucket' || fail "the table baseline note must name the two-bucket measure; got: $out"
+
+# 15h. The in-repo cohort reports its unbound sessions too.
+UI="$TMP/unbound-self"; mkdir -p "$UI/$SELF_SLUG"
+cp "$U/fired-unbound.jsonl" "$U/cond-unbound.jsonl" "$U/cond-silent.jsonl" "$UI/$SELF_SLUG/"
+js="$(CLAUDE_PROJECTS_DIR="$UI" bash "$SCRIPT" --hook "$CHOOK" --json)"
+echo "$js" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+assert d["sessions"]==0, d
+assert d["in_repo"]["unbound"]==2, d["in_repo"]
+' || fail "the in-repo cohort must report its unbound count: $js"
+out="$(CLAUDE_PROJECTS_DIR="$UI" bash "$SCRIPT" --hook "$CHOOK")"
+echo "$out" | grep -q 'unbound 2' || fail "the in-repo line must show the unbound count; got: $out"
+
 echo "PASS: all grounding-readout tests"
