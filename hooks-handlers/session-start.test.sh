@@ -266,6 +266,14 @@ assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, CLAUDE_PLUGIN_ROOT set"
 out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE BASH_COMPAT=42 \
   HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
 assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, bash 4.2 rules"
+# G1c. When the plugin root holds no readable procedure, the citation falls
+#      back to the repo-relative path, and no placeholder ever leaks (#524).
+BARE_ROOT="$TMP/bare-root"; mkdir -p "$BARE_ROOT"
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE CLAUDE_PLUGIN_ROOT="$BARE_ROOT" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+[ "$(printf '%s' "$out" | cited_paths)" = "skills/shared/actor-and-role-resolution.md" ] \
+  || fail "G1c: with no readable procedure under the plugin root, cite the repo-relative path"
+case "$out" in *@RESOLUTION_DOC@*) fail "G1c: placeholder leaked" ;; esac
 
 # G2. Honest by construction: it DEMANDS the load and does NOT claim grounding
 #     already happened.
@@ -392,6 +400,11 @@ out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
   HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
 assert_conditional "$out" "no credentials store"
 assert_cited_resolves "$out" "$PLUGIN_DIR" "conditional form"
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE BASH_COMPAT=42 \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$MISSING_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_conditional "$out" "no credentials store, bash 4.2 rules"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "conditional form, bash 4.2 rules"
 
 # G18. A glassfrog record whose accessToken is the empty string is the
 #      unauthenticated state, not the authenticated one. This is the exact
@@ -718,6 +731,18 @@ out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
 elapsed=$(( $(date +%s) - start ))
 [ "$elapsed" -lt 10 ] || fail "a hanging Keychain read must be cut off (took ${elapsed}s)"
 assert_conditional "$out" "Keychain read timed out, stale file"
+
+# G38b. The same hang on a Python without posix_spawn setsid (#525).
+start=$(date +%s)
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
+  PATH="$STUB_BIN:$PATH" PYTHONPATH="$NOSETSID" HOLACRACY_GROUNDING_KEYCHAIN=on \
+  HOLACRACY_GROUNDING_KEYCHAIN_TIMEOUT=1 STUB_SLEEP=20 \
+  STUB_KEYCHAIN_ITEM="$AUTHED_CRED" \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$EMPTY_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+elapsed=$(( $(date +%s) - start ))
+[ "$elapsed" -lt 10 ] || fail "G38b: a hanging read must be cut off without setsid (took ${elapsed}s)"
+assert_conditional "$out" "G38b: timed out without setsid, stale file"
 
 # --- claude.ai connectors (issue #332) --------------------------------------
 # A claude.ai connector's OAuth lives on claude.ai's side, so it never appears
