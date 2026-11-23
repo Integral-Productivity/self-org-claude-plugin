@@ -260,6 +260,12 @@ assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, no CLAUDE_PLUGIN_ROOT"
 out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE CLAUDE_PLUGIN_ROOT="$PLUGIN_DIR" \
   HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
 assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, CLAUDE_PLUGIN_ROOT set"
+# A stock Mac runs the hook under /bin/bash 3.2. BASH_COMPAT=42 reproduces that
+# version's expansion rules, where a quoted pattern-substitution replacement
+# keeps its quotes, so the citation is checked under them too.
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE BASH_COMPAT=42 \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, bash 4.2 rules"
 
 # G2. Honest by construction: it DEMANDS the load and does NOT claim grounding
 #     already happened.

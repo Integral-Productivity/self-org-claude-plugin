@@ -59,6 +59,10 @@ RESOLUTION_DOC="skills/shared/actor-and-role-resolution.md"
 if [[ -n "$PLUGIN_ROOT" && -r "$PLUGIN_ROOT/$RESOLUTION_DOC" ]]; then
   RESOLUTION_DOC="$PLUGIN_ROOT/$RESOLUTION_DOC"
 fi
+# Each heredoc holds @RESOLUTION_DOC@ once. It is spliced in by prefix and
+# suffix removal, not ${var//pat/rep}: bash 4.2 and earlier (a stock Mac's
+# /bin/bash 3.2) keep quotes in a quoted replacement, and bash 5.2 reads an
+# unquoted `&` in one as the matched text.
 if [[ -r "$PLUGIN_ROOT/version.txt" ]]; then
   PLUGIN_VERSION="$(tr -d '[:space:]' < "$PLUGIN_ROOT/version.txt")"
   [[ -n "$PLUGIN_VERSION" ]] || PLUGIN_VERSION="unknown"
@@ -498,7 +502,7 @@ This hook found no authenticated GlassFrog connector in the local MCP OAuth stor
 - If no such tool is available, make no GlassFrog call and do not ask about a role. Proceed with the work.
 CONDITIONAL
 )
-    conditional="${conditional//@RESOLUTION_DOC@/"$RESOLUTION_DOC"}"
+    conditional="${conditional%%@RESOLUTION_DOC@*}${RESOLUTION_DOC}${conditional#*@RESOLUTION_DOC@}"
     # Version stamp outside the heredoc, as for the directive below.
     conditional="${conditional}"$'\n\n'"_Conditional directive emitted by self-org plugin v${PLUGIN_VERSION}._"
   fi
@@ -513,7 +517,7 @@ If the `glassfrog_get_me` call fails, or a step would need an answer nobody in t
 This grounding has NOT yet been performed -- this directive only requests it and does not assert it happened (the hook has no GlassFrog access at fire time). If work crosses into another role's remit, name the boundary and mark a chapter.
 DIRECTIVE
 )
-    grounding="${grounding//@RESOLUTION_DOC@/"$RESOLUTION_DOC"}"
+    grounding="${grounding%%@RESOLUTION_DOC@*}${RESOLUTION_DOC}${grounding#*@RESOLUTION_DOC@}"
     # Stamp the running version. Appended AFTER the heredoc and never inside it:
     # scripts/grounding-readout.sh derives its detection marker from the first
     # non-empty line of this `DIRECTIVE` heredoc at run time, and its header
