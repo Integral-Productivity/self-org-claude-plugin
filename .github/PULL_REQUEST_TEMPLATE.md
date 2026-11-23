@@ -9,7 +9,6 @@ Closes #
 
 - [ ]
 - [ ]
-- [ ] Checked against docs/plugin-design-checklist.md (required when commands/, skills/ or agents/ change)
 
 <!--
 Conventions (see devops-excellence ADRs):
