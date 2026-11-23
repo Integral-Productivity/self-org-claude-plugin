@@ -151,6 +151,12 @@ def page(items, args, prefix):
 def handle_tool(name, args):
     actor = FIXTURE["actor"]
 
+    # A scenario's `faults` make one named tool fail with the live error
+    # envelope (#284, #334). Only the named tool fails; every other call works.
+    fault = FIXTURE.get("faults", {}).get(name)
+    if fault is not None:
+        return {"error": dict(fault)}
+
     if name == "glassfrog_get_me":
         return {"data": {
             "actor": actor,

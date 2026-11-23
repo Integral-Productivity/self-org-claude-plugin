@@ -53,6 +53,8 @@ Follow the procedure in `./actor-and-role-resolution.md`, **with the target = an
 6. If multiple -> ask: *"This could be owned by [Role A] or [Role B] -- which role is accountable for this outcome?"*
 7. If zero (the actor fills no role in that circle) -> name the constraint per `./actor-and-role-resolution.md` Step 3.
 
+**Unattended:** steps 3 and 6 do not ask, and an unattended run never files. It drafts the project in the run's output instead, for a person to file later. When the circle or the owner role is not clear, it also writes the `Operating **unbound**:` line from `./actor-and-role-resolution.md` Step 3 (section "Unattended Sessions and the Unbound State").
+
 Announce the resolved context in the first response, e.g. *"Filing on **Marketing of General Company Circle** (role_id: role_xxx)."*
 
 ### Step 3 -- Elicit the project (if starting thin)

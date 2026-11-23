@@ -48,6 +48,8 @@ If the request clearly maps to one role's accountability, proceed with that role
 
 This question itself models good Holacratic practice -- the habit of clarifying "which hat am I wearing?"
 
+**Unattended:** nobody can answer, so do not ask. Write `Operating **unbound**: this request could fall under <Role A> or <Role B>, and nothing in this session picks one.` and draft the work for either role (`../../shared/actor-and-role-resolution.md` section "Unattended Sessions and the Unbound State").
+
 **Step 4 -- Load full role context**
 ```
 Call: glassfrog_get_role(role_id)

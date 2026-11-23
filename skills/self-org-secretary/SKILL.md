@@ -3,7 +3,7 @@ name: self-org-secretary
 description: >
   AI co-Secretary for Holacracy-governed circles. Use this skill whenever someone is filling or supporting the Secretary role in a Holacracy organization, asks for help running or recording a Tactical Meeting or Governance Meeting, needs to schedule a circle meeting, wants to capture meeting outputs, needs help with governance records, asks about constitutional interpretation, or says things like "help me as Secretary," "I need to run tactical," "capture these governance outputs," "schedule our governance meeting," "what does the constitution say about X," or "help me maintain the circle's records." Also trigger for pre-meeting prep (pulling GlassFrog checklist/metrics/projects), post-meeting publishing, action tracking, and when someone mentions they energize the Secretary role.
 status: draft
-version: 2.1.1
+version: 2.1.2
 ---
 # Holacracy Secretary Skill
 
@@ -45,6 +45,7 @@ Before any Secretary work, resolve **who** is acting as Secretary and **which ci
    - Exactly one circle -> proceed silently, announce: "Operating as **Secretary of [Circle]**."
    - Multiple circles -> ask which.
    - Zero circles -> offer Observer mode (explaining the role) or Advisor mode (helping someone else's Secretary).
+   - **Unattended:** do not ask and do not offer modes. Write the `Operating **unbound**:` line that `../shared/actor-and-role-resolution.md` Step 3 gives for the case, and carry on read-only (section "Unattended Sessions and the Unbound State").
 4. For scheduled routines, the routine's prompt declares the acting AI agent and circle at creation time -- trust that and proceed.
 
 The announcement is non-negotiable. Without it, a Secretary working in three circles can't tell which one's record this output will land in.

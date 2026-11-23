@@ -3,7 +3,7 @@ name: async-tactical
 description: >
   Read-only async Tactical briefing for one Holacracy circle, built for runs where no one is present: scheduled tasks, cloud routines, or a person who wants the Tactical picture without holding the meeting. Use when asked to "run tactical async", "run the async tactical for <circle>", "prep tactical without a meeting", or when a scheduled prompt asks for a circle's Tactical review. Resolves the actor and circle from GlassFrog, reads the circle's roles, checklist items, metrics, unprocessed tensions, projects and actions, flags stale and blocked projects, and returns one briefing with a gap marker for every section it could not read. It never writes to GlassFrog and never stops to ask a question; every suggested write is named as a command for a person to run later. For live, in-meeting Secretary capture, the user types /self-org:tactical instead.
 status: draft
-version: 0.1.0
+version: 0.2.0
 ---
 # Async Tactical briefing
 
@@ -14,7 +14,11 @@ The Tactical Meeting's job is to sync on recurring work (checklists, metrics), s
 ## Rules for an unattended run
 
 1. **Draft only.** Do not call any GlassFrog write tool: no tension, project, action, note, tag, metric or checklist write. A sensed tension is written into the briefing as a candidate, not filed. This is the constitutional safeguard in `../shared/actor-and-role-resolution.md` (section "Scheduled Routines: Context Encoding at Creation Time") and ADR-0003.
-2. **Never wait for an answer.** No one is present. Where an interactive skill would ask, choose the reading the evidence supports, state the choice in one line in the briefing, and continue. If the circle cannot be resolved at all, return a short briefing that says what was tried and what the caller must supply next time. Do not end the run with a question.
+2. **Never wait for an answer.** No one is present. Two cases, and they take different rules:
+   - **Who is acting (actor and role).** Follow the unattended branch of `../shared/actor-and-role-resolution.md`: when the actor or role cannot be resolved, write one `Operating **unbound**: <the gap>.` line and continue. A routine whose prompt declares a role uses the declared-role line from that file's section "A routine's declared role". Do not pick a role to act as. An unbound briefing still reads and drafts; rule 1 already forbids every write.
+   - **What the evidence says (inside the briefing).** Where an interactive skill would ask how to read a record, choose the reading the evidence supports, state the choice in one line in the briefing, and continue.
+
+   If the circle cannot be resolved at all, return a short briefing that says what was tried and what the caller must supply next time. Do not end the run with a question.
 3. **Never invent data.** GlassFrog exposes no meeting-occurrence data and no last-touched timestamp for a project. Do not state a last-meeting date or a "last updated" time you did not read. A section you could not read gets a gap marker, not a guess.
 4. **Name follow-ups as commands for a person.** For example: "Run `/self-org:project-sweep Delivery Circle` to re-energize or archive the stale project." Do not start a user-only command yourself.
 
@@ -32,7 +36,7 @@ Follow `../shared/actor-and-role-resolution.md` Step 1 and Step 2 exactly, inclu
 - If the input carries a role id or URL, resolve it with `glassfrog_get_role` (see `../shared/glassfrog-id-and-url-resolution.md`). An id the caller gave wins over a name match.
 - If the input carries only a name, match it against the circles of the roles the actor fills. One match: use it. Several: take the one where the actor fills Circle Lead or Secretary, and say so in the briefing. None: go to the degradation rules below.
 
-Open the briefing with `Operating as **<Role> of <Circle>** (async, read-only)`. If the actor fills no role in the circle, say `Observing <Circle> (async, read-only)` instead; reading is still allowed.
+Open the briefing with `Operating as **<Role> of <Circle>** (async, read-only)`. If the actor fills no role in the circle, say `Observing <Circle> (async, read-only)` instead; reading is still allowed. If Step 1 of the reference could not resolve the actor (for example, `glassfrog_get_me` failed), open with the `Operating **unbound**:` line from rule 2 instead, and resolve the circle from the input id or name with read-only calls.
 
 ### Step 2 -- Read the circle's roles
 

@@ -25,7 +25,7 @@ Load two shared references at the start:
 
 **Write only what the actor owns.** In Holacracy only a role's filler updates or closes that role's projects. A project on a role the actor does not fill is walked and drafted, never written: its block shows the draft for the owner to apply and offers no write key. The same holds for that role's pass record (step 8).
 
-**Unattended runs.** A scheduled run makes a write only where its routine's policy allows that write. The pass record follows the same rule as the state tag: otherwise it stays a draft in the run's report.
+**Unattended runs.** A scheduled run makes a write only where its routine's policy allows that write, and only when step 1 resolved the actor. If `glassfrog_get_me` failed, the run is unbound: it drafts every write and makes none, as `skills/shared/actor-and-role-resolution.md` section "A routine's declared role" says. The pass record follows the same rule as the state tag: otherwise it stays a draft in the run's report.
 
 ## What this command does
 

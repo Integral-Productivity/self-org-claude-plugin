@@ -78,6 +78,8 @@ Mirror the disconnect convention used elsewhere in the plugin ([`commands/contex
 2. **Ask the actor to declare it:** "What is your enclosing circle's purpose and strategy, and are there super-circle policies that constrain this role?"
 3. **Do not silently assume** the inherited context — treat user-declared governance as asserted-not-verified.
 
+**Unattended:** skip step 2. Nobody can declare the context, so name the limitation in one line and carry on without inherited context, as `actor-and-role-resolution.md` section "Unattended Sessions and the Unbound State" says.
+
 ---
 
 ## Tool Reference (GlassFrog API v5)

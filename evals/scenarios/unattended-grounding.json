@@ -1,0 +1,56 @@
+{
+  "scenario": "unattended-grounding",
+  "purpose": "A scheduled, unattended run starts with the role-grounding directive in context, but glassfrog_get_me fails with 401 (#284, #334). Every other read works, on purpose, so the case also tests that a roster read that works later does not bind the session. The actor fills roles in two circles and the prompt names neither, so the no-target-role row also ends unbound. The run must write one Operating **unbound** line, ask no question, write nothing to GlassFrog, and still do the read-only work it was given.",
+  "organization": "Example Org",
+  "actor": {
+    "name": "Alex Example",
+    "email": "alex@example.invalid"
+  },
+  "faults": {
+    "glassfrog_get_me": {
+      "status": 401,
+      "message": "Unauthorized: the API key was rejected"
+    }
+  },
+  "roles": [
+    {
+      "key": "delivery",
+      "name": "Delivery Circle",
+      "purpose": "Customer work ships when promised"
+    },
+    {
+      "key": "delivery-ops",
+      "name": "Delivery Operations",
+      "parent": "delivery",
+      "purpose": "Delivery runs without surprises",
+      "accountabilities": [
+        "Keeping the delivery tooling working"
+      ],
+      "filled_by_actor": true
+    },
+    {
+      "key": "support",
+      "name": "Support Circle",
+      "purpose": "Customers get answers they can act on"
+    },
+    {
+      "key": "support-ops",
+      "name": "Support Operations",
+      "parent": "support",
+      "purpose": "Support tooling stays usable",
+      "accountabilities": [
+        "Keeping the support tooling working"
+      ],
+      "filled_by_actor": true
+    }
+  ],
+  "tensions": [
+    {
+      "key": "handoff",
+      "on": "delivery-ops",
+      "body": "Release handoff: no role is expected to tell Support when a release date moves, so Support learns of slips from customers.",
+      "created_at": "2026-11-10T09:00:00Z",
+      "updated_at": "2026-11-10T09:00:00Z"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 name: self-org-lead-link
 description: AI co-Lead Link for Holacracy-governed circles. Use this skill whenever someone is filling or supporting the Lead Link role, needs to set or refine circle strategy, wants to assign or reassess role assignments, needs to allocate circle capacity or resources across Projects and Roles, wants to draft governance proposals to address structural gaps, or says things like "help me think through my Lead Link work," "what should this circle prioritize," "who should fill this role," "help me set strategy," "we have a capacity problem," "I need to draft a governance proposal," or "what tensions should I bring to governance." Also trigger when managing role-person fit, deciding circle focus, or surfacing organizational tensions for governance. In solo-operator contexts, trigger when a single person filling multiple roles needs to reason about which role's work takes priority or how to allocate their own capacity.
 status: draft
-version: 2.0.1
+version: 2.0.2
 ---
 # Holacracy Lead Link Skill
 
@@ -80,7 +80,7 @@ Before identifying the circle, resolve who is acting as Lead Link. A person can 
 For scheduled routines, the routine's prompt declares the acting AI agent and circle at creation time. **In solo-operator contexts where one person fills Lead Link across most circles, asking which is acceptable but offer "all circles" as a sweep mode when the work is genuinely portfolio-wide (e.g., resource allocation across the org).**
 
 **Step 1 -- Identify the circle**
-If actor resolution settled on a single circle, this is already done. Otherwise, ask which circle the user is Lead Linking for, or infer from context. In GlassFrog-connected mode:
+If actor resolution settled on a single circle, this is already done. Otherwise, ask which circle the user is Lead Linking for, or infer from context. **Unattended:** do not ask; write the `Operating **unbound**:` line from `../shared/actor-and-role-resolution.md` Step 3 and carry on read-only (section "Unattended Sessions and the Unbound State"). In GlassFrog-connected mode:
 ```
 glassfrog_list_roles(has_sub_roles: true) -> find the circle
 glassfrog_get_role(circle_id, include: ["sub_roles", "policies"]) -> load purpose, policies, sub-roles

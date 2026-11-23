@@ -28,6 +28,7 @@ When `$ARGUMENTS` contains the `--inherited` flag, after the roster is resolved,
 ## Behaviour
 
 - If GlassFrog is not connected, ask the user to declare the context: "I don't have live GlassFrog data. Whose role should I treat as the basis for this session?" When `--inherited` was requested while disconnected, follow the same fallback the inherited-context procedure defines (name the limitation, ask the actor to declare their enclosing-circle purpose, strategy, and constraining policies).
+- **Unattended:** when no person can answer, do not ask. Write the `Operating **unbound**:` line from `skills/shared/actor-and-role-resolution.md` section "Unattended Sessions and the Unbound State", load no inherited context, and carry on.
 - If `$ARGUMENTS` names a circle the actor does not fill any role in, say so explicitly and offer Observer mode.
 - If the actor fills the same role in many circles (e.g., Lead Link in 5 circles in a solo-operator org), summarize counts rather than enumerating every line.
 - Output is for the user to read and confirm; do not advance into any role-specific work from this command.

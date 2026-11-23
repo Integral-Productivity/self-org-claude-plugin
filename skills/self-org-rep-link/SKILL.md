@@ -1,7 +1,7 @@
 ---
 name: self-org-rep-link
 status: draft
-version: 2.0.1
+version: 2.0.2
 description: >
   AI co-Rep Link for Holacracy-governed circles. Use this skill whenever someone is filling or supporting the Rep Link role in a Holacracy organization, wants help surfacing tensions to the enclosing circle, needs to prepare for an enclosing circle tactical or governance meeting, wants to triage which member tensions belong in the enclosing circle vs. staying local, needs help identifying or drafting proposals to remove constraints the broader organization is imposing on their sub-circle, or says things like "help me prep for the enclosing circle meeting," "should I escalate this tension?", "help me remove this constraint," or "what tensions should I carry?" Also trigger when someone asks what a Rep Link does, how to energize the Rep Link role, or wants to understand what crosses the circle boundary. Load GlassFrog context before beginning Rep Link work when the GlassFrog MCP is available.
 ---
@@ -63,6 +63,8 @@ When this skill activates, establish context before diving into specific tasks:
    - If exactly one match, proceed silently and announce: "Operating as **Rep Link of [Sub-Circle] to [Enclosing Circle]**." If multiple, ask which. If none, switch to Observer mode (explaining the role) or Advisor mode (helping someone else's Rep Link).
 
    For scheduled routines, the routine's prompt declares the acting AI agent and sub-circle at creation time.
+
+   **Unattended:** do not ask which sub-circle or enclosing circle, and do not offer modes. Write the `Operating **unbound**:` line from `../shared/actor-and-role-resolution.md` Step 3 and carry on read-only (section "Unattended Sessions and the Unbound State").
 
 1. **Identify the enclosing circle.** Once Rep Link scope is resolved, the sub-circle is known; ask which enclosing circle you link out to if it isn't obvious from governance.
 

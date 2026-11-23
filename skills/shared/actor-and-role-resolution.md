@@ -23,14 +23,14 @@ This is not just terminology -- GlassFrog's data model treats people and agents 
 |---|---|
 | Interactive session, user is logged into Claude with their GlassFrog credentials | `glassfrog_get_me` returns the human actor. This is the default. |
 | Interactive session, user is helping a different person | User states the actor explicitly: "I'm helping Alex prep for tactical." The skill operates as if the actor is Alex (Observer/Advisor mode -- see below). |
-| Scheduled routine fires | The routine's prompt declares the acting AI agent at creation time. The skill trusts that declaration and operates as that agent. |
+| Scheduled routine fires | The routine's prompt declares the acting AI agent at creation time. The skill trusts that declaration and operates as that agent. If `glassfrog_get_me` then fails, the declaration is unverified: see [A routine's declared role](#a-routines-declared-role). |
 | Slash command invoked | Same resolution as the underlying session context. `/self-org:context` is the explicit override. |
 
 ### What the plugin does NOT do
 
 - The plugin does **not auto-create** AI agents in GlassFrog. AI agents must already exist (registered in the GlassFrog UI) and be assigned to the relevant role before any routine references them.
 - The plugin does **not persist** resolved actor identity across sessions. Each interactive session resolves fresh via `glassfrog_get_me`; each scheduled routine carries its identity in its own prompt.
-- The plugin does **not** assume the human is the actor when GlassFrog is unavailable. It names the limitation: "I don't have live actor data -- who should I treat as the actor for this session?"
+- The plugin does **not** assume the human is the actor when GlassFrog is unavailable. It names the limitation: "I don't have live actor data -- who should I treat as the actor for this session?" In an unattended session it names the limitation and proceeds **unbound** instead of asking (see [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state)).
 
 ---
 
@@ -46,6 +46,8 @@ If actor identity has not yet been resolved this session:
 2. If `glassfrog_get_me` fails or returns nothing, ask the user: "Which actor should I treat as the basis for this session? (your own GlassFrog identity, or someone you're supporting?)"
 
 If GlassFrog is not connected at all, name the constraint: "I don't have live GlassFrog data, so I'm working from what you tell me. Whose role-context should I treat as primary?"
+
+**Unattended:** if the session is unattended, or the session-start role-grounding directive sent you here, a failed or empty `glassfrog_get_me` gets one line and nothing more: no retry loop and no question. Write `Operating **unbound**: glassfrog_get_me failed (<the error, in a few words>), so no role is resolved.` and carry on with the work. The session stays unbound: a roster call that works later is not a confirmed actor, so do not bind from it. It may still scope read-only calls, such as reading the tensions on those roles. A role skill or routine that runs with no GlassFrog connector writes the line in "When GlassFrog Data Is Unavailable" instead. The session-start directive writes no line when no `glassfrog_get_me` tool is listed (ADR-0008 A8). See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
 
 ### Step 2 -- Load the actor's role roster (bounded)
 
@@ -84,6 +86,9 @@ Apply the **silent-when-obvious + ascertain-vs-ask + announce-the-result** polic
 | The named role does not exist in the organization at all | **Do not fall through to Observer mode.** Run Step 3a below. A role the user speaks of as real but that governance has never created is a different condition from a role they simply do not fill, and it needs a different answer. |
 | The user named the circle in their prompt | Use it as the resolution signal. Validate against the actor's role roster: if it's a circle the actor fills the role in, use it silently; if not, name the mismatch. |
 | User explicitly overrides via `/self-org:context` | Use the override. Announce the override is active. |
+| No target role: the session-start directive sent you here, or the request names no role | Resolve from the roster and from what the session names. The actor fills exactly one role: announce it. The prompt names a role or circle the actor fills: use it. Otherwise do not ask: write `Operating **unbound**: <actor> fills <N> roles, and nothing in this session picks one.` A person can name the role later (see [Leaving unbound](#unattended-sessions-and-the-unbound-state)). This row never asks, in an attended session too, because the directive must not ask a question (ADR-0008 invariant 4). |
+
+**Unattended:** every row above that asks the user becomes one line and no question. Several matching circles: `Operating **unbound**: <Role> is filled in <Circle A> and <Circle B>, and nothing in this session picks one.` The actor fills the target role nowhere: `Operating **unbound**: <actor> does not fill <Role> in any circle.` Then carry on. Do not pick a circle silently; a guessed circle is a wrong attribution that looks clean. See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
 
 ### Step 3a -- When the named role does not exist
 
@@ -101,6 +106,8 @@ The Step 3 table's "does not fill the target role anywhere" row assumes the role
 
 4. **Offer the two real paths, in order of cost.** (a) Proceed now under the nearest existing role whose Purpose and Accountabilities actually cover the work, naming the compromise. (b) File the governance proposal first, then attach the work to the new role. Let the user choose; do not pick silently.
 5. **If the user proceeds under a substitute role, say so in the record.** Whatever the skill files -- project, action, tension -- carries a line naming the intended role, the substitute used, and why. Otherwise the record shows a clean attribution that was never clean, and the next reader cannot tell a deliberate compromise from a mistake.
+
+**Unattended:** items 1 and 2 still run, because they are read-only searches. Item 4 has nobody to choose, so it becomes one line and no question: `Operating **unbound**: <Role> does not exist in GlassFrog.` Add the in-flight item and its holder when item 2 found one. Do not take either path, and do not proceed under a substitute role. File no project, action or tension for the work; draft it instead, and name the missing role in the draft. See [Unattended Sessions and the Unbound State](#unattended-sessions-and-the-unbound-state).
 
 **Why this earns its place.** The failure is silent and it corrupts the governance record rather than the conversation. A skill that files a project under a plausible-looking role because the named one was missing produces an artifact that looks correct in GlassFrog forever. Catching it costs one search call at resolution time.
 
@@ -168,6 +175,46 @@ A skill can still operate without GlassFrog, but it must:
 3. **Not silently assume** the human is the actor or that the canonical role definition matches their current accountabilities.
 
 This is the same pattern as the existing `self-org-ai-governance` SKILL.md "Required: GlassFrog MCP Tools" section -- it doesn't refuse to operate, it names the constraint.
+
+**Unattended:** skip step 2. Nobody can declare the context, so write `Operating **unbound**: GlassFrog is not available in this session, so no role is resolved.` and carry on. Step 3 still holds: an unbound session assumes no actor and no role.
+
+This branch is for a role skill or a routine that runs this procedure. The session-start conditional directive does not send a session here when no `glassfrog_get_me` tool is listed. That session makes no GlassFrog call and writes no unbound line. The conditional directive in its transcript is the record that grounding was not available.
+
+---
+
+## Unattended Sessions and the Unbound State
+
+Every "ask the user" step above assumes someone can answer. Some sessions have nobody: a scheduled routine, a headless or pipeline run, a session started by a trigger, an agent working alone. A question there is never answered, so the session either stalls on it or drops grounding without a word, and a reader of the transcript cannot tell that from forgetting.
+
+**When a session is unattended.** Treat the session as unattended when no person can answer in it, or when you cannot tell. An unasked question costs less than an unanswered one. The session-start role-grounding directive fires before anyone has spoken, so a `glassfrog_get_me` failure on that path takes the unattended branch even when a person later turns up. A role skill a person invokes during the session follows the interactive asks above. A session that has no `glassfrog_get_me` tool and runs no role skill never starts this procedure, so it writes no unbound line.
+
+**The rule.** On an unattended path, every ask becomes one line that names the gap, and the session proceeds **unbound**. No retry loop, and no question.
+
+**The line.** It always starts the same way, so it parallels `Operating as **Role of Circle**` and can be found in a transcript:
+
+> Operating **unbound**: <the gap, in one clause>.
+
+Write it once, in the opening lines, where the role announcement would have gone.
+
+**What unbound permits.** Work that needs no role's authority: reading, analysis, code, drafts, and read-only GlassFrog calls.
+
+**What unbound forbids.**
+
+- Claiming a role. Do not write `Operating as ...`, and do not attribute output to a role. The one exception is a routine's declared role, which may author drafts (see [A routine's declared role](#a-routines-declared-role)).
+- GlassFrog writes that act from a role: tensions, projects, actions, proposals, notes, tags, checklist items, metrics, goal updates. Draft them as text instead, and say which role they would need.
+- Picking a role or circle by guess, so the record shows a binding that never happened.
+
+**Leaving unbound.** A session leaves the state when a person names the role, or when `glassfrog_get_me` later succeeds (for example, after a reconnected connector). Announce the new context in the usual way (Step 4). Do not file anything retroactively under a role chosen after the fact without saying so.
+
+### A routine's declared role
+
+A scheduled routine declares its acting role in its prompt (see [Scheduled Routines](#scheduled-routines-context-encoding-at-creation-time)). When `glassfrog_get_me` succeeds, the routine operates as that role in the usual way. When it fails, nothing confirms the declaration. The session stays unbound, but it keeps the declared role as the author of its drafts:
+
+> Operating **unbound**: glassfrog_get_me failed (<the error>); drafts are attributed to <declared Role of Circle>, unverified.
+
+It drafts as that role and writes nothing to GlassFrog, even where a policy would let the role write unattended. A write needs a verified binding.
+
+A pre-declared default role, which would let an unattended session bind without a GlassFrog call, is a separate mechanism and is not part of this procedure.
 
 ---
 
