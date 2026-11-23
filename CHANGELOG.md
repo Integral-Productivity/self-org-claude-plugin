@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.11.0...v1.11.1) (2026-11-23)
+
+
+### Bug Fixes
+
+* **grounding:** give unattended sessions a stated unbound outcome ([#519](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/519)) ([4ed09de](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/4ed09def302cceeb51c7d26bb40c98a161d95375))
+
 ## [1.11.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.10.1...v1.11.0) (2026-11-23)
 
 
