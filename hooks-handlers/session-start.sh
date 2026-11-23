@@ -52,6 +52,13 @@ set -uo pipefail
 _hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || _hook_dir=""
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-${_hook_dir%/hooks-handlers}}"
 PLUGIN_VERSION="unknown"
+# The directive cites the resolution procedure by path. The session's working
+# directory is usually another repository, where a repo-relative path names
+# nothing (#524), so cite it under the plugin root when the file is there.
+RESOLUTION_DOC="skills/shared/actor-and-role-resolution.md"
+if [[ -n "$PLUGIN_ROOT" && -r "$PLUGIN_ROOT/$RESOLUTION_DOC" ]]; then
+  RESOLUTION_DOC="$PLUGIN_ROOT/$RESOLUTION_DOC"
+fi
 if [[ -r "$PLUGIN_ROOT/version.txt" ]]; then
   PLUGIN_VERSION="$(tr -d '[:space:]' < "$PLUGIN_ROOT/version.txt")"
   [[ -n "$PLUGIN_VERSION" ]] || PLUGIN_VERSION="unknown"
@@ -325,14 +332,22 @@ def keychain_item(service):
     # import and its fork cost ~7 ms more on the hot path (measured, #319).
     r, w = os.pipe()
     null = os.open(os.devnull, os.O_RDWR)
+    argv = ["security", "find-generic-password", "-s", service, "-w"]
+    actions = [(os.POSIX_SPAWN_DUP2, null, 0), (os.POSIX_SPAWN_DUP2, w, 1),
+               (os.POSIX_SPAWN_DUP2, null, 2), (os.POSIX_SPAWN_CLOSE, r)]
+    # The child must lead its own process group so a timeout can kill all of
+    # it. setsid does that, but some Python builds have no posix_spawn setsid
+    # and raise NotImplementedError (#525); setpgroup=0 gives the same group.
+    # A spawn that still fails means the Keychain cannot be read: return ""
+    # so the caller falls back to the file, never let the error escape.
     try:
-        pid = os.posix_spawnp(
-            "security", ["security", "find-generic-password", "-s", service, "-w"],
-            os.environ,
-            file_actions=[(os.POSIX_SPAWN_DUP2, null, 0), (os.POSIX_SPAWN_DUP2, w, 1),
-                          (os.POSIX_SPAWN_DUP2, null, 2), (os.POSIX_SPAWN_CLOSE, r)],
-            setsid=True)
-    except OSError:
+        try:
+            pid = os.posix_spawnp("security", argv, os.environ,
+                                  file_actions=actions, setsid=True)
+        except NotImplementedError:
+            pid = os.posix_spawnp("security", argv, os.environ,
+                                  file_actions=actions, setpgroup=0)
+    except (OSError, NotImplementedError):
         for fd in (r, w, null):
             os.close(fd)
         return ""
@@ -351,7 +366,7 @@ def keychain_item(service):
         chunks.append(chunk)
     os.close(r)
     if expired:
-        # setsid made the child its own process group: kill all of it.
+        # The child leads its own process group (setsid or setpgroup): kill all of it.
         try:
             os.killpg(pid, signal.SIGKILL)
         except OSError:
@@ -479,10 +494,11 @@ if _truthy "${HOLACRACY_GROUNDING_DIRECTIVE:-on}"; then
 
 This hook found no authenticated GlassFrog connector in the local MCP OAuth store. That store cannot see a claude.ai connector (Cowork, claude.ai), so the hook cannot tell whether GlassFrog is connected. Your own tool list can. Check it, including deferred tools listed by name only:
 
-- If a tool whose name ends in `glassfrog_get_me` is available, from any server, this is the role-grounding directive. Before your first substantive action, resolve and announce the active Holacratic role/circle per `skills/shared/actor-and-role-resolution.md`, following its bounded Step 2 call shape: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. Announce the result in your opening lines (e.g. "Operating as **Role of Circle**"). Grounding has NOT yet been performed; this only requests it. If the `glassfrog_get_me` call fails, or a step would need an answer nobody in this session can give: one line, no retry, no question. Write `Operating **unbound**:` and name the gap, then carry on with the work, per "Unattended Sessions and the Unbound State" in that file.
+- If a tool whose name ends in `glassfrog_get_me` is available, from any server, this is the role-grounding directive. Before your first substantive action, resolve and announce the active Holacratic role/circle per `@RESOLUTION_DOC@`, following its bounded Step 2 call shape: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. Announce the result in your opening lines (e.g. "Operating as **Role of Circle**"). Grounding has NOT yet been performed; this only requests it. If the `glassfrog_get_me` call fails, or a step would need an answer nobody in this session can give: one line, no retry, no question. Write `Operating **unbound**:` and name the gap, then carry on with the work, per "Unattended Sessions and the Unbound State" in that file.
 - If no such tool is available, make no GlassFrog call and do not ask about a role. Proceed with the work.
 CONDITIONAL
 )
+    conditional="${conditional//@RESOLUTION_DOC@/"$RESOLUTION_DOC"}"
     # Version stamp outside the heredoc, as for the directive below.
     conditional="${conditional}"$'\n\n'"_Conditional directive emitted by self-org plugin v${PLUGIN_VERSION}._"
   fi
@@ -490,13 +506,14 @@ CONDITIONAL
     grounding=$(cat <<'DIRECTIVE'
 **self-org plugin: role-grounding directive**
 
-Before your first substantive action this session, resolve and announce the active Holacratic role/circle per the procedure in `skills/shared/actor-and-role-resolution.md` -- follow its Step 2 call shape, which is bounded: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. For a Partner who fills many roles both overflow the tool-result limit and cost you the turn. Then announce the result in your opening lines (e.g. "Operating as **Role of Circle**").
+Before your first substantive action this session, resolve and announce the active Holacratic role/circle per the procedure in `@RESOLUTION_DOC@` -- follow its Step 2 call shape, which is bounded: do NOT pass `include_roles: true` to `glassfrog_get_me`, and do NOT call `glassfrog_list_my_roles` unpaged. For a Partner who fills many roles both overflow the tool-result limit and cost you the turn. Then announce the result in your opening lines (e.g. "Operating as **Role of Circle**").
 
 If the `glassfrog_get_me` call fails, or a step would need an answer nobody in this session can give: one line, no retry, no question. Write `Operating **unbound**:` and name the gap, then carry on with the work, per "Unattended Sessions and the Unbound State" in that file.
 
 This grounding has NOT yet been performed -- this directive only requests it and does not assert it happened (the hook has no GlassFrog access at fire time). If work crosses into another role's remit, name the boundary and mark a chapter.
 DIRECTIVE
 )
+    grounding="${grounding//@RESOLUTION_DOC@/"$RESOLUTION_DOC"}"
     # Stamp the running version. Appended AFTER the heredoc and never inside it:
     # scripts/grounding-readout.sh derives its detection marker from the first
     # non-empty line of this `DIRECTIVE` heredoc at run time, and its header
