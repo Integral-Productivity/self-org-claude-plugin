@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.2](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.11.1...v1.11.2) (2026-11-24)
+
+
+### Bug Fixes
+
+* **hooks:** cite the resolution procedure by plugin path and catch a setsid-less spawn ([#532](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/532)) ([fd380ba](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/fd380bafd025549eafa143a6cdda73eb2b3803fe))
+
 ## [1.11.1](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.11.0...v1.11.1) (2026-11-23)
 
 
