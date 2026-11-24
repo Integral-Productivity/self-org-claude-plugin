@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.11.2...v1.12.0) (2026-11-24)
+
+
+### Features
+
+* **readout:** count unbound sessions as their own grounding outcome ([#534](https://github.com/Integral-Productivity/self-org-claude-plugin/issues/534)) ([cdc0d11](https://github.com/Integral-Productivity/self-org-claude-plugin/commit/cdc0d11cbcb7c3edb7a13556d5657a053e090b5f))
+
 ## [1.11.2](https://github.com/Integral-Productivity/self-org-claude-plugin/compare/v1.11.1...v1.11.2) (2026-11-24)
 
 
