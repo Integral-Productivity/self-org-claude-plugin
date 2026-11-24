@@ -205,6 +205,35 @@ sedi '/^argument-hint:/d' "$TMP/c3c/commands/demo-cmd.md"
 git -C "$TMP/c3c" add -A && git -C "$TMP/c3c" commit -qm c3c
 _assert_load_bearing 3 "$TMP/c3c" "command missing argument-hint"
 
+# 3e/3f. Frontmatter is the block opened by `---` on line 1 and closed at the
+#        next `---` (#528). A key in a body block between two horizontal rules
+#        is not frontmatter (3e), and a file whose line 1 is not `---` has no
+#        frontmatter at all (3f).
+_fixture "$TMP/c3e"
+sedi '/^version:/d' "$TMP/c3e/skills/demo/SKILL.md"
+printf '\n---\n\nversion: 1.0.0\n\n---\n' >> "$TMP/c3e/skills/demo/SKILL.md"
+git -C "$TMP/c3e" add -A && git -C "$TMP/c3e" commit -qm c3e
+_assert_load_bearing 3 "$TMP/c3e" "skill version only in a body rule-block"
+
+_fixture "$TMP/c3f"
+sedi '1d' "$TMP/c3f/commands/demo-cmd.md"
+git -C "$TMP/c3f" add -A && git -C "$TMP/c3f" commit -qm c3f
+_assert_load_bearing 3 "$TMP/c3f" "command whose line 1 is not ---"
+
+# 3g/3h. The same rule at the command and agent call sites (#536 F1): a key that
+#        exists only in a body block between two horizontal rules is missing.
+_fixture "$TMP/c3g"
+sedi '/^argument-hint:/d' "$TMP/c3g/commands/demo-cmd.md"
+printf '\n---\n\nargument-hint: [thing]\n\n---\n' >> "$TMP/c3g/commands/demo-cmd.md"
+git -C "$TMP/c3g" add -A && git -C "$TMP/c3g" commit -qm c3g
+_assert_load_bearing 3 "$TMP/c3g" "command argument-hint only in a body rule-block"
+
+_fixture "$TMP/c3h"
+sedi '/^model:/d' "$TMP/c3h/agents/demo-agent.md"
+printf '\n---\n\nmodel: inherit\n\n---\n' >> "$TMP/c3h/agents/demo-agent.md"
+git -C "$TMP/c3h" add -A && git -C "$TMP/c3h" commit -qm c3h
+_assert_load_bearing 3 "$TMP/c3h" "agent model only in a body rule-block"
+
 # 4. Content changed without a version bump — diff-aware, so it needs --base.
 _fixture "$TMP/c4"
 BASE4="$(git -C "$TMP/c4" rev-parse HEAD)"
@@ -247,6 +276,44 @@ sedi 's/^version: 1.0.0/version: 1.0.1/' "$TMP/c4d/skills/demo/SKILL.md"
 git -C "$TMP/c4d" add -A && git -C "$TMP/c4d" commit -qm c4d-bump
 SKILLS_LINT_ROOT="$TMP/c4d" bash "$LINT" --base "$BASE4D" >/dev/null 2>&1 \
   || fail "check 4: bumping SKILL.md did not clear a references/ change"
+CASES=$((CASES + 1))
+
+# 4e. A body edit between two `---` horizontal rules is still a body edit (#528).
+#     Stripping "frontmatter" with a repeating `/^---$/,/^---$/` range also
+#     deletes every block between a later pair of rules, so an edit there looked
+#     unchanged and needed no bump. Only the leading frontmatter is metadata.
+_fixture "$TMP/c4e"
+printf '\n---\n\nBetween the rules: original instruction.\n\n---\n\nAfter the rules.\n' \
+  >> "$TMP/c4e/skills/demo/SKILL.md"
+git -C "$TMP/c4e" add -A && git -C "$TMP/c4e" commit -qm c4e-base
+BASE4E="$(git -C "$TMP/c4e" rev-parse HEAD)"
+SKILLS_LINT_ROOT="$TMP/c4e" bash "$LINT" --base "$BASE4E" >/dev/null 2>&1 \
+  || fail "check 4e: the base fixture with horizontal rules is not clean"
+sedi 's/original instruction/a materially different instruction/' "$TMP/c4e/skills/demo/SKILL.md"
+git -C "$TMP/c4e" add -A && git -C "$TMP/c4e" commit -qm c4e
+SKILLS_LINT_ROOT="$TMP/c4e" bash "$LINT" --base "$BASE4E" >/dev/null 2>&1 \
+  && fail "check 4: a body edit between two horizontal rules escaped the version-bump check"
+SKILLS_LINT_SKIP=4 SKILLS_LINT_ROOT="$TMP/c4e" bash "$LINT" --base "$BASE4E" >/dev/null 2>&1 \
+  || fail "check 4 is not load-bearing for an edit between horizontal rules"
+CASES=$((CASES + 1))
+
+# 4f. A SKILL.md whose line 1 is not `---` has no frontmatter, so its first pair
+#     of horizontal rules is body, not metadata (#536 F2). An edit between them
+#     is a body edit. Checks 3 and 8 flag the missing frontmatter and its
+#     description, so skip them here.
+_fixture "$TMP/c4f"
+printf '# Demo\n\n---\n\nBetween the rules: original instruction.\n\n---\n\nAfter the rules.\n' \
+  > "$TMP/c4f/skills/demo/SKILL.md"
+git -C "$TMP/c4f" add -A && git -C "$TMP/c4f" commit -qm c4f-base
+BASE4F="$(git -C "$TMP/c4f" rev-parse HEAD)"
+SKILLS_LINT_SKIP=3,8 SKILLS_LINT_ROOT="$TMP/c4f" bash "$LINT" --base "$BASE4F" >/dev/null 2>&1 \
+  || fail "check 4f: the base fixture without frontmatter is not clean with checks 3 and 8 skipped"
+sedi 's/original instruction/a materially different instruction/' "$TMP/c4f/skills/demo/SKILL.md"
+git -C "$TMP/c4f" add -A && git -C "$TMP/c4f" commit -qm c4f
+SKILLS_LINT_SKIP=3,8 SKILLS_LINT_ROOT="$TMP/c4f" bash "$LINT" --base "$BASE4F" >/dev/null 2>&1 \
+  && fail "check 4: in a file whose line 1 is not ---, an edit between the first two rules escaped the version-bump check"
+SKILLS_LINT_SKIP=3,4,8 SKILLS_LINT_ROOT="$TMP/c4f" bash "$LINT" --base "$BASE4F" >/dev/null 2>&1 \
+  || fail "check 4 is not load-bearing for an edit in a file without frontmatter"
 CASES=$((CASES + 1))
 
 # 5. A slash command referenced in prose that neither exists nor is declared.
@@ -435,6 +502,28 @@ _fixture "$TMP/c10e"
 sedi 's/^model: inherit$/model: inherit\ntools: Read, mcp__made-up__glassfrog_get_role/' "$TMP/c10e/agents/demo-agent.md"
 git -C "$TMP/c10e" add -A && git -C "$TMP/c10e" commit -qm c10e
 _assert_load_bearing 10 "$TMP/c10e" "unknown server prefix in a tools: line"
+
+# 10f. The generated tool lines sit in a body block between two horizontal
+#      rules, not in the frontmatter, so Claude Code grants the coach every
+#      tool (#528).
+_fixture "$TMP/c10f"
+{ printf -- '---\nname: self-org-coach\ndescription: coach\nmodel: inherit\n---\nBody.\n\n---\n\n'
+  GLASSFROG_INVENTORY_ROOT="$TMP/c10f" python3 "$HERE/glassfrog-tool-inventory.py" coach-frontmatter \
+    || fail "c10f fixture: generator failed"
+  printf -- '\n---\n'
+} > "$TMP/c10f/agents/self-org-coach.md"
+git -C "$TMP/c10f" add -A && git -C "$TMP/c10f" commit -qm c10f
+_assert_load_bearing 10 "$TMP/c10f" "coach tool lines only in a body rule-block"
+
+# 10g. The positive twin of 10f (#536 F3): a generated coach whose body holds a
+#      tools: line between two horizontal rules is clean. Only the frontmatter's
+#      lines are compared; the body block is prose.
+_coach_fixture "$TMP/c10g"
+printf '\n---\n\ntools: Read\n\n---\n' >> "$TMP/c10g/agents/self-org-coach.md"
+git -C "$TMP/c10g" add -A && git -C "$TMP/c10g" commit -qm c10g
+SKILLS_LINT_ROOT="$TMP/c10g" bash "$LINT" >/dev/null 2>&1 \
+  || { SKILLS_LINT_ROOT="$TMP/c10g" bash "$LINT"; fail "check 10 read a tools: line in the coach's body as frontmatter"; }
+CASES=$((CASES + 1))
 
 # 11. Triage-state names come from a closed list. GlassFrog creates any tag it
 #     is sent, so a misspelled state becomes a tag no queue reads (ADR-0019).
@@ -756,6 +845,14 @@ SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT" >/dev/null 2>&1 \
   || { SKILLS_LINT_ROOT="$TMP/c17b" bash "$LINT"; fail "check 17 flagged a flagged command or an exempt triage walk"; }
 CASES=$((CASES + 1))
 
+# 17c. The flag written in a body block between two horizontal rules does not
+#      make the command user-only (#528).
+_fixture "$TMP/c17c"
+printf '\nFiles it with `glassfrog_create_tension(role_id, body)` on confirmation.\n\n---\n\ndisable-model-invocation: true\n\n---\n' \
+  >> "$TMP/c17c/commands/demo-cmd.md"
+git -C "$TMP/c17c" add -A && git -C "$TMP/c17c" commit -qm c17c
+_assert_load_bearing 17 "$TMP/c17c" "disable-model-invocation only in a body rule-block"
+
 # 18. A command named in neither act-type shape (ADR-0028, #462). Then a
 #     name in each shape, and a deprecated alias, all pass.
 _fixture "$TMP/c18"
@@ -773,6 +870,15 @@ git -C "$TMP/c18b" add -A && git -C "$TMP/c18b" commit -qm c18b
 SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT" >/dev/null 2>&1 \
   || { SKILLS_LINT_ROOT="$TMP/c18b" bash "$LINT"; fail "check 18 flagged a well-named command or a deprecated alias"; }
 CASES=$((CASES + 1))
+
+# 18c. An alias description in a body block between two horizontal rules does
+#      not exempt a misnamed command (#528).
+_fixture "$TMP/c18c"
+printf -- '---\ndescription: x\nargument-hint: [x]\n---\n' > "$TMP/c18c/commands/commit-project.md"
+printf -- '---\ndescription: x\nargument-hint: [x]\n---\nBody.\n\n---\n\ndescription: Deprecated alias for /self-org:commit-project.\n\n---\n' \
+  > "$TMP/c18c/commands/capture-project.md"
+git -C "$TMP/c18c" add -A && git -C "$TMP/c18c" commit -qm c18c
+_assert_load_bearing 18 "$TMP/c18c" "alias description only in a body rule-block"
 
 # 19. The design checklist names a lint check that does not exist (#465 review).
 #     The checklist says which items lint enforces; a renumbered or removed check

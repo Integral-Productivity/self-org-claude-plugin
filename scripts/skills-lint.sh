@@ -57,6 +57,16 @@ cd "$ROOT" || { echo "cannot cd to $ROOT" >&2; exit 2; }
 # shellcheck source=lib/check-common.sh
 source "$SCRIPT_DIR/lib/check-common.sh"
 
+# Frontmatter is the block that opens with `---` on line 1 and closes at the next
+# `---`. A `/^---$/,/^---$/` sed range re-opens at every later `---`, so body text
+# between two horizontal rules would read as frontmatter (#528).
+_frontmatter() {
+  awk 'NR == 1 { if ($0 != "---") exit; print; next } { print } $0 == "---" { exit }' "${1:--}"
+}
+_body() {
+  awk 'NR == 1 && $0 == "---" { fm = 1; next } fm && $0 == "---" { fm = 0; next } !fm' "${1:--}"
+}
+
 # Files that ship as part of the plugin's behaviour or its public documentation.
 #
 # docs/plans, docs/brainstorms, docs/solutions and docs/ideation are excluded as
@@ -244,12 +254,11 @@ check_frontmatter() {
   skipped 3 && return 0
   local f fm key
 
-  _fm() { sed -n '/^---$/,/^---$/p' "$1"; }
   _has() { printf '%s\n' "$1" | grep -qE "^$2:"; }
 
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    fm="$(_fm "$f")"
+    fm="$(_frontmatter "$f")"
     [ -n "$fm" ] || { finding 3 "$f" "no YAML frontmatter"; continue; }
     for key in name description status version; do
       _has "$fm" "$key" || finding 3 "$f" "skill frontmatter missing '$key'"
@@ -262,7 +271,7 @@ check_frontmatter() {
 
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    fm="$(_fm "$f")"
+    fm="$(_frontmatter "$f")"
     [ -n "$fm" ] || { finding 3 "$f" "no YAML frontmatter"; continue; }
     for key in description argument-hint; do
       _has "$fm" "$key" || finding 3 "$f" "command frontmatter missing '$key'"
@@ -271,7 +280,7 @@ check_frontmatter() {
 
   while IFS= read -r f; do
     [ -n "$f" ] || continue
-    fm="$(_fm "$f")"
+    fm="$(_frontmatter "$f")"
     [ -n "$fm" ] || { finding 3 "$f" "no YAML frontmatter"; continue; }
     for key in name description model; do
       _has "$fm" "$key" || finding 3 "$f" "agent frontmatter missing '$key'"
@@ -315,8 +324,8 @@ check_version_bump() {
     if git -C "$ROOT" diff --name-only "$BASE" -- "$skill" 2>/dev/null | grep -qv "^$sk$"; then
       body_changed=1
     elif ! diff -q \
-        <(git -C "$ROOT" show "$BASE:$sk" | sed '/^---$/,/^---$/d') \
-        <(sed '/^---$/,/^---$/d' "$ROOT/$sk") >/dev/null 2>&1; then
+        <(git -C "$ROOT" show "$BASE:$sk" | _body) \
+        <(_body "$ROOT/$sk") >/dev/null 2>&1; then
       body_changed=1
     fi
     [ "$body_changed" = 1 ] || continue
@@ -567,7 +576,7 @@ check_tool_grants() {
     want="$(GLASSFROG_INVENTORY_ROOT="$ROOT" python3 "$SCRIPT_DIR/glassfrog-tool-inventory.py" coach-frontmatter 2>&1)" \
       || { finding 10 "$coach" "cannot generate the expected tool lines: $want"; want=""; }
     if [ -n "$want" ]; then
-      got="$(sed -n '/^---$/,/^---$/p' "$ROOT/$coach" | grep -E '^(tools|disallowedTools):')"
+      got="$(_frontmatter "$ROOT/$coach" | grep -E '^(tools|disallowedTools):')"
       [ "$got" = "$want" ] \
         || finding 10 "$coach" "tools:/disallowedTools: differ from the inventory -- regenerate with: python3 scripts/glassfrog-tool-inventory.py coach-frontmatter"
     fi
@@ -958,7 +967,7 @@ check_user_only_writers() {
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     case " $MODEL_INVOCABLE_WRITERS " in *" $f "*) continue ;; esac
-    sed -n '/^---$/,/^---$/p' "$ROOT/$f" | grep -qE '^disable-model-invocation:[[:space:]]*true' \
+    _frontmatter "$ROOT/$f" | grep -qE '^disable-model-invocation:[[:space:]]*true' \
       || finding 17 "$f" "names a GlassFrog write tool but lacks 'disable-model-invocation: true' (#464)"
   done < <(cd "$ROOT" && git ls-files 'commands/*.md' \
     | xargs -r grep -lwF -f <(printf '%s\n' "$writers") 2>/dev/null)
@@ -984,7 +993,7 @@ check_command_names() {
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     name="$(basename "$f" .md)"
-    sed -n '/^---$/,/^---$/p' "$ROOT/$f" | grep -qE '^description:[[:space:]]*Deprecated alias for /self-org:' && continue
+    _frontmatter "$ROOT/$f" | grep -qE '^description:[[:space:]]*Deprecated alias for /self-org:' && continue
     ok=""
     grep -qxF "$name" <<< "$fixed" && ok=1
     for i in $items; do
