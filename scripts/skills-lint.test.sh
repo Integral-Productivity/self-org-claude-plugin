@@ -249,6 +249,44 @@ SKILLS_LINT_ROOT="$TMP/c4d" bash "$LINT" --base "$BASE4D" >/dev/null 2>&1 \
   || fail "check 4: bumping SKILL.md did not clear a references/ change"
 CASES=$((CASES + 1))
 
+# 4e. A body edit between two `---` horizontal rules is still a body edit (#528).
+#     Stripping "frontmatter" with a repeating `/^---$/,/^---$/` range also
+#     deletes every block between a later pair of rules, so an edit there looked
+#     unchanged and needed no bump. Only the leading frontmatter is metadata.
+_fixture "$TMP/c4e"
+printf '\n---\n\nBetween the rules: original instruction.\n\n---\n\nAfter the rules.\n' \
+  >> "$TMP/c4e/skills/demo/SKILL.md"
+git -C "$TMP/c4e" add -A && git -C "$TMP/c4e" commit -qm c4e-base
+BASE4E="$(git -C "$TMP/c4e" rev-parse HEAD)"
+SKILLS_LINT_ROOT="$TMP/c4e" bash "$LINT" --base "$BASE4E" >/dev/null 2>&1 \
+  || fail "check 4e: the base fixture with horizontal rules is not clean"
+sedi 's/original instruction/a materially different instruction/' "$TMP/c4e/skills/demo/SKILL.md"
+git -C "$TMP/c4e" add -A && git -C "$TMP/c4e" commit -qm c4e
+SKILLS_LINT_ROOT="$TMP/c4e" bash "$LINT" --base "$BASE4E" >/dev/null 2>&1 \
+  && fail "check 4: a body edit between two horizontal rules escaped the version-bump check"
+SKILLS_LINT_SKIP=4 SKILLS_LINT_ROOT="$TMP/c4e" bash "$LINT" --base "$BASE4E" >/dev/null 2>&1 \
+  || fail "check 4 is not load-bearing for an edit between horizontal rules"
+CASES=$((CASES + 1))
+
+# 4f. A SKILL.md whose line 1 is not `---` has no frontmatter, so its first pair
+#     of horizontal rules is body, not metadata (#536 F2). An edit between them
+#     is a body edit. Checks 3 and 8 flag the missing frontmatter and its
+#     description, so skip them here.
+_fixture "$TMP/c4f"
+printf '# Demo\n\n---\n\nBetween the rules: original instruction.\n\n---\n\nAfter the rules.\n' \
+  > "$TMP/c4f/skills/demo/SKILL.md"
+git -C "$TMP/c4f" add -A && git -C "$TMP/c4f" commit -qm c4f-base
+BASE4F="$(git -C "$TMP/c4f" rev-parse HEAD)"
+SKILLS_LINT_SKIP=3,8 SKILLS_LINT_ROOT="$TMP/c4f" bash "$LINT" --base "$BASE4F" >/dev/null 2>&1 \
+  || fail "check 4f: the base fixture without frontmatter is not clean with checks 3 and 8 skipped"
+sedi 's/original instruction/a materially different instruction/' "$TMP/c4f/skills/demo/SKILL.md"
+git -C "$TMP/c4f" add -A && git -C "$TMP/c4f" commit -qm c4f
+SKILLS_LINT_SKIP=3,8 SKILLS_LINT_ROOT="$TMP/c4f" bash "$LINT" --base "$BASE4F" >/dev/null 2>&1 \
+  && fail "check 4: in a file whose line 1 is not ---, an edit between the first two rules escaped the version-bump check"
+SKILLS_LINT_SKIP=3,4,8 SKILLS_LINT_ROOT="$TMP/c4f" bash "$LINT" --base "$BASE4F" >/dev/null 2>&1 \
+  || fail "check 4 is not load-bearing for an edit in a file without frontmatter"
+CASES=$((CASES + 1))
+
 # 5. A slash command referenced in prose that neither exists nor is declared.
 _fixture "$TMP/c5"
 printf '\nSee `/self-org:ghost-command` for details.\n' >> "$TMP/c5/README.md"

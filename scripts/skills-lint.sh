@@ -57,6 +57,16 @@ cd "$ROOT" || { echo "cannot cd to $ROOT" >&2; exit 2; }
 # shellcheck source=lib/check-common.sh
 source "$SCRIPT_DIR/lib/check-common.sh"
 
+# Frontmatter is the block that opens with `---` on line 1 and closes at the next
+# `---`. A `/^---$/,/^---$/` sed range re-opens at every later `---`, so body text
+# between two horizontal rules would read as frontmatter (#528).
+_frontmatter() {
+  awk 'NR == 1 { if ($0 != "---") exit; print; next } { print } $0 == "---" { exit }' "${1:--}"
+}
+_body() {
+  awk 'NR == 1 && $0 == "---" { fm = 1; next } fm && $0 == "---" { fm = 0; next } !fm' "${1:--}"
+}
+
 # Files that ship as part of the plugin's behaviour or its public documentation.
 #
 # docs/plans, docs/brainstorms, docs/solutions and docs/ideation are excluded as
@@ -315,8 +325,8 @@ check_version_bump() {
     if git -C "$ROOT" diff --name-only "$BASE" -- "$skill" 2>/dev/null | grep -qv "^$sk$"; then
       body_changed=1
     elif ! diff -q \
-        <(git -C "$ROOT" show "$BASE:$sk" | sed '/^---$/,/^---$/d') \
-        <(sed '/^---$/,/^---$/d' "$ROOT/$sk") >/dev/null 2>&1; then
+        <(git -C "$ROOT" show "$BASE:$sk" | _body) \
+        <(_body "$ROOT/$sk") >/dev/null 2>&1; then
       body_changed=1
     fi
     [ "$body_changed" = 1 ] || continue
