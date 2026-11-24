@@ -232,6 +232,49 @@ echo "$out" | python3 -c 'import json,sys; json.loads(sys.stdin.read())' || fail
 echo "$out" | grep -q "role-grounding directive" || fail "grounding directive marker missing"
 echo "$out" | grep -q "actor-and-role-resolution.md" || fail "grounding directive should point at the resolution procedure"
 
+# G1b. The cited procedure resolves from any working directory (#524). The
+#      session's cwd is usually another repository, where a repo-relative
+#      `skills/shared/...` path names nothing. Both the directive and the
+#      conditional form must cite an absolute path to a file that exists, under
+#      CLAUDE_PLUGIN_ROOT when it is set and under the hook's plugin otherwise.
+cited_paths() {  # stdin = hook output; prints each backticked path to the procedure
+  python3 -c '
+import json, re, sys
+ctx = json.loads(sys.stdin.read())["hookSpecificOutput"]["additionalContext"]
+for p in re.findall(r"`([^`]*actor-and-role-resolution\.md)`", ctx):
+    print(p)'
+}
+assert_cited_resolves() {  # $1 = hook output, $2 = required prefix, $3 = case label
+  local paths p
+  paths="$(printf '%s' "$1" | cited_paths)"
+  [ -n "$paths" ] || fail "G1b ($3): no cited path to the resolution procedure"
+  while IFS= read -r p; do
+    case "$p" in "$2"/*) ;; *) fail "G1b ($3): '$p' is not under $2" ;; esac
+    [ -f "$p" ] || fail "G1b ($3): cited path '$p' does not exist"
+  done <<< "$paths"
+}
+PLUGIN_DIR="$(cd "$HERE/.." && pwd)"
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE -u CLAUDE_PLUGIN_ROOT \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, no CLAUDE_PLUGIN_ROOT"
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE CLAUDE_PLUGIN_ROOT="$PLUGIN_DIR" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, CLAUDE_PLUGIN_ROOT set"
+# A stock Mac runs the hook under /bin/bash 3.2. BASH_COMPAT=42 reproduces that
+# version's expansion rules, where a quoted pattern-substitution replacement
+# keeps its quotes, so the citation is checked under them too.
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE BASH_COMPAT=42 \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "directive, bash 4.2 rules"
+# G1c. When the plugin root holds no readable procedure, the citation falls
+#      back to the repo-relative path, and no placeholder ever leaks (#524).
+BARE_ROOT="$TMP/bare-root"; mkdir -p "$BARE_ROOT"
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE CLAUDE_PLUGIN_ROOT="$BARE_ROOT" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+[ "$(printf '%s' "$out" | cited_paths)" = "skills/shared/actor-and-role-resolution.md" ] \
+  || fail "G1c: with no readable procedure under the plugin root, cite the repo-relative path"
+case "$out" in *@RESOLUTION_DOC@*) fail "G1c: placeholder leaked" ;; esac
+
 # G2. Honest by construction: it DEMANDS the load and does NOT claim grounding
 #     already happened.
 echo "$out" | grep -q "NOT yet been performed" || fail "directive must demand the load, not claim it happened"
@@ -356,6 +399,12 @@ out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
   HOLACRACY_GROUNDING_CREDENTIALS_FILE="$MISSING_CRED" \
   HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
 assert_conditional "$out" "no credentials store"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "conditional form"
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE BASH_COMPAT=42 \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$MISSING_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+assert_conditional "$out" "no credentials store, bash 4.2 rules"
+assert_cited_resolves "$out" "$PLUGIN_DIR" "conditional form, bash 4.2 rules"
 
 # G18. A glassfrog record whose accessToken is the empty string is the
 #      unauthenticated state, not the authenticated one. This is the exact
@@ -511,6 +560,40 @@ out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
   HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
 assert_conditional "$out" "Keychain off, stale file only"
 
+# G27b/G27c. A Python build without posix_spawn setsid must not decide the
+#      outcome by accident (#525). A sitecustomize shim makes the spawn raise
+#      NotImplementedError, as python3 3.13 does in some containers, so these
+#      cases behave the same on every interpreter.
+NOSETSID="$TMP/nosetsid"; mkdir -p "$NOSETSID"
+cat > "$NOSETSID/sitecustomize.py" <<'SITE'
+import os
+_real = os.posix_spawnp
+def _spawnp(*args, **kwargs):
+    if kwargs.get("setsid") or os.environ.get("STUB_SPAWN_FAILS") == "all":
+        raise NotImplementedError("posix_spawnp: setsid unavailable on this platform")
+    return _real(*args, **kwargs)
+os.posix_spawnp = _spawnp
+SITE
+# G27b. Without setsid the Keychain is still read: the authenticated item lets
+#       the directive through, exactly as G27.
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
+  PATH="$STUB_BIN:$PATH" PYTHONPATH="$NOSETSID" HOLACRACY_GROUNDING_KEYCHAIN=on \
+  STUB_KEYCHAIN_ITEM="$AUTHED_CRED" \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$EMPTY_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+echo "$out" | grep -q "role-grounding directive\*\*" \
+  || fail "G27b: a Python without posix_spawn setsid must still read the Keychain (#525)"
+# G27c. When no spawn works at all, the Keychain counts as unreadable and the
+#       file is the store, as when the item is missing (G30). The exception
+#       must not escape and fail the gate closed.
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
+  PATH="$STUB_BIN:$PATH" PYTHONPATH="$NOSETSID" STUB_SPAWN_FAILS=all \
+  HOLACRACY_GROUNDING_KEYCHAIN=on STUB_KEYCHAIN_ITEM="$EMPTY_CRED" \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$AUTHED_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+echo "$out" | grep -q "role-grounding directive\*\*" \
+  || fail "G27c: a spawn that cannot run must fall back to the file, not fail closed (#525)"
+
 # G29. When the Keychain item is readable it IS the store. Its unauthenticated
 #      entry is not outvoted by a file that happens to hold a token: on a Mac
 #      that file is stale, and letting it vote would report a logged-out
@@ -648,6 +731,18 @@ out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
 elapsed=$(( $(date +%s) - start ))
 [ "$elapsed" -lt 10 ] || fail "a hanging Keychain read must be cut off (took ${elapsed}s)"
 assert_conditional "$out" "Keychain read timed out, stale file"
+
+# G38b. The same hang on a Python without posix_spawn setsid (#525).
+start=$(date +%s)
+out="$(cd "$TMP" && env -u HOLACRACY_GROUNDING_DIRECTIVE \
+  PATH="$STUB_BIN:$PATH" PYTHONPATH="$NOSETSID" HOLACRACY_GROUNDING_KEYCHAIN=on \
+  HOLACRACY_GROUNDING_KEYCHAIN_TIMEOUT=1 STUB_SLEEP=20 \
+  STUB_KEYCHAIN_ITEM="$AUTHED_CRED" \
+  HOLACRACY_GROUNDING_CREDENTIALS_FILE="$EMPTY_CRED" \
+  HOLACRACY_ROUTINE_LEDGER="$MISSING" bash "$HOOK")"
+elapsed=$(( $(date +%s) - start ))
+[ "$elapsed" -lt 10 ] || fail "G38b: a hanging read must be cut off without setsid (took ${elapsed}s)"
+assert_conditional "$out" "G38b: timed out without setsid, stale file"
 
 # --- claude.ai connectors (issue #332) --------------------------------------
 # A claude.ai connector's OAuth lives on claude.ai's side, so it never appears

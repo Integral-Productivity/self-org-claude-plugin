@@ -1,6 +1,7 @@
 ---
 title: "Keychain tests (G27 and on) fail where python3 cannot posix_spawn with setsid"
 date: 2026-11-22
+last_updated: 2026-11-23
 category: test-failures
 module: grounding-hook
 problem_type: test_failure
@@ -25,6 +26,8 @@ tags:
 ---
 
 # Keychain tests (G27 and on) fail where python3 cannot posix_spawn with setsid
+
+> **Resolved in the hook by #525 (2026-11-23).** `keychain_item()` now retries the spawn with `setpgroup=0` when `setsid` raises `NotImplementedError`, and catches a spawn that still fails on purpose, so the file store is consulted. G27b and G27c in `session-start.test.sh` hold this on every interpreter through a `sitecustomize` shim. The interpreter workaround below is needed only on a branch cut before that fix.
 
 ## Problem
 
@@ -68,4 +71,4 @@ The hook fails closed here: a session on such an interpreter gets the conditiona
 ## Prevention
 
 - Before you treat a G27-or-later failure as a regression, run the one-line interpreter check above.
-- Open question, not decided: should `keychain_item()` also catch `NotImplementedError` and return `""`? The hook would still fail closed, but on purpose rather than by an uncaught exception, and the Keychain-off file path would then be consulted as the comment above `raw = keychain_item(...)` intends. That is a product-code change for whoever owns the hook (ADR-0008 A6), so it is not made here. The Keychain is macOS-only, so production impact is limited to Linux hosts that set `HOLACRACY_GROUNDING_KEYCHAIN=on`, which the tests do.
+- The open question this entry first recorded (should `keychain_item()` catch `NotImplementedError`?) was decided in #525: yes, on purpose, with a `setpgroup=0` retry first so the timeout can still kill the whole process group.
