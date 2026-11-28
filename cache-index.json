@@ -1,6 +1,6 @@
 {
   "_run_summary": {
-    "generated_at": "2026-11-27T07:08:39.455344+00:00",
+    "generated_at": "2026-11-28T07:07:17.498620+00:00",
     "hits": 0,
     "legs": [
       {
@@ -486,12 +486,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.78,
-        "total_duration_seconds": 1.8,
+        "executor_duration_seconds": 1.48,
+        "total_duration_seconds": 1.5,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_01e89efe2f15bdd66ac8d1659e5b7dfe": {
@@ -1956,12 +1956,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 2.19,
-        "total_duration_seconds": 2.22,
+        "executor_duration_seconds": 1.58,
+        "total_duration_seconds": 1.6,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_0e4407e13c26814ab330fd612be89a27": {
@@ -4974,12 +4974,12 @@
         "total": 4
       },
       "timing": {
-        "executor_duration_seconds": 1.75,
-        "total_duration_seconds": 1.77,
+        "executor_duration_seconds": 1.8,
+        "total_duration_seconds": 1.82,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_20f82c7ca645e4741c2f855ae7a84095": {
@@ -5239,12 +5239,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 3.0,
-        "total_duration_seconds": 3.02,
+        "executor_duration_seconds": 1.61,
+        "total_duration_seconds": 1.63,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_243b3a86e89e5a50c2a87809b3a33a60": {
@@ -5384,12 +5384,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.63,
-        "total_duration_seconds": 1.65,
+        "executor_duration_seconds": 1.33,
+        "total_duration_seconds": 1.35,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_24bcfa8d824aff212ba1e2f5bf678d59": {
@@ -5845,12 +5845,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.53,
-        "total_duration_seconds": 1.55,
+        "executor_duration_seconds": 1.59,
+        "total_duration_seconds": 1.61,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_270b9dae8b83bb5f6619ad1a9129c8af": {
@@ -8494,12 +8494,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.73,
-        "total_duration_seconds": 1.76,
+        "executor_duration_seconds": 1.38,
+        "total_duration_seconds": 1.41,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_370f3d99ab1dbaef7c0b70bff7d998eb": {
@@ -9533,12 +9533,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.71,
-        "total_duration_seconds": 1.74,
+        "executor_duration_seconds": 1.39,
+        "total_duration_seconds": 1.41,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_3fcabdf2eb658f9f3c039d06627a9f74": {
@@ -12665,12 +12665,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.66,
-        "total_duration_seconds": 1.68,
+        "executor_duration_seconds": 1.57,
+        "total_duration_seconds": 1.59,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_5436453162b828ea665e187f2dbc5f95": {
@@ -13442,12 +13442,12 @@
         "total": 8
       },
       "timing": {
-        "executor_duration_seconds": 1.6,
-        "total_duration_seconds": 1.62,
+        "executor_duration_seconds": 1.39,
+        "total_duration_seconds": 1.41,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_5b15a0e529fce6bdf37100a26e34f238": {
@@ -14174,12 +14174,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.68,
-        "total_duration_seconds": 1.7,
+        "executor_duration_seconds": 1.42,
+        "total_duration_seconds": 1.44,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_5eac3357202429abae05d8d3d758868a": {
@@ -14321,12 +14321,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.61,
-        "total_duration_seconds": 1.64,
+        "executor_duration_seconds": 1.47,
+        "total_duration_seconds": 1.49,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_5ee4236ceda95d29d680b0d3e5afc39a": {
@@ -14526,12 +14526,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.77,
-        "total_duration_seconds": 1.79,
+        "executor_duration_seconds": 1.36,
+        "total_duration_seconds": 1.38,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_5f74dd41b3618f1843d301d54d3a03e2": {
@@ -15654,12 +15654,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.75,
-        "total_duration_seconds": 1.78,
+        "executor_duration_seconds": 1.45,
+        "total_duration_seconds": 1.47,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_665f199d9bab5c2f599751a861bb6b8c": {
@@ -19649,11 +19649,11 @@
       },
       "timing": {
         "executor_duration_seconds": 1.6,
-        "total_duration_seconds": 1.63,
+        "total_duration_seconds": 1.62,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_7f88da3517a6395e2a12cde61223a423": {
@@ -20957,12 +20957,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.71,
-        "total_duration_seconds": 1.73,
+        "executor_duration_seconds": 1.7,
+        "total_duration_seconds": 1.72,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_894862cd63924abbb64b7a2401359820": {
@@ -22849,12 +22849,12 @@
         "total": 11
       },
       "timing": {
-        "executor_duration_seconds": 1.72,
-        "total_duration_seconds": 1.75,
+        "executor_duration_seconds": 1.64,
+        "total_duration_seconds": 1.66,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_95804e71a8f42a7cbe38234c916b7a37": {
@@ -23326,12 +23326,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.55,
-        "total_duration_seconds": 1.58,
+        "executor_duration_seconds": 1.6,
+        "total_duration_seconds": 1.62,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_98fb4ebcefb81f2b80167ed6499c12e6": {
@@ -28742,12 +28742,12 @@
         "total": 8
       },
       "timing": {
-        "executor_duration_seconds": 1.91,
-        "total_duration_seconds": 1.93,
+        "executor_duration_seconds": 1.93,
+        "total_duration_seconds": 1.95,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_b83f169d368b73b56599bc7590bf306c": {
@@ -28872,12 +28872,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.63,
-        "total_duration_seconds": 1.66,
+        "executor_duration_seconds": 1.56,
+        "total_duration_seconds": 1.58,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_b857d0b0fa3cebdb08905859546d6f29": {
@@ -29518,12 +29518,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.95,
-        "total_duration_seconds": 1.97,
+        "executor_duration_seconds": 1.37,
+        "total_duration_seconds": 1.39,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_bc5c06fc331c726af64543b57725c0fc": {
@@ -29997,12 +29997,12 @@
         "total": 4
       },
       "timing": {
-        "executor_duration_seconds": 1.62,
-        "total_duration_seconds": 1.64,
+        "executor_duration_seconds": 2.62,
+        "total_duration_seconds": 2.64,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_bfd6251513c3be52169387b2f583a7eb": {
@@ -31434,12 +31434,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.64,
-        "total_duration_seconds": 1.66,
+        "executor_duration_seconds": 1.34,
+        "total_duration_seconds": 1.36,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_c55cb78d4e1861c3e0148a02d87d7c13": {
@@ -31573,12 +31573,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.54,
-        "total_duration_seconds": 1.57,
+        "executor_duration_seconds": 1.35,
+        "total_duration_seconds": 1.37,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_c58cca430ce1ee74e68b239521accff3": {
@@ -35943,12 +35943,12 @@
         "total": 6
       },
       "timing": {
-        "executor_duration_seconds": 1.65,
-        "total_duration_seconds": 1.68,
+        "executor_duration_seconds": 1.43,
+        "total_duration_seconds": 1.45,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_e26e7ecd785138cdb683e46783de11e2": {
@@ -36353,12 +36353,12 @@
         "total": 5
       },
       "timing": {
-        "executor_duration_seconds": 1.52,
-        "total_duration_seconds": 1.54,
+        "executor_duration_seconds": 1.55,
+        "total_duration_seconds": 1.57,
         "total_tokens": 0
       }
     },
-    "last_executed": "2026-11-27T07:08:39.455344+00:00",
+    "last_executed": "2026-11-28T07:07:17.498620+00:00",
     "successful": false
   },
   "leg_e57c653f63f65deb7ed8206bd6c26302": {
